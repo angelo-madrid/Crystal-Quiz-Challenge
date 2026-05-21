@@ -8,120 +8,59 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Segoe UI', sans-serif;
-  min-height: 100vh;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: flex-start;
-  padding: 16px; color: white;
-  background: #1a1a2e;
-  position: relative;
-  overflow-x: hidden;
+  font-family: 'Segoe UI', sans-serif; min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 16px; color: white; background: #1a1a2e; position: relative; overflow-x: hidden;
 }
-
-/* Pokemon themed animated background - only on role/rules screens */
-.pokemon-bg {
-  position: fixed; top:0; left:0; width:100%; height:100%;
-  z-index: 0; pointer-events: none; overflow: hidden;
-}
-.pokeball {
-  position: absolute; border-radius: 50%;
-  animation: float linear infinite;
-  opacity: 0.07;
-}
-@keyframes float {
-  0%   { transform: translateY(110vh) rotate(0deg); }
-  100% { transform: translateY(-10vh) rotate(720deg); }
-}
-.lightning {
-  position: absolute; font-size: 1.5rem;
-  animation: floatEmoji linear infinite;
-  opacity: 0.15;
-}
-@keyframes floatEmoji {
-  0%   { transform: translateY(110vh); opacity:0.15; }
-  100% { transform: translateY(-10vh); opacity:0; }
-}
-
-/* Hero section */
-.hero {
-  position: relative; z-index:1;
-  text-align: center; padding: 30px 16px 16px;
-  width: 100%; max-width: 680px;
-}
-.hero-badge {
-  display: inline-block;
-  background: linear-gradient(135deg, #ffcb05, #ff9800);
-  color: #1a1a2e; font-size: 0.75rem; font-weight: 900;
-  letter-spacing: 2px; padding: 5px 16px;
-  border-radius: 20px; margin-bottom: 12px;
-  text-transform: uppercase;
-}
-.hero h1 {
-  font-size: 2.2rem; font-weight: 900; line-height: 1.2;
-  text-shadow: 0 0 30px rgba(255,203,5,0.5), 2px 2px 8px rgba(0,0,0,0.8);
-  margin-bottom: 6px;
-  background: linear-gradient(135deg, #ffcb05, #ff9800, #fff);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.hero .subtitle {
-  font-size: 0.9rem; opacity: 0.8; margin-bottom: 0;
-  color: white; -webkit-text-fill-color: white;
-}
-.pokeball-hero {
-  font-size: 4rem; margin-bottom: 8px;
-  animation: spin 8s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-.gengar-hero {
-  display: inline-block;
-  margin-bottom: 8px;
-  animation: gengarFloat 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 20px rgba(123,94,167,0.8));
-}
-@keyframes gengarFloat {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50%       { transform: translateY(-12px) scale(1.05); }
-}
-#app { width: 100%; max-width: 680px; position: relative; z-index: 1; }
-.logo { text-align:center; font-size:0.8rem; letter-spacing:3px; opacity:0.6; margin-bottom:4px; }
-h1 { text-align:center; font-size:1.8rem; font-weight:900; text-shadow:2px 2px 8px rgba(0,0,0,0.4); margin-bottom:4px; }
-.subtitle { text-align:center; font-size:0.9rem; opacity:0.8; margin-bottom:16px; }
+.pokemon-bg { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
+.pokeball { position:absolute; border-radius:50%; animation:float linear infinite; opacity:0.07; }
+@keyframes float { 0%{transform:translateY(110vh) rotate(0deg);} 100%{transform:translateY(-10vh) rotate(720deg);} }
+.lightning { position:absolute; font-size:1.5rem; animation:floatEmoji linear infinite; opacity:0.15; }
+@keyframes floatEmoji { 0%{transform:translateY(110vh);opacity:0.15;} 100%{transform:translateY(-10vh);opacity:0;} }
+.hero { position:relative; z-index:1; text-align:center; padding:24px 16px 12px; width:100%; max-width:680px; }
+.hero-badge { display:inline-block; background:linear-gradient(135deg,#ffcb05,#ff9800); color:#1a1a2e; font-size:0.75rem; font-weight:900; letter-spacing:2px; padding:5px 16px; border-radius:20px; margin-bottom:10px; text-transform:uppercase; }
+.hero h1 { font-size:2.2rem; font-weight:900; line-height:1.2; text-shadow:0 0 30px rgba(255,203,5,0.5),2px 2px 8px rgba(0,0,0,0.8); margin-bottom:6px; background:linear-gradient(135deg,#ffcb05,#ff9800,#fff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero .subtitle { font-size:0.9rem; opacity:0.8; color:white; -webkit-text-fill-color:white; }
+.gengar-hero { display:inline-block; margin-bottom:8px; animation:gengarFloat 3s ease-in-out infinite; filter:drop-shadow(0 0 20px rgba(123,94,167,0.8)); }
+@keyframes gengarFloat { 0%,100%{transform:translateY(0px) scale(1);} 50%{transform:translateY(-12px) scale(1.05);} }
+#app { width:100%; max-width:680px; position:relative; z-index:1; }
 .screen { display:none; }
 .screen.active { display:block; }
-.card { background: rgba(255,255,255,0.12); border-radius:16px; padding: 24px 20px; margin-bottom:14px; }
+.card { background:rgba(255,255,255,0.12); border-radius:16px; padding:24px 20px; margin-bottom:14px; }
 .card h2 { font-size:1.3rem; font-weight:900; margin-bottom:10px; }
 .card p  { font-size:0.9rem; opacity:0.85; line-height:1.6; margin-bottom:10px; }
 input[type=text] { width:100%; padding:12px 16px; border-radius:10px; border:none; font-size:1rem; font-weight:700; color:#333; margin-bottom:10px; outline:none; }
-input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
+input[type=text]:focus { box-shadow:0 0 0 3px #ffa602; }
 .btn { display:inline-block; padding:13px 28px; border:none; border-radius:12px; font-size:0.95rem; font-weight:800; cursor:pointer; transition:transform 0.1s; margin:4px; }
 .btn:hover { transform:scale(1.04); }
-.btn-yellow { background:#ffa602; color:#1a1a1a; }
+.btn-yellow { background:#ffa602; color:#1a1a2e; }
 .btn-white  { background:rgba(255,255,255,0.2); color:white; }
 .btn-full   { display:block; width:100%; text-align:center; }
 .player-slots { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:12px 0; }
-.player-slot { background:rgba(255,255,255,0.1); border-radius:10px; padding:8px 4px; text-align:center; min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; border: 2px dashed rgba(255,255,255,0.2); transition: all 0.3s; }
-.player-slot.joined { background:rgba(255,255,255,0.2); border-color: #ffa602; }
+.player-slot { background:rgba(255,255,255,0.1); border-radius:10px; padding:8px 4px; text-align:center; min-height:60px; display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px dashed rgba(255,255,255,0.2); transition:all 0.3s; }
+.player-slot.joined { background:rgba(255,255,255,0.2); border-color:#ffa602; }
 .p-emoji { font-size:1.2rem; margin-bottom:2px; }
 .p-name  { font-size:0.72rem; font-weight:800; }
 .p-tag   { font-size:0.62rem; opacity:0.65; }
 .badge { display:inline-block; padding:5px 18px; border-radius:20px; font-size:0.82rem; font-weight:800; letter-spacing:1px; }
-.r1{background:#e21b3c;} .r2{background:#1368ce;} .r3{background:#26890c;}
+.r1{background:#e21b3c;} .r2{background:#1368ce;} .r3{background:#26890c;} .r4{background:#6c3483;} .r5{background:#d68910;} .r6{background:#1a5276;}
 .round-badge { text-align:center; margin-bottom:10px; }
 .score-bar { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.15); border-radius:12px; padding:9px 18px; margin-bottom:10px; font-weight:700; font-size:0.9rem; }
-.timer-wrap { background:rgba(255,255,255,0.2); border-radius:8px; height:12px; margin-bottom:6px; overflow:hidden; border-radius:8px; }
+.timer-wrap { background:rgba(255,255,255,0.2); border-radius:8px; height:12px; margin-bottom:6px; overflow:hidden; }
 .timer-bar  { height:100%; background:#ffa602; width:100%; transition:width 0.05s linear; border-radius:8px; }
 .timer-text { text-align:center; font-size:1.1rem; font-weight:900; margin-bottom:8px; }
 .q-type-label { text-align:center; font-size:0.75rem; font-weight:700; letter-spacing:1px; opacity:0.7; text-transform:uppercase; margin-bottom:6px; }
 .q-card { background:white; color:#333; border-radius:16px; padding:22px 18px; text-align:center; font-size:1.05rem; font-weight:700; min-height:88px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin-bottom:14px; box-shadow:0 4px 20px rgba(0,0,0,0.2); line-height:1.5; white-space:pre-line; }
 .q-emoji { font-size:1.8rem; margin-bottom:6px; }
 .answers { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
-.ans-btn { padding:15px 10px; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; cursor:pointer; color:white; transition:transform 0.1s, opacity 0.2s; box-shadow:0 4px 12px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px; word-break:break-word; text-align:left; }
+.ans-btn { padding:15px 10px; border:none; border-radius:12px; font-size:0.95rem; font-weight:700; cursor:pointer; color:white; transition:transform 0.1s,opacity 0.2s; box-shadow:0 4px 12px rgba(0,0,0,0.2); display:flex; align-items:center; gap:8px; word-break:break-word; text-align:left; }
 .ans-btn:hover:not(:disabled) { transform:scale(1.03); }
 .ans-btn.correct { outline:4px solid #fff; filter:brightness(1.15); }
 .ans-btn.wrong   { opacity:0.35; }
 .ans-icon { font-size:1.1rem; flex-shrink:0; }
 .feedback { text-align:center; font-size:1.05rem; font-weight:800; min-height:30px; margin-bottom:8px; }
+.next-btn { display:none; margin:0 auto; background:#ffa602; color:#1a1a2e; border:none; border-radius:12px; padding:12px 36px; font-size:1rem; font-weight:800; cursor:pointer; }
+.next-btn:hover { transform:scale(1.05); }
 .lb-row { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.1); border-radius:12px; padding:12px 16px; margin-bottom:8px; }
 .lb-row.rank-1{background:rgba(255,166,2,0.3);border:2px solid #ffa602;}
 .lb-row.rank-2{background:rgba(192,192,192,0.2);border:2px solid silver;}
@@ -146,106 +85,66 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
 .err{color:#ff6b6b;font-weight:700;margin-top:8px;font-size:0.9rem;text-align:center;line-height:1.5;}
 .ok{color:#7dffb3;font-weight:700;margin-top:4px;font-size:0.85rem;text-align:center;}
 .divider{border:none;border-top:1px solid rgba(255,255,255,0.15);margin:12px 0;}
-.info-box{background:rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;margin-bottom:12px;font-size:0.85rem;line-height:1.8;}
-.info-box b{color:#ffa602;}
-.step{display:flex;gap:10px;margin-bottom:6px;align-items:flex-start;}
-.step-num{background:#ffa602;color:#1a1a1a;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.78rem;flex-shrink:0;margin-top:2px;}
 .link-box{background:rgba(0,0,0,0.3);border-radius:10px;padding:10px 14px;font-size:0.78rem;font-family:monospace;word-break:break-all;margin:8px 0;color:#ffa602;border:1px solid rgba(255,166,2,0.3);}
-.q-counter{text-align:center;font-size:0.8rem;opacity:0.6;margin-bottom:4px;}
-
-.rules-section { margin-bottom:16px; }
-.rules-section h3 { font-size:1rem; font-weight:900; color:#ffa602; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
-.rules-list { list-style:none; padding:0; }
-.rules-list li { font-size:0.88rem; line-height:1.6; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.08); display:flex; gap:10px; align-items:flex-start; }
-.rules-list li:last-child { border-bottom:none; }
-.rules-list .ri { flex-shrink:0; font-size:1rem; margin-top:2px; }
-.crystal-table { width:100%; border-collapse:collapse; font-size:0.82rem; margin-top:8px; }
-.crystal-table th { background:rgba(255,166,2,0.2); padding:7px 10px; text-align:left; font-weight:800; color:#ffa602; }
-.crystal-table td { padding:7px 10px; border-bottom:1px solid rgba(255,255,255,0.08); }
-.crystal-table tr:last-child td { border-bottom:none; }
-.highlight-row td { background:rgba(255,166,2,0.1); font-weight:800; }
-
+.rules-section{margin-bottom:16px;}
+.rules-section h3{font-size:1rem;font-weight:900;color:#ffa602;margin-bottom:8px;}
+.rules-list{list-style:none;padding:0;}
+.rules-list li{font-size:0.88rem;line-height:1.6;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;gap:10px;align-items:flex-start;}
+.rules-list li:last-child{border-bottom:none;}
+.rules-list .ri{flex-shrink:0;font-size:1rem;margin-top:2px;}
+.prize-table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-top:8px;}
+.prize-table th{background:rgba(255,166,2,0.2);padding:8px 10px;text-align:left;font-weight:800;color:#ffa602;}
+.prize-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.prize-table tr:last-child td{border-bottom:none;}
+.prize-table .hl td{background:rgba(255,166,2,0.1);font-weight:800;}
+.bonus-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.bonus-card{background:rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;font-size:0.82rem;}
+.bonus-card b{color:#ffa602;}
 </style>
 </head>
 <body>
-<div id="app">
-  <!-- Pokemon animated background -->
-  <div class="pokemon-bg" id="pokemon-bg"></div>
+<div class="pokemon-bg" id="pokemon-bg"></div>
 
-  <!-- Hero Header -->
-  <div class="hero" id="main-hero">
-    <div class="gengar-hero">
-  <svg viewBox="0 0 200 200" width="120" height="120" xmlns="http://www.w3.org/2000/svg">
-    <!-- Body -->
-    <ellipse cx="100" cy="115" rx="72" ry="65" fill="#7b5ea7"/>
-    <!-- Head -->
-    <circle cx="100" cy="85" r="68" fill="#7b5ea7"/>
-    <!-- Ears/spikes -->
-    <polygon points="45,40 25,5 65,30" fill="#7b5ea7"/>
-    <polygon points="155,40 175,5 135,30" fill="#7b5ea7"/>
-    <!-- Belly -->
-    <ellipse cx="100" cy="125" rx="42" ry="35" fill="#9b7ec8"/>
-    <!-- Eyes whites -->
-    <circle cx="78" cy="78" r="18" fill="white"/>
-    <circle cx="122" cy="78" r="18" fill="white"/>
-    <!-- Pupils -->
-    <circle cx="82" cy="80" r="10" fill="#e74c3c"/>
-    <circle cx="126" cy="80" r="10" fill="#e74c3c"/>
-    <!-- Eye shine -->
-    <circle cx="86" cy="76" r="4" fill="white"/>
-    <circle cx="130" cy="76" r="4" fill="white"/>
-    <!-- Evil grin -->
-    <path d="M 62 108 Q 100 138 138 108" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
-    <!-- Teeth -->
-    <polygon points="76,110 84,110 80,122" fill="white"/>
-    <polygon points="90,114 98,114 94,126" fill="white"/>
-    <polygon points="104,114 112,114 108,126" fill="white"/>
-    <polygon points="118,110 126,110 122,122" fill="white"/>
-    <!-- Claws bottom -->
-    <ellipse cx="42" cy="165" rx="14" ry="10" fill="#7b5ea7"/>
-    <ellipse cx="158" cy="165" rx="14" ry="10" fill="#7b5ea7"/>
-    <ellipse cx="100" cy="175" rx="18" ry="10" fill="#7b5ea7"/>
-    <!-- Shadow/dark overlay for spooky effect -->
-    <ellipse cx="100" cy="190" rx="60" ry="8" fill="rgba(0,0,0,0.2)"/>
-  </svg>
-</div>
-    <div class="hero-badge">🔮 Pokemon Convention Edition</div>
-    <h1>Crystal Quiz<br>Challenge!</h1>
-    <div class="subtitle">6 Rounds • 120 Questions • Earn 🔮 Crystals • Win Pokemon Cards! 🃏</div>
+<div class="hero" id="main-hero">
+  <div class="gengar-hero">
+    <svg viewBox="0 0 200 200" width="110" height="110" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="100" cy="115" rx="72" ry="65" fill="#7b5ea7"/>
+      <circle cx="100" cy="85" r="68" fill="#7b5ea7"/>
+      <polygon points="45,40 25,5 65,30" fill="#7b5ea7"/>
+      <polygon points="155,40 175,5 135,30" fill="#7b5ea7"/>
+      <ellipse cx="100" cy="125" rx="42" ry="35" fill="#9b7ec8"/>
+      <circle cx="78" cy="78" r="18" fill="white"/>
+      <circle cx="122" cy="78" r="18" fill="white"/>
+      <circle cx="82" cy="80" r="10" fill="#e74c3c"/>
+      <circle cx="126" cy="80" r="10" fill="#e74c3c"/>
+      <circle cx="86" cy="76" r="4" fill="white"/>
+      <circle cx="130" cy="76" r="4" fill="white"/>
+      <path d="M 62 108 Q 100 138 138 108" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <polygon points="76,110 84,110 80,122" fill="white"/>
+      <polygon points="90,114 98,114 94,126" fill="white"/>
+      <polygon points="104,114 112,114 108,126" fill="white"/>
+      <polygon points="118,110 126,110 122,122" fill="white"/>
+    </svg>
   </div>
+  <div class="hero-badge">🔮 Pokemon Convention Edition</div>
+  <h1>Crystal Quiz<br>Challenge!</h1>
+  <div class="subtitle">6 Rounds • 120 Questions • Earn 🔮 Crystals • Win Pokemon Cards! 🃏</div>
+</div>
+
+<div id="app">
 
   <!-- ROLE SELECT -->
   <div id="screen-role" class="screen active">
-
-    <!-- Prize Banner -->
     <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:2px solid #ffcb05;border-radius:16px;padding:20px;margin-bottom:14px;text-align:center;">
       <div style="font-size:0.75rem;letter-spacing:2px;color:#ffcb05;font-weight:800;margin-bottom:8px;">🏆 PRIZE POOL</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:10px;">
-        <div style="background:rgba(255,203,5,0.15);border-radius:10px;padding:10px 4px;border:1px solid rgba(255,203,5,0.4)">
-          <div style="font-size:1.4rem">🥇</div>
-          <div style="font-size:1rem;font-weight:900;color:#ffcb05">₱1,000</div>
-          <div style="font-size:0.65rem;opacity:0.7">1st Place</div>
-        </div>
-        <div style="background:rgba(192,192,192,0.1);border-radius:10px;padding:10px 4px;border:1px solid rgba(192,192,192,0.3)">
-          <div style="font-size:1.4rem">🥈</div>
-          <div style="font-size:1rem;font-weight:900;color:silver">₱750</div>
-          <div style="font-size:0.65rem;opacity:0.7">2nd Place</div>
-        </div>
-        <div style="background:rgba(205,127,50,0.1);border-radius:10px;padding:10px 4px;border:1px solid rgba(205,127,50,0.3)">
-          <div style="font-size:1.4rem">🥉</div>
-          <div style="font-size:1rem;font-weight:900;color:#cd7f32">₱500</div>
-          <div style="font-size:0.65rem;opacity:0.7">3rd Place</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 4px;border:1px solid rgba(255,255,255,0.1)">
-          <div style="font-size:1.4rem">4️⃣</div>
-          <div style="font-size:1rem;font-weight:900;color:white">₱250</div>
-          <div style="font-size:0.65rem;opacity:0.7">4th Place</div>
-        </div>
+        <div style="background:rgba(255,203,5,0.15);border-radius:10px;padding:10px 4px;border:1px solid rgba(255,203,5,0.4)"><div style="font-size:1.4rem">🥇</div><div style="font-size:1rem;font-weight:900;color:#ffcb05">₱1,000</div><div style="font-size:0.65rem;opacity:0.7">1st Place</div></div>
+        <div style="background:rgba(192,192,192,0.1);border-radius:10px;padding:10px 4px;border:1px solid rgba(192,192,192,0.3)"><div style="font-size:1.4rem">🥈</div><div style="font-size:1rem;font-weight:900;color:silver">₱750</div><div style="font-size:0.65rem;opacity:0.7">2nd Place</div></div>
+        <div style="background:rgba(205,127,50,0.1);border-radius:10px;padding:10px 4px;border:1px solid rgba(205,127,50,0.3)"><div style="font-size:1.4rem">🥉</div><div style="font-size:1rem;font-weight:900;color:#cd7f32">₱500</div><div style="font-size:0.65rem;opacity:0.7">3rd Place</div></div>
+        <div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:10px 4px;border:1px solid rgba(255,255,255,0.1)"><div style="font-size:1.4rem">4️⃣</div><div style="font-size:1rem;font-weight:900;color:white">₱250</div><div style="font-size:0.65rem;opacity:0.7">4th Place</div></div>
       </div>
       <div style="font-size:0.75rem;opacity:0.6">Spend your prize on Pokemon cards at the convention! 🃏</div>
     </div>
-
-    <!-- Category Preview -->
     <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:14px;">
       <div style="font-size:0.75rem;letter-spacing:2px;color:#ffcb05;font-weight:800;margin-bottom:10px;text-align:center;">📚 6 QUESTION CATEGORIES</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -257,62 +156,50 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
         <div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;font-size:0.82rem;font-weight:700;">🎵 Film & Music</div>
       </div>
     </div>
-
     <button class="btn btn-yellow btn-full" style="font-size:1.05rem;padding:16px" onclick="showScreen('screen-rules')">📜 Read Rules & Play!</button>
     <button class="btn btn-white btn-full" style="margin-top:8px" onclick="showScreen('screen-join')">🎮 Join a Room</button>
   </div>
-
 
   <!-- RULES -->
   <div id="screen-rules" class="screen">
     <div class="card">
       <h2>📜 Game Rules</h2>
-      <div style="text-align:center;margin-bottom:14px;">
-        <div style="display:inline-flex;gap:8px;background:rgba(255,203,5,0.1);border:1px solid rgba(255,203,5,0.3);border-radius:12px;padding:8px 16px;font-size:0.82rem;">
-          <span>6 Rounds</span><span style="opacity:0.4">•</span>
-          <span>20 Questions/Round</span><span style="opacity:0.4">•</span>
-          <span>120 Total</span>
-        </div>
-      </div>
-
+      <div style="text-align:center;margin-bottom:14px;"><div style="display:inline-flex;gap:8px;background:rgba(255,203,5,0.1);border:1px solid rgba(255,203,5,0.3);border-radius:12px;padding:8px 16px;font-size:0.82rem;"><span>6 Rounds</span><span style="opacity:0.4">•</span><span>20 Questions/Round</span><span style="opacity:0.4">•</span><span>120 Total</span></div></div>
       <div class="rules-section">
         <h3>🎮 How to Play</h3>
         <ul class="rules-list">
-          <li><span class="ri">1️⃣</span><span>There are <b>5 rounds</b> with <b>20 questions</b> each — 100 questions total!</span></li>
-          <li><span class="ri">⏱️</span><span>Each question has a <b>20-second timer</b>. Everyone answers at the same time — just like Kahoot!</span></li>
-          <li><span class="ri">❌</span><span>If you don't answer in time, it's marked <b>incorrect</b> and the game moves on.</span></li>
-          <li><span class="ri">🔀</span><span>Questions are a <b>random mix</b> of Tagalog ↔ English, Guess the Price, and What Item Am I?</span></li>
+          <li><span class="ri">1️⃣</span><span>There are <b>6 rounds</b> with <b>20 questions</b> each — 120 questions total!</span></li>
+          <li><span class="ri">⏱️</span><span>Each question has a <b>20-second timer</b>. Everyone answers at the same time!</span></li>
+          <li><span class="ri">❌</span><span>If you don't answer in time, it's marked <b>incorrect</b> automatically.</span></li>
+          <li><span class="ri">🔀</span><span>Each round is a <b>random mix</b> of all 6 question categories!</span></li>
         </ul>
       </div>
-
       <div class="rules-section">
         <h3>🔮 How Crystals Work</h3>
         <ul class="rules-list">
           <li><span class="ri">✅</span><span><b>100 crystals</b> for a correct answer</span></li>
-          <li><span class="ri">⚡</span><span><b>Up to 100 crystals</b> speed bonus — the faster you answer, the more you earn! — the faster you answer, the more you earn!</span></li>
-          <li><span class="ri">🏆</span><span><b>Round Winner Bonus:</b> 🥇+1,000 🔮 · 🥈+500 🔮 · 🥉+250 🔮</span></li>
-          <li><span class="ri">👑</span><span><b>Grand Champion Bonus</b> (end of game): 🥇+3,000 🔮 · 🥈+1,500 🔮 · 🥉+750 🔮</span></li>
+          <li><span class="ri">⚡</span><span><b>Up to 100 crystals</b> speed bonus — faster = more crystals!</span></li>
+          <li><span class="ri">🏆</span><span><b>Round Winner Bonus:</b> 🥇+1,000 🔮 · 🥈+500 🔮 · 🥉+250 🔮 · 4th+100 🔮</span></li>
+          <li><span class="ri">👑</span><span><b>Grand Champion Bonus:</b> 🥇+3,000 🔮 · 🥈+1,500 🔮 · 🥉+750 🔮</span></li>
         </ul>
       </div>
-
       <div class="rules-section">
         <h3>🏆 Prize Money by Rank</h3>
-        <table class="crystal-table">
+        <table class="prize-table">
           <thead><tr><th>Rank</th><th>Prize</th><th>🃏 You can buy</th></tr></thead>
           <tbody>
-            <tr class="highlight-row"><td>🥇 1st Place</td><td>₱1,000</td><td>Ultra Rare / EX / V card</td></tr>
+            <tr class="hl"><td>🥇 1st Place</td><td>₱1,000</td><td>Ultra Rare / EX / V card</td></tr>
             <tr><td>🥈 2nd Place</td><td>₱750</td><td>1–2 Holo Rares</td></tr>
             <tr><td>🥉 3rd Place</td><td>₱500</td><td>1 Holo Rare + uncommons</td></tr>
             <tr><td>4️⃣ 4th Place</td><td>₱250</td><td>2–3 uncommons or commons</td></tr>
           </tbody>
         </table>
-        <div style="font-size:0.78rem;opacity:0.65;margin-top:8px;text-align:center;">Total prize pool: ₱2,500 🎉 Spend it at the Pokemon convention! 🃏</div>
+        <div style="font-size:0.78rem;opacity:0.65;margin-top:8px;text-align:center;">Total prize pool: ₱2,500 🎉</div>
       </div>
-
     </div>
     <div style="text-align:center;">
-      <button class="btn btn-yellow" onclick="showScreen('screen-role')">← Back</button>
-      <button class="btn btn-white" onclick="showScreen('screen-host-setup')" style="margin-left:8px">👑 I'm the Host →</button>
+      <button class="btn btn-white" onclick="showScreen('screen-role')">← Back</button>
+      <button class="btn btn-yellow" onclick="showScreen('screen-host-setup')" style="margin-left:8px">👑 I'm the Host →</button>
     </div>
   </div>
 
@@ -323,7 +210,7 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
       <input type="text" id="host-name" placeholder="Your name (e.g. Gelo)" maxlength="16">
       <input type="text" id="host-code" placeholder="Room code (e.g. PAPA)" maxlength="8" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
       <button class="btn btn-yellow btn-full" id="host-create-btn" onclick="hostCreate()">🚀 Create Room</button>
-      <button class="btn btn-white btn-full" style="margin-top:6px" onclick="showScreen('screen-role')">← Back</button>
+      <button class="btn btn-white btn-full" style="margin-top:6px" onclick="showScreen('screen-rules')">← Back</button>
       <div class="err" id="host-err"></div>
     </div>
   </div>
@@ -392,7 +279,7 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
       <button class="ans-btn" id="ans3" onclick="checkAnswer(3)"><span class="ans-icon">■</span><span class="ans-txt"></span></button>
     </div>
     <div class="feedback" id="feedback"></div>
-    <button class="next-btn" id="next-btn" onclick="playerNextQ()" style="display:none">Next ➜</button>
+    <button class="next-btn" id="next-btn" onclick="playerNextQ()">Next ➜</button>
     <div class="divider"></div>
     <div style="font-size:0.78rem;opacity:0.6;text-align:center;margin-bottom:6px;">LIVE LEADERBOARD</div>
     <div id="live-lb"></div>
@@ -403,6 +290,9 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
     <div class="card" style="text-align:center">
       <h2 id="rs-title">Round Complete! 🎉</h2>
       <div class="rs-scores" id="rs-scores"></div>
+      <div id="round-bonus-display" style="margin-top:10px;padding:10px;background:rgba(255,203,5,0.1);border-radius:10px;font-size:0.88rem;display:none;">
+        <b style="color:#ffcb05">🏆 Round Winner Bonus!</b><div id="round-bonus-text" style="margin-top:4px;opacity:0.85;"></div>
+      </div>
     </div>
     <div style="font-size:0.82rem;font-weight:700;opacity:0.65;margin-bottom:8px;text-align:center;">LEADERBOARD</div>
     <div id="rs-lb"></div>
@@ -417,44 +307,36 @@ input[type=text]:focus { box-shadow: 0 0 0 3px #ffa602; }
     <div class="card" style="text-align:center">
       <h2>🏆 Game Over! Salamat sa paglaro!</h2>
       <div class="podium" id="final-podium"></div>
+      <div id="grand-champion-bonus" style="margin-top:10px;padding:12px;background:rgba(255,203,5,0.15);border-radius:12px;font-size:0.88rem;border:1px solid rgba(255,203,5,0.3);">
+        <b style="color:#ffcb05">👑 Grand Champion Bonuses Applied!</b>
+        <div id="champion-bonus-text" style="margin-top:6px;opacity:0.85;line-height:1.8;"></div>
+      </div>
     </div>
-    <div style="font-size:0.82rem;font-weight:700;opacity:0.65;margin-bottom:8px;text-align:center;">FINAL STANDINGS</div>
+    <div style="font-size:0.82rem;font-weight:700;opacity:0.65;margin-bottom:8px;text-align:center;">FINAL STANDINGS & PRIZES</div>
     <div id="final-lb"></div>
     <div style="text-align:center;margin-top:16px;">
       <button class="btn btn-yellow" onclick="location.href=location.href.split('?')[0].split('#')[0]">🔄 Play Again</button>
     </div>
   </div>
-</div>
+
+</div><!-- /app -->
 
 <script>
-// ═══════════════════════════════════════════════════════
-// SUPABASE SETUP
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
+// SUPABASE
+// ═══════════════════════════════════════
 const SUPABASE_URL = 'https://ccveburbryrigaeeiheo.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_9jauwIGlTUqff9b3bMFbsQ_q_VGuvIy';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function dbRead(roomId) {
-  const { data, error } = await sb.from('rooms').select('data').eq('id', roomId).single();
-  if (error || !data) return null;
-  return data.data;
-}
+async function dbRead(id){ const {data,error}=await sb.from('rooms').select('data').eq('id',id).single(); if(error||!data)return null; return data.data; }
+async function dbWrite(id,roomData){ const {error}=await sb.from('rooms').upsert({id,data:roomData,updated_at:new Date().toISOString()}); if(error)console.error('dbWrite:',JSON.stringify(error)); }
 
-async function dbWrite(roomId, roomData) {
-  const { error } = await sb.from('rooms').upsert({
-    id: roomId,
-    data: roomData,
-    updated_at: new Date().toISOString()
-  });
-  if (error) {
-    console.error('dbWrite error:', JSON.stringify(error));
-    throw new Error(JSON.stringify(error));
-  }
-}
+// ═══════════════════════════════════════
+// ALL QUESTION DATA
+// ═══════════════════════════════════════
 
-// ═══════════════════════════════════════════════════════
-// ITEMS DATA
-// ═══════════════════════════════════════════════════════
+// Category 1 & 2 & 3: Palengke items
 const ITEMS = [
   {tl:"Manok",     en:"Chicken",         emoji:"🍗", price:222, clue:"I am the most popular protein in Filipino cooking. I crow in the morning and end up in adobo, tinola, or inasal!"},
   {tl:"Itlog",     en:"Brown Eggs",       emoji:"🥚", price:780, clue:"I come in a tray of 30. Chickens lay me every day. Scramble, fry, or boil me — a Filipino breakfast staple!"},
@@ -497,243 +379,391 @@ const ITEMS = [
   {tl:"Mani",      en:"Peanuts",          emoji:"🥜", price:160, clue:"I am a legume sold roasted or raw. I go into kare-kare sauce. Street vendors sell me in small paper cones!"},
 ];
 
-const ROUNDS  = [{num:1,name:"Mixed Round 1",badge:"r1",emoji:"🔀"},{num:2,name:"Mixed Round 2",badge:"r2",emoji:"🔀"},{num:3,name:"Mixed Round 3",badge:"r3",emoji:"🔀"}];
-const QS=20, TIME=20;
-const EMOJIS=['🦁','🐯','🐻','🦊','🐼','🐸','🦋','🐬','🦅','🐲'];
-const COLORS=['#e21b3c','#1368ce','#d89e00','#26890c'];
-const MEDALS=['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+// Category 4: Pokemon Trivia
+const POKEMON_QS = [
+  {q:"What is Pikachu's evolved form?",                                    a:"Raichu",              w:["Jolteon","Electabuzz","Ampharos"]},
+  {q:"What type is Charizard?",                                            a:"Fire / Flying",       w:["Fire / Dragon","Fire / Rock","Fire only"]},
+  {q:"Which Pokemon was created by scientists in a lab?",                  a:"Mewtwo",              w:["Mew","Deoxys","Genesect"]},
+  {q:"What is the first Pokemon in the Pokedex?",                          a:"Bulbasaur",           w:["Caterpie","Charmander","Squirtle"]},
+  {q:"How many Pokemon were in the original Generation 1?",               a:"151",                 w:["150","152","160"]},
+  {q:"What does Magikarp evolve into?",                                    a:"Gyarados",            w:["Lapras","Dragonair","Vaporeon"]},
+  {q:"What type is super effective against Water?",                        a:"Electric",            w:["Fire","Grass","Ice"]},
+  {q:"What is Ash's hometown in the Pokemon anime?",                       a:"Pallet Town",         w:["Viridian City","Cerulean City","Lavender Town"]},
+  {q:"Which Pokemon can change its type based on the plate it holds?",     a:"Arceus",              w:["Ditto","Silvally","Mew"]},
+  {q:"What level does Charmander evolve into Charmeleon?",                 a:"Level 16",            w:["Level 18","Level 20","Level 14"]},
+  {q:"What is the rarest Pokemon card rarity?",                            a:"Crown Rare",          w:["Holo Rare","Ultra Rare","Secret Rare"]},
+  {q:"Which Pokemon is the heaviest — Snorlax, Steelix, or Groudon?",     a:"Groudon",             w:["Snorlax","Steelix","Wailord"]},
+  {q:"What is Pikachu's most famous move?",                                a:"Thunderbolt",         w:["Thunder","Volt Tackle","Spark"]},
+  {q:"What is Team Rocket's Meowth's biggest dream?",                      a:"To be praised by Giovanni", w:["To learn Payday","To evolve into Persian","To beat Pikachu"]},
+  {q:"What Pokemon evolves using a Moon Stone?",                           a:"Clefable",            w:["Gengar","Vaporeon","Wigglytuff"]},
+  {q:"Which Gen 1 city has a Rock-type gym leader?",                       a:"Pewter City",         w:["Cerulean City","Vermilion City","Celadon City"]},
+  {q:"What is Eevee's Water-type evolution?",                              a:"Vaporeon",            w:["Flareon","Jolteon","Glaceon"]},
+  {q:"How many gym badges do you need to enter the Pokemon League?",       a:"8",                   w:["6","7","10"]},
+  {q:"What does the Everstone prevent?",                                   a:"Evolution",           w:["Fainting","Learning new moves","Running away"]},
+  {q:"Which Pokemon is known as the King of the Sea?",                     a:"Kingdra",             w:["Gyarados","Lapras","Lugia"]},
+];
 
-// ═══════════════════════════════════════════════════════
+// Category 5: Science
+const SCIENCE_QS = [
+  {q:"What planet is known as the Red Planet?",                            a:"Mars",                w:["Venus","Jupiter","Saturn"]},
+  {q:"How many bones are in the adult human body?",                        a:"206",                 w:["186","196","216"]},
+  {q:"What gas do plants absorb from the air to make food?",               a:"Carbon Dioxide",      w:["Oxygen","Nitrogen","Hydrogen"]},
+  {q:"What is the powerhouse of the cell?",                                a:"Mitochondria",        w:["Nucleus","Ribosome","Cell Wall"]},
+  {q:"What is the closest star to Earth?",                                 a:"The Sun",             w:["Proxima Centauri","Sirius","Betelgeuse"]},
+  {q:"What force pulls objects toward the center of the Earth?",           a:"Gravity",             w:["Friction","Magnetism","Inertia"]},
+  {q:"What is H₂O more commonly known as?",                               a:"Water",               w:["Hydrogen","Salt","Oxygen"]},
+  {q:"How many planets are in our Solar System?",                          a:"8",                   w:["7","9","10"]},
+  {q:"What organ pumps blood around the body?",                            a:"Heart",               w:["Lungs","Liver","Kidney"]},
+  {q:"What is the hardest natural substance on Earth?",                    a:"Diamond",             w:["Gold","Iron","Quartz"]},
+  {q:"What type of animal is a dolphin?",                                  a:"Mammal",              w:["Fish","Reptile","Amphibian"]},
+  {q:"What is the process by which plants make food using sunlight?",      a:"Photosynthesis",      w:["Respiration","Digestion","Germination"]},
+  {q:"What is the center of an atom called?",                              a:"Nucleus",             w:["Electron","Proton","Neutron"]},
+  {q:"Which planet has the most moons?",                                   a:"Saturn",              w:["Jupiter","Uranus","Neptune"]},
+  {q:"What is the chemical symbol for Gold?",                              a:"Au",                  w:["Go","Gd","Ag"]},
+  {q:"What is the fastest land animal?",                                   a:"Cheetah",             w:["Lion","Falcon","Jaguar"]},
+  {q:"How many chambers does the human heart have?",                       a:"4",                   w:["2","3","6"]},
+  {q:"What layer of the Earth do we live on?",                             a:"Crust",               w:["Mantle","Core","Magma"]},
+  {q:"What is the boiling point of water in Celsius?",                     a:"100°C",               w:["90°C","110°C","80°C"]},
+  {q:"What organ do humans use to breathe?",                               a:"Lungs",               w:["Gills","Skin","Trachea"]},
+];
+
+// Category 6: Film & Music
+const MUSIC_QS = [
+  {q:"What was the Beatles' home city in England?",                        a:"Liverpool",           w:["London","Manchester","Birmingham"]},
+  {q:"Complete the lyric: 'She loves you, ___'",                          a:"Yeah Yeah Yeah",      w:["Oh Oh Oh","La La La","Hey Hey Hey"]},
+  {q:"How many members were in The Beatles?",                              a:"4",                   w:["3","5","6"]},
+  {q:"What Beatles album has a zebra crossing on the cover?",             a:"Abbey Road",          w:["Revolver","Help!","Let It Be"]},
+  {q:"What are the two main characters' names in Wicked?",                a:"Elphaba & Glinda",    w:["Dorothy & Toto","Nessa & Fiyero","Elphaba & Oz"]},
+  {q:"What color is Elphaba's skin in Wicked?",                           a:"Green",               w:["Blue","Purple","Grey"]},
+  {q:"What power ballad does Elphaba sing alone on stage in Wicked?",     a:"Defying Gravity",     w:["Popular","For Good","The Wizard and I"]},
+  {q:"Who played Elphaba in the 2024 Wicked movie?",                      a:"Cynthia Erivo",       w:["Ariana Grande","Idina Menzel","Lizzo"]},
+  {q:"Who wrote the musical Hamilton?",                                    a:"Lin-Manuel Miranda",  w:["Stephen Sondheim","Andrew Lloyd Webber","Beyoncé"]},
+  {q:"Hamilton is based on the life of which real person?",               a:"Alexander Hamilton",  w:["George Washington","Thomas Jefferson","Benjamin Franklin"]},
+  {q:"What is the opening song of Hamilton?",                              a:"Alexander Hamilton",  w:["My Shot","The Room Where It Happens","Burn"]},
+  {q:"What does Hamilton say he is 'not throwing away'?",                 a:"My shot",             w:["My pride","My life","My chance"]},
+  {q:"What is the name of Annie's dog?",                                   a:"Sandy",               w:["Buddy","Max","Spot"]},
+  {q:"What is the famous Annie song about tomorrow?",                      a:"Tomorrow",            w:["Maybe","Hard Knock Life","Little Girls"]},
+  {q:"What is the name of the rich man who takes Annie in?",              a:"Daddy Warbucks",      w:["Mr. Burns","Oliver Warbucks","Mr. Rich"]},
+  {q:"What color is Annie's iconic dress?",                                a:"Red",                 w:["Blue","Yellow","Pink"]},
+  {q:"How many members are in BTS?",                                       a:"7",                   w:["5","6","8"]},
+  {q:"What does BTS stand for in Korean?",                                 a:"Bangtan Sonyeondan",  w:["Beyond The Stars","Boys That Sing","Bulletproof Scout"]},
+  {q:"What is the name of BTS's massive 2020 global hit?",                a:"Dynamite",            w:["Butter","Boy With Luv","DNA"]},
+  {q:"What is the name of BTS's fanbase?",                                 a:"ARMY",                w:["BTS Nation","Bangtan Fans","Purple Hearts"]},
+];
+
+// ═══════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════
+const TOTAL_ROUNDS = 6;
+const QS_PER_ROUND = 20;
+const TIME = 20;
+const EMOJIS = ['🦁','🐯','🐻','🦊','🐼','🐸','🦋','🐬','🦅','🐲'];
+const COLORS = ['#e21b3c','#1368ce','#d89e00','#26890c'];
+const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+const PRIZES = [1000, 750, 500, 250];
+const ROUND_BONUS = [1000, 500, 250, 100];
+const CHAMP_BONUS = [3000, 1500, 750, 0];
+const ROUND_CONFIGS = [
+  {num:1,name:"Mixed Round 1",badge:"r1",emoji:"🔀"},
+  {num:2,name:"Mixed Round 2",badge:"r2",emoji:"🔀"},
+  {num:3,name:"Mixed Round 3",badge:"r3",emoji:"🔀"},
+  {num:4,name:"Mixed Round 4",badge:"r4",emoji:"🔀"},
+  {num:5,name:"Mixed Round 5",badge:"r5",emoji:"🔀"},
+  {num:6,name:"Mixed Round 6",badge:"r6",emoji:"🔀"},
+];
+
+// ═══════════════════════════════════════
 // STATE
-// ═══════════════════════════════════════════════════════
-let myName='', myEmoji='', myID='', isHost=false;
-let roomCode='', gameSeed=0;
-let myScore=0, myCorrect=0, currentRound=0, currentQ=0;
-let roundQs=[], currentChoices=[], answered=false;
-let timerInt=null, timeLeft=TIME, questionStartTime=0;
-let roundScores=[{s:0,c:0},{s:0,c:0},{s:0,c:0}];
+// ═══════════════════════════════════════
+let myName='',myEmoji='',myID='',isHost=false;
+let roomCode='',gameSeed=0;
+let myScore=0,myCorrect=0,currentRound=0,currentQ=0;
+let roundQs=[],currentChoices=[],answered=false;
+let timerInt=null,timeLeft=TIME,questionStartTime=0;
+let roundScores=Array.from({length:TOTAL_ROUNDS},()=>({s:0,c:0}));
 let pollInt=null;
-let lastPhase='', lastQ=-1, lastRound=-1;
+let lastPhase='',lastQ=-1,lastRound=-1;
 
-// ═══════════════════════════════════════════════════════
-// POLLING — simple, reliable, every 2s for everyone
-// ═══════════════════════════════════════════════════════
-function startPolling(){ stopPolling(); pollInt=setInterval(doPoll, 2000); }
-function stopPolling(){ if(pollInt){ clearInterval(pollInt); pollInt=null; } }
+// ═══════════════════════════════════════
+// SEEDED RNG
+// ═══════════════════════════════════════
+function srng(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
 
-async function doPoll(){
-  const room = await dbRead(roomCode);
-  if(room) onRoomUpdate(room);
+// ═══════════════════════════════════════
+// QUESTION BUILDER — 6 categories, 4+4+4+3+3+2 per round (rotated)
+// Per round: 4 Tagalog, 4 Price, 4 Clue, 3 Pokemon, 3 Science, 2 Music (varies by round)
+// Actually: each round gets ~3-4 from each category, total 20
+// Distribution: 4,4,4,3,3,2 rotating which gets the extra
+// ═══════════════════════════════════════
+function buildRoundQs(roundNum, seed){
+  const r = srng(seed + roundNum * 7919);
+
+  // Per-round distribution: rotate which gets 4 vs 3
+  // Rounds 1-6: tagalog, price, clue, pokemon, science, music
+  // Each gets exactly: across 6 rounds totals = 24,24,24,18,18,12 = 120 ✅
+  const counts = [
+    [4,4,4,3,3,2], // round 0
+    [4,4,4,3,2,3], // round 1
+    [4,4,4,2,3,3], // round 2
+    [4,4,4,3,3,2], // round 3
+    [4,4,4,3,2,3], // round 4
+    [4,4,4,2,3,3], // round 5
+  ];
+  const dist = counts[roundNum % 6];
+
+  // Shuffle item pools per round using seed
+  const itemPool  = [...ITEMS].sort(()=>r()-0.5);
+  const pokePool  = [...POKEMON_QS].sort(()=>r()-0.5);
+  const sciPool   = [...SCIENCE_QS].sort(()=>r()-0.5);
+  const musicPool = [...MUSIC_QS].sort(()=>r()-0.5);
+
+  // Offset per round to avoid repeats: take slice starting at roundNum*count
+  const iOff = (roundNum * 4) % ITEMS.length;
+  const pOff = (roundNum * 3) % POKEMON_QS.length;
+  const sOff = (roundNum * 3) % SCIENCE_QS.length;
+  const mOff = (roundNum * 2) % MUSIC_QS.length;
+
+  const tagItems   = rotSlice(itemPool, iOff, dist[0]);
+  const priceItems = rotSlice(itemPool, (iOff + dist[0]) % itemPool.length, dist[1]);
+  const clueItems  = rotSlice(itemPool, (iOff + dist[0] + dist[1]) % itemPool.length, dist[2]);
+  const pokeItems  = rotSlice(pokePool, pOff, dist[3]);
+  const sciItems   = rotSlice(sciPool,  sOff, dist[4]);
+  const musicItems = rotSlice(musicPool,mOff, dist[5]);
+
+  const qs = [
+    ...tagItems.map((item,i)   => buildTagQ(item, seed+roundNum*1000+i*97)),
+    ...priceItems.map((item,i) => buildPriceQ(item, seed+roundNum*2000+i*97)),
+    ...clueItems.map((item,i)  => buildClueQ(item, seed+roundNum*3000+i*97)),
+    ...pokeItems.map((q,i)     => buildMCQ('🎮 Pokemon', '⚡', q, seed+roundNum*4000+i*97)),
+    ...sciItems.map((q,i)      => buildMCQ('🔬 Science', '🔬', q, seed+roundNum*5000+i*97)),
+    ...musicItems.map((q,i)    => buildMCQ('🎵 Film & Music', '🎵', q, seed+roundNum*6000+i*97)),
+  ];
+
+  // Shuffle the final question order
+  return qs.sort(()=>r()-0.5);
 }
 
-// ═══════════════════════════════════════════════════════
-// CORE ROOM UPDATE HANDLER
-// ═══════════════════════════════════════════════════════
-function onRoomUpdate(room){
-  if(!room) return;
-  const screen = document.querySelector('.screen.active')?.id;
+function rotSlice(arr, start, count){
+  const result = [];
+  for(let i=0;i<count;i++) result.push(arr[(start+i)%arr.length]);
+  return result;
+}
 
-  // ── LOBBY ──
-  if(screen === 'screen-host-lobby'){
-    renderSlots(room.players, 'host-slots');
-    document.getElementById('host-lobby-status').textContent = `${room.players.length}/10 players joined`;
-    document.getElementById('btn-start-game').style.display = room.players.length >= 2 ? 'block' : 'none';
-    if(room.phase === 'playing'){ stopPolling(); launchQuiz(room); }
-    return;
+function buildTagQ(item, seed){
+  const r=srng(seed);
+  if(r()>0.5){
+    const others=[...ITEMS].filter(x=>x.en!==item.en).sort(()=>r()-0.5).slice(0,3).map(x=>x.en);
+    return {qtype:'🔤 Tagalog → English',emoji:item.emoji,q:`What is the English name for:\n"${item.tl}"?`,answer:item.en,choices:[item.en,...others].sort(()=>r()-0.5)};
+  } else {
+    const others=[...ITEMS].filter(x=>x.tl!==item.tl).sort(()=>r()-0.5).slice(0,3).map(x=>x.tl);
+    return {qtype:'🔤 English → Tagalog',emoji:item.emoji,q:`What is the Tagalog name for:\n"${item.en}"?`,answer:item.tl,choices:[item.tl,...others].sort(()=>r()-0.5)};
   }
+}
 
-  if(screen === 'screen-player-lobby'){
-    renderSlots(room.players, 'player-slots');
-    document.getElementById('player-lobby-status').textContent = `${room.players.length} player(s) joined — waiting for Host…`;
-    if(room.phase === 'playing'){ stopPolling(); launchQuiz(room); }
-    return;
-  }
+function buildPriceQ(item, seed){
+  const r=srng(seed);
+  const mults=[0.35,0.55,0.70,0.80,1.20,1.40,1.65,1.90].sort(()=>r()-0.5);
+  let ch=new Set([item.price]);
+  for(let m of mults){ if(ch.size>=4)break; const v=Math.max(5,Math.round(item.price*m/5)*5); if(v!==item.price)ch.add(v); }
+  while(ch.size<4){ const v=Math.max(5,item.price+((Math.floor(r()*10)+1)*(item.price<50?5:20)*(r()>0.5?1:-1))); if(v!==item.price)ch.add(v); }
+  return {qtype:'💰 Guess the Price',emoji:item.emoji,q:`Average market price of\n${item.tl} (${item.en})\nin pesos?`,answer:`₱${item.price}`,choices:[...ch].slice(0,4).sort(()=>r()-0.5).map(p=>`₱${p}`)};
+}
 
-  // ── QUIZ ──
-  if(screen === 'screen-quiz'){
-    renderLB(room.players, 'live-lb');
-    // Phase changed
-    if(room.phase === 'round_summary' && lastPhase !== 'round_summary'){
-      lastPhase = 'round_summary';
-      showRoundSummary(room); return;
+function buildClueQ(item, seed){
+  const r=srng(seed);
+  const others=[...ITEMS].filter(x=>x.tl!==item.tl).sort(()=>r()-0.5).slice(0,3).map(x=>`${x.tl} (${x.en})`);
+  return {qtype:'🔍 What Item Am I?',emoji:'🤔',q:item.clue,answer:`${item.tl} (${item.en})`,choices:[`${item.tl} (${item.en})`,...others].sort(()=>r()-0.5)};
+}
+
+function buildMCQ(qtype, emoji, qdata, seed){
+  const r=srng(seed);
+  const choices=[qdata.a,...qdata.w].sort(()=>r()-0.5);
+  return {qtype,emoji,q:qdata.q,answer:qdata.a,choices};
+}
+
+// ═══════════════════════════════════════
+// ROUND WINNER BONUS
+// ═══════════════════════════════════════
+function applyRoundBonus(room){
+  const sorted=[...room.players].sort((a,b)=>b.total-a.total);
+  const bonusText=[];
+  sorted.forEach((p,i)=>{
+    const bonus=ROUND_BONUS[i]||0;
+    if(bonus>0){
+      const player=room.players.find(x=>x.id===p.id);
+      if(player){ player.total+=bonus; }
+      bonusText.push(`${MEDALS[i]} ${p.name}: +${bonus} 🔮`);
     }
-    if(room.phase === 'final'){ stopPolling(); showFinal(room); return; }
-    // Question advanced by host
-    if(!isHost && (room.currentQ !== lastQ || room.currentRound !== lastRound)){
-      lastQ = room.currentQ; lastRound = room.currentRound;
-      currentQ = room.currentQ; currentRound = room.currentRound;
-      roundQs = buildRoundQs(currentRound, room.seed);
+  });
+  return bonusText;
+}
+
+function applyChampionBonus(room){
+  const sorted=[...room.players].sort((a,b)=>b.total-a.total);
+  const bonusText=[];
+  sorted.forEach((p,i)=>{
+    const bonus=CHAMP_BONUS[i]||0;
+    if(bonus>0){
+      const player=room.players.find(x=>x.id===p.id);
+      if(player){ player.total+=bonus; }
+      bonusText.push(`${MEDALS[i]} ${p.name}: +${bonus} 🔮`);
+    }
+  });
+  return bonusText;
+}
+
+// ═══════════════════════════════════════
+// POLLING
+// ═══════════════════════════════════════
+function startPolling(){ stopPolling(); pollInt=setInterval(doPoll,2000); }
+function stopPolling(){ if(pollInt){clearInterval(pollInt);pollInt=null;} }
+async function doPoll(){ const room=await dbRead(roomCode); if(room)onRoomUpdate(room); }
+
+// ═══════════════════════════════════════
+// ROOM UPDATE HANDLER
+// ═══════════════════════════════════════
+function onRoomUpdate(room){
+  if(!room)return;
+  const screen=document.querySelector('.screen.active')?.id;
+
+  if(screen==='screen-host-lobby'){
+    renderSlots(room.players,'host-slots');
+    document.getElementById('host-lobby-status').textContent=`${room.players.length}/10 players joined`;
+    document.getElementById('btn-start-game').style.display=room.players.length>=2?'block':'none';
+    if(room.phase==='playing'){stopPolling();launchQuiz(room);}
+    return;
+  }
+  if(screen==='screen-player-lobby'){
+    renderSlots(room.players,'player-slots');
+    document.getElementById('player-lobby-status').textContent=`${room.players.length} player(s) joined — waiting for Host…`;
+    if(room.phase==='playing'){stopPolling();launchQuiz(room);}
+    return;
+  }
+  if(screen==='screen-quiz'){
+    renderLB(room.players,'live-lb');
+    if(room.phase==='round_summary'&&lastPhase!=='round_summary'){lastPhase='round_summary';showRoundSummary(room);return;}
+    if(room.phase==='final'){stopPolling();showFinal(room);return;}
+    if(!isHost&&(room.currentQ!==lastQ||room.currentRound!==lastRound)){
+      lastQ=room.currentQ;lastRound=room.currentRound;
+      currentQ=room.currentQ;currentRound=room.currentRound;
+      roundQs=buildRoundQs(currentRound,room.seed);
       loadQ(room.questionStartTime);
     }
     return;
   }
-
-  // ── ROUND SUMMARY ──
-  if(screen === 'screen-round-summary'){
-    renderLB(room.players, 'rs-lb');
+  if(screen==='screen-round-summary'){
+    renderLB(room.players,'rs-lb');
     if(!isHost){
-      if(room.phase === 'playing' && room.currentRound > currentRound){
-        stopPolling(); launchQuiz(room);
-      }
-      if(room.phase === 'final'){ stopPolling(); showFinal(room); }
+      if(room.phase==='playing'&&room.currentRound>currentRound){stopPolling();launchQuiz(room);}
+      if(room.phase==='final'){stopPolling();showFinal(room);}
     }
     return;
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// QUESTION BUILDER
-// ═══════════════════════════════════════════════════════
-function srng(seed){ let s=seed>>>0; return ()=>{ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
-
-function buildOneQ(item,type,seed){
-  const r=srng(seed);
-  if(type==='translation'){
-    if(r()>0.5){
-      const o=[...ITEMS].filter(x=>x.en!==item.en).sort(()=>r()-0.5).slice(0,3).map(x=>x.en);
-      return {qtype:'🔤 Tagalog → English',emoji:item.emoji,q:`What is the English name for:\n"${item.tl}"?`,answer:item.en,choices:[item.en,...o].sort(()=>r()-0.5)};
-    } else {
-      const o=[...ITEMS].filter(x=>x.tl!==item.tl).sort(()=>r()-0.5).slice(0,3).map(x=>x.tl);
-      return {qtype:'🔤 English → Tagalog',emoji:item.emoji,q:`What is the Tagalog name for:\n"${item.en}"?`,answer:item.tl,choices:[item.tl,...o].sort(()=>r()-0.5)};
-    }
-  } else if(type==='price'){
-    const mults=[0.35,0.55,0.70,0.80,1.20,1.40,1.65,1.90].sort(()=>r()-0.5);
-    let ch=new Set([item.price]);
-    for(let m of mults){ if(ch.size>=4)break; const v=Math.max(5,Math.round(item.price*m/5)*5); if(v!==item.price)ch.add(v); }
-    while(ch.size<4){ const v=Math.max(5,item.price+((Math.floor(r()*10)+1)*(item.price<50?5:20)*(r()>0.5?1:-1))); if(v!==item.price)ch.add(v); }
-    return {qtype:'💰 Guess the Price',emoji:item.emoji,q:`Average market price of\n${item.tl} (${item.en})\nin pesos?`,answer:`₱${item.price}`,choices:[...ch].slice(0,4).sort(()=>r()-0.5).map(p=>`₱${p}`)};
-  } else {
-    const o=[...ITEMS].filter(x=>x.tl!==item.tl).sort(()=>r()-0.5).slice(0,3).map(x=>`${x.tl} (${x.en})`);
-    return {qtype:'🔍 What Item Am I?',emoji:'🤔',q:item.clue,answer:`${item.tl} (${item.en})`,choices:[`${item.tl} (${item.en})`,...o].sort(()=>r()-0.5)};
-  }
+// ═══════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  updateBg();
 }
-
-function buildRoundQs(roundNum,seed){
-  const r=srng(seed+roundNum*7919);
-  const items=[...ITEMS].sort(()=>r()-0.5);
-  const types=[];
-  for(let i=0;i<7;i++) types.push('translation');
-  for(let i=0;i<7;i++) types.push('price');
-  for(let i=0;i<6;i++) types.push('clue');
-  types.sort(()=>r()-0.5);
-  return types.map((t,i)=>buildOneQ(items[i%items.length],t,seed+roundNum*1000+i*97));
-}
-
-// ═══════════════════════════════════════════════════════
-// UI
-// ═══════════════════════════════════════════════════════
-function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); updateBg(); }
 
 function renderSlots(players,elID,max=10){
-  const el=document.getElementById(elID); if(!el)return; el.innerHTML='';
+  const el=document.getElementById(elID);if(!el)return;el.innerHTML='';
   for(let i=0;i<max;i++){
-    const p=players[i]; const d=document.createElement('div'); d.className='player-slot'+(p?' joined':'');
+    const p=players[i];const d=document.createElement('div');d.className='player-slot'+(p?' joined':'');
     d.innerHTML=p?`<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div class="p-tag">${i===0?'👑':'P'+i}</div>`:`<div class="p-emoji" style="opacity:.3">❓</div>`;
     el.appendChild(d);
   }
 }
 
 function renderLB(players,elID){
-  const el=document.getElementById(elID); if(!el||!players)return;
+  const el=document.getElementById(elID);if(!el||!players)return;
   const sorted=[...players].sort((a,b)=>b.total-a.total);
   el.innerHTML=sorted.map((p,i)=>`<div class="lb-row rank-${i+1}"><div class="lb-rank">${MEDALS[i]||i+1}</div><div class="lb-emoji">${p.emoji}</div><div style="flex:1"><div class="lb-name">${p.name}${p.id===myID?' (You)':''}</div><div class="lb-sub">${p.correct||0} correct</div></div><div class="lb-score">${p.total} 🔮</div></div>`).join('');
 }
 
 function buildShareLink(code){ const base=location.href.split('?')[0].split('#')[0]; return `${base}?room=${code}`; }
-
 function copyLink(){
   const url=document.getElementById('player-link-box').textContent;
-  navigator.clipboard.writeText(url).then(()=>{
-    const ok=document.getElementById('copy-ok'); ok.style.display='block';
-    setTimeout(()=>ok.style.display='none',2500);
-  }).catch(()=>prompt('Copy this link:',url));
+  navigator.clipboard.writeText(url).then(()=>{const ok=document.getElementById('copy-ok');ok.style.display='block';setTimeout(()=>ok.style.display='none',2500);}).catch(()=>prompt('Copy this link:',url));
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // HOST
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 async function hostCreate(){
   const name=document.getElementById('host-name').value.trim();
   const code=document.getElementById('host-code').value.trim();
   const err=document.getElementById('host-err');
-  if(!name){ err.textContent='⚠️ Enter your name!'; return; }
-  if(!code){ err.textContent='⚠️ Enter a room code!'; return; }
+  if(!name){err.textContent='⚠️ Enter your name!';return;}
+  if(!code){err.textContent='⚠️ Enter a room code!';return;}
   const btn=document.getElementById('host-create-btn');
-  btn.textContent='⏳ Creating…'; btn.disabled=true; err.textContent='';
-  try {
-    myName=name; myID='host_'+Date.now(); myEmoji=EMOJIS[0];
-    isHost=true; roomCode=code; gameSeed=Math.floor(Math.random()*999983);
-    const room={
-      code, seed:gameSeed, phase:'lobby',
-      currentRound:0, currentQ:0, questionStartTime:0,
-      players:[{id:myID,name:myName,emoji:myEmoji,total:0,correct:0,scores:[0,0,0],corrects:[0,0,0]}]
-    };
-    await dbWrite(code, room);
+  btn.textContent='⏳ Creating…';btn.disabled=true;err.textContent='';
+  try{
+    myName=name;myID='host_'+Date.now();myEmoji=EMOJIS[0];isHost=true;roomCode=code;
+    gameSeed=Math.floor(Math.random()*999983);
+    const room={code,seed:gameSeed,phase:'lobby',currentRound:0,currentQ:0,questionStartTime:0,
+      players:[{id:myID,name:myName,emoji:myEmoji,total:0,correct:0,scores:Array(TOTAL_ROUNDS).fill(0),corrects:Array(TOTAL_ROUNDS).fill(0)}]};
+    await dbWrite(code,room);
     document.getElementById('lobby-code-display').textContent=code;
     document.getElementById('player-link-box').textContent=buildShareLink(code);
     renderSlots(room.players,'host-slots');
     document.getElementById('host-lobby-status').textContent='1/10 players joined';
     showScreen('screen-host-lobby');
     startPolling();
-  } catch(e){
-    err.textContent='❌ Error: '+e.message;
-    btn.textContent='🚀 Create Room'; btn.disabled=false;
-  }
+  }catch(e){err.textContent='❌ Error: '+e.message;btn.textContent='🚀 Create Room';btn.disabled=false;}
 }
 
-async function hostStartGame(){ await doStart(); }
-async function hostForceStart(){ await doStart(); }
-
+async function hostStartGame(){await doStart();}
+async function hostForceStart(){await doStart();}
 async function doStart(){
   stopPolling();
-  const room=await dbRead(roomCode); if(!room)return;
-  room.phase='playing'; room.currentRound=0; room.currentQ=0;
-  room.questionStartTime=Date.now();
+  const room=await dbRead(roomCode);if(!room)return;
+  room.phase='playing';room.currentRound=0;room.currentQ=0;room.questionStartTime=Date.now();
   gameSeed=room.seed;
   await dbWrite(roomCode,room);
   launchQuiz(room);
-  startPolling(); // host keeps polling to push question advances
+  startPolling();
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // PLAYER JOIN
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 async function playerJoin(){
   const name=document.getElementById('player-name').value.trim();
   const code=document.getElementById('join-code').value.trim();
   const err=document.getElementById('join-err');
   const btn=document.getElementById('join-btn');
-  if(!name){ err.textContent='⚠️ Enter your name!'; return; }
-  if(!code){ err.textContent='⚠️ Enter the room code!'; return; }
-  btn.textContent='⏳ Joining…'; btn.disabled=true; err.textContent='';
-  try {
+  if(!name){err.textContent='⚠️ Enter your name!';return;}
+  if(!code){err.textContent='⚠️ Enter the room code!';return;}
+  btn.textContent='⏳ Joining…';btn.disabled=true;err.textContent='';
+  try{
     const room=await dbRead(code);
-    if(!room){ err.textContent=`❌ Room "${code}" not found. Ask the Host for the correct code.`; btn.textContent='🚀 Join!'; btn.disabled=false; return; }
-    if(room.players.length>=10){ err.textContent='❌ Room is full!'; btn.textContent='🚀 Join!'; btn.disabled=false; return; }
-    myName=name; myID='p_'+Date.now();
-    myEmoji=EMOJIS[room.players.length % EMOJIS.length];
-    isHost=false; roomCode=code; gameSeed=room.seed;
-    room.players.push({id:myID,name:myName,emoji:myEmoji,total:0,correct:0,scores:[0,0,0],corrects:[0,0,0]});
+    if(!room){err.textContent=`❌ Room "${code}" not found.`;btn.textContent='🚀 Join!';btn.disabled=false;return;}
+    if(room.players.length>=10){err.textContent='❌ Room is full!';btn.textContent='🚀 Join!';btn.disabled=false;return;}
+    myName=name;myID='p_'+Date.now();myEmoji=EMOJIS[room.players.length%EMOJIS.length];
+    isHost=false;roomCode=code;gameSeed=room.seed;
+    room.players.push({id:myID,name:myName,emoji:myEmoji,total:0,correct:0,scores:Array(TOTAL_ROUNDS).fill(0),corrects:Array(TOTAL_ROUNDS).fill(0)});
     await dbWrite(code,room);
     document.getElementById('player-lobby-status').textContent=`${room.players.length} player(s) joined — waiting for Host…`;
     renderSlots(room.players,'player-slots');
     showScreen('screen-player-lobby');
-    startPolling(); // player polls every 2s waiting for game to start
-  } catch(e){
-    err.textContent='❌ Error: '+e.message;
-    btn.textContent='🚀 Join!'; btn.disabled=false;
-  }
+    startPolling();
+  }catch(e){err.textContent='❌ Error: '+e.message;btn.textContent='🚀 Join!';btn.disabled=false;}
 }
 
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 // QUIZ ENGINE
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════
 function launchQuiz(room){
-  currentRound=room.currentRound; currentQ=room.currentQ||0;
-  roundQs=buildRoundQs(currentRound, room.seed);
-  lastPhase=room.phase; lastQ=currentQ; lastRound=currentRound;
-  const rc=ROUNDS[currentRound];
-  document.getElementById('quiz-round-badge').innerHTML=`<span class="badge ${rc.badge}">${rc.emoji} Round ${rc.num}: ${rc.name}</span>`;
+  currentRound=room.currentRound;currentQ=room.currentQ||0;
+  roundQs=buildRoundQs(currentRound,room.seed);
+  lastPhase=room.phase;lastQ=currentQ;lastRound=currentRound;
+  const rc=ROUND_CONFIGS[currentRound];
+  document.getElementById('quiz-round-badge').innerHTML=`<span class="badge ${rc.badge}">${rc.emoji} Round ${rc.num}/6: ${rc.name}</span>`;
   document.getElementById('my-score').textContent=myScore;
   document.getElementById('my-correct').textContent=myCorrect;
   showScreen('screen-quiz');
@@ -743,23 +773,21 @@ function launchQuiz(room){
 }
 
 function loadQ(qStartTime){
-  answered=false; clearInterval(timerInt);
+  answered=false;clearInterval(timerInt);
   const q=roundQs[currentQ];
   document.getElementById('q-type-label').textContent=q.qtype;
   document.getElementById('q-emoji').textContent=q.emoji;
   document.getElementById('q-text').textContent=q.q;
-  document.getElementById('q-progress').textContent=`Q${currentQ+1}/${QS}`;
+  document.getElementById('q-progress').textContent=`Q${currentQ+1}/${QS_PER_ROUND}`;
   document.getElementById('feedback').textContent='';
   document.getElementById('next-btn').style.display='none';
-
   currentChoices=[...q.choices].sort(()=>Math.random()-0.5);
   [0,1,2,3].forEach(i=>{
     const b=document.getElementById('ans'+i);
     b.querySelector('.ans-txt').textContent=currentChoices[i]||'';
-    b.classList.remove('correct','wrong'); b.style.opacity='';
-    b.style.background=COLORS[i]; b.disabled=false;
+    b.classList.remove('correct','wrong');b.style.opacity='';
+    b.style.background=COLORS[i];b.disabled=false;
   });
-
   questionStartTime=qStartTime||Date.now();
   function tick(){
     const elapsed=(Date.now()-questionStartTime)/1000;
@@ -769,167 +797,190 @@ function loadQ(qStartTime){
     document.getElementById('timer-text').textContent=Math.ceil(timeLeft);
     const tb=document.getElementById('timer-bar');
     tb.style.background=timeLeft>10?'#ffa602':timeLeft>5?'#ff6b2b':'#e21b3c';
-    if(timeLeft<=0){ clearInterval(timerInt); if(!answered) timeUp(); }
+    if(timeLeft<=0){clearInterval(timerInt);if(!answered)timeUp();}
   }
-  tick();
-  timerInt=setInterval(tick,100);
+  tick();timerInt=setInterval(tick,100);
 }
 
 function timeUp(){
   answered=true;
-  const q=roundQs[currentQ]; const ci=currentChoices.indexOf(q.answer);
-  [0,1,2,3].forEach(i=>{ const b=document.getElementById('ans'+i); b.disabled=true; b.classList.add(i===ci?'correct':'wrong'); });
+  const q=roundQs[currentQ];const ci=currentChoices.indexOf(q.answer);
+  [0,1,2,3].forEach(i=>{const b=document.getElementById('ans'+i);b.disabled=true;b.classList.add(i===ci?'correct':'wrong');});
   document.getElementById('feedback').textContent=`⏰ Time's up! Answer: ${q.answer}`;
   document.getElementById('feedback').style.color='#ffb3b3';
-  document.getElementById('next-btn').style.display = 'block';
-  if(isHost) setTimeout(()=>hostAdvanceQ(), 2000);
+  document.getElementById('next-btn').style.display='block';
+  if(isHost)setTimeout(()=>hostAdvanceQ(),2000);
 }
 
 function checkAnswer(idx){
   if(answered)return;
-  answered=true;
-  const q=roundQs[currentQ]; const ci=currentChoices.indexOf(q.answer);
-  [0,1,2,3].forEach(i=>{ const b=document.getElementById('ans'+i); b.disabled=true; b.classList.add(i===ci?'correct':'wrong'); });
+  answered=true;clearInterval(timerInt);
+  const q=roundQs[currentQ];const ci=currentChoices.indexOf(q.answer);
+  [0,1,2,3].forEach(i=>{const b=document.getElementById('ans'+i);b.disabled=true;b.classList.add(i===ci?'correct':'wrong');});
   if(currentChoices[idx]===q.answer){
     const bonus=Math.round(100+timeLeft*5);
-    myScore+=bonus; myCorrect++;
-    roundScores[currentRound].s+=bonus; roundScores[currentRound].c++;
+    myScore+=bonus;myCorrect++;
+    roundScores[currentRound].s+=bonus;roundScores[currentRound].c++;
     document.getElementById('my-score').textContent=myScore;
     document.getElementById('my-correct').textContent=myCorrect;
     document.getElementById('feedback').textContent=`✅ Correct! +${bonus} 🔮`;
     document.getElementById('feedback').style.color='#7dffb3';
-  } else {
+  }else{
     document.getElementById('feedback').textContent=`❌ Wrong! Answer: ${q.answer}`;
     document.getElementById('feedback').style.color='#ffb3b3';
   }
+  document.getElementById('next-btn').style.display='block';
   pushMyScore();
-  document.getElementById('next-btn').style.display = 'block';
+}
+
+function playerNextQ(){
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('feedback').textContent='⏳ Waiting for next question…';
+  document.getElementById('feedback').style.color='rgba(255,255,255,0.5)';
+  if(isHost)hostAdvanceQ();
 }
 
 async function pushMyScore(){
-  const room=await dbRead(roomCode); if(!room)return;
-  const me=room.players.find(p=>p.id===myID); if(!me)return;
-  me.total=myScore; me.correct=myCorrect;
+  const room=await dbRead(roomCode);if(!room)return;
+  const me=room.players.find(p=>p.id===myID);if(!me)return;
+  me.total=myScore;me.correct=myCorrect;
   me.scores=roundScores.map(r=>r.s);
   me.corrects=roundScores.map(r=>r.c);
   await dbWrite(roomCode,room);
 }
 
-function playerNextQ(){
-  // Players tap Next to dismiss feedback — actual question advance is controlled by host timer
-  document.getElementById('next-btn').style.display = 'none';
-  document.getElementById('feedback').textContent = '⏳ Waiting for next question…';
-  document.getElementById('feedback').style.color = 'rgba(255,255,255,0.5)';
-  if(isHost) hostAdvanceQ();
-}
-
 async function hostAdvanceQ(){
   clearInterval(timerInt);
   const nextQ=currentQ+1;
-  if(nextQ>=QS){
-    // End of round
-    const room=await dbRead(roomCode); if(!room)return;
+  if(nextQ>=QS_PER_ROUND){
+    const room=await dbRead(roomCode);if(!room)return;
+    // Apply round bonus before showing summary
+    const bonusText=applyRoundBonus(room);
     room.phase='round_summary';
+    room.roundBonusText=bonusText;
     await dbWrite(roomCode,room);
     showRoundSummary(room);
     return;
   }
-  currentQ=nextQ; lastQ=nextQ;
-  const room=await dbRead(roomCode); if(!room)return;
-  room.currentQ=nextQ;
-  room.questionStartTime=Date.now();
+  currentQ=nextQ;lastQ=nextQ;
+  const room=await dbRead(roomCode);if(!room)return;
+  room.currentQ=nextQ;room.questionStartTime=Date.now();
   await dbWrite(roomCode,room);
   loadQ(room.questionStartTime);
 }
 
 function showRoundSummary(room){
-  stopPolling(); clearInterval(timerInt);
-  const rc=ROUNDS[currentRound]; const rs=roundScores[currentRound]; const pct=rs.c/QS;
+  stopPolling();clearInterval(timerInt);
+  const rc=ROUND_CONFIGS[currentRound];
+  const rs=roundScores[currentRound];
+  const pct=rs.c/QS_PER_ROUND;
   const grade=pct===1?'🏆 Perpekto!':pct>=0.8?'🥇 Mahusay!':pct>=0.6?'🥈 Magaling!':pct>=0.4?'🥉 Kaya mo pa!':'😅 Mag-aral pa!';
   document.getElementById('rs-title').textContent=`Round ${rc.num} Complete! ${rc.emoji}`;
   document.getElementById('rs-scores').innerHTML=`
     <div class="rs-cell"><div class="rs-label">Round Score</div><div class="rs-val">${rs.s} 🔮</div></div>
-    <div class="rs-cell"><div class="rs-label">Correct</div><div class="rs-val">${rs.c}/${QS}</div></div>
+    <div class="rs-cell"><div class="rs-label">Correct</div><div class="rs-val">${rs.c}/${QS_PER_ROUND}</div></div>
     <div class="rs-cell"><div class="rs-label">Grade</div><div class="rs-val" style="font-size:0.82rem">${grade}</div></div>`;
+  // Show round bonus
+  if(room.roundBonusText&&room.roundBonusText.length>0){
+    document.getElementById('round-bonus-display').style.display='block';
+    document.getElementById('round-bonus-text').textContent=room.roundBonusText.join(' · ');
+  }
   renderLB(room.players,'rs-lb');
   if(isHost){
-    document.getElementById('rs-host-btn').innerHTML=currentRound<2
+    document.getElementById('rs-host-btn').innerHTML=currentRound<TOTAL_ROUNDS-1
       ?`<button class="btn btn-yellow" onclick="hostNextRound()">▶ Start Round ${currentRound+2}</button>`
       :`<button class="btn btn-yellow" onclick="hostEndGame()">🏆 Show Final Results!</button>`;
     document.getElementById('rs-waiting').textContent='';
-  } else {
+  }else{
     document.getElementById('rs-host-btn').innerHTML='';
-    document.getElementById('rs-waiting').textContent='⏳ Waiting for Host to start next round…';
+    document.getElementById('rs-waiting').textContent='⏳ Waiting for Host to continue…';
     startPolling();
   }
   showScreen('screen-round-summary');
 }
 
 async function hostNextRound(){
-  const room=await dbRead(roomCode); if(!room)return;
-  currentRound++; lastRound=currentRound; lastQ=0; lastPhase='playing';
-  room.currentRound=currentRound; room.currentQ=0;
-  room.phase='playing'; room.questionStartTime=Date.now();
+  const room=await dbRead(roomCode);if(!room)return;
+  currentRound++;lastRound=currentRound;lastQ=0;lastPhase='playing';
+  room.currentRound=currentRound;room.currentQ=0;
+  room.phase='playing';room.questionStartTime=Date.now();
+  room.roundBonusText=[];
   await dbWrite(roomCode,room);
   launchQuiz(room);
 }
 
 async function hostEndGame(){
-  const room=await dbRead(roomCode); if(!room)return;
+  const room=await dbRead(roomCode);if(!room)return;
+  // Apply grand champion bonus
+  const champText=applyChampionBonus(room);
   room.phase='final';
+  room.champBonusText=champText;
   await dbWrite(roomCode,room);
   showFinal(room);
 }
 
 function showFinal(room){
-  stopPolling(); clearInterval(timerInt);
+  stopPolling();clearInterval(timerInt);
   const sorted=[...room.players].sort((a,b)=>b.total-a.total);
   const cfg=sorted.length>=3?[[sorted[1],'p2'],[sorted[0],'p1'],[sorted[2],'p3']]:sorted.length===2?[[sorted[1],'p2'],[sorted[0],'p1']]:[[sorted[0],'p1']];
   document.getElementById('final-podium').innerHTML=cfg.map(([p,cls])=>`<div class="podium-place ${cls}"><div class="pod-emoji">${p.emoji}</div><div class="pod-name">${p.name}</div><div class="pod-score">${p.total} 🔮</div></div>`).join('');
-  renderLB(room.players,'final-lb');
+  // Champion bonus text
+  if(room.champBonusText&&room.champBonusText.length>0){
+    document.getElementById('champion-bonus-text').textContent=room.champBonusText.join(' · ');
+  }
+  // Final leaderboard with prizes
+  const el=document.getElementById('final-lb');
+  el.innerHTML=sorted.map((p,i)=>`
+    <div class="lb-row rank-${i+1}">
+      <div class="lb-rank">${MEDALS[i]||i+1}</div>
+      <div class="lb-emoji">${p.emoji}</div>
+      <div style="flex:1">
+        <div class="lb-name">${p.name}${p.id===myID?' (You)':''}</div>
+        <div class="lb-sub">${p.correct||0} correct answers · ${p.total} 🔮</div>
+      </div>
+      <div style="text-align:right">
+        <div class="lb-score">₱${(PRIZES[i]||0).toLocaleString()}</div>
+        <div style="font-size:0.7rem;opacity:0.65">prize</div>
+      </div>
+    </div>`).join('');
   showScreen('screen-final');
 }
 
-// ═══════════════════════════════════════════════════════
-// AUTO-DETECT player link
-// ═══════════════════════════════════════════════════════
-// ── Animated Pokemon background ──────────────────
+// ═══════════════════════════════════════
+// BACKGROUND ANIMATION
+// ═══════════════════════════════════════
 function initPokemonBg(){
-  const bg = document.getElementById('pokemon-bg');
-  if(!bg) return;
-  const emojis = ['⚡','🔥','💧','🌿','🔮','⭐','💥','🌙','☀️','❄️','🎵','💎'];
-  const colors = ['#ffcb05','#ff6b6b','#74b9ff','#55efc4','#a29bfe','#fd79a8'];
+  const bg=document.getElementById('pokemon-bg');if(!bg)return;
+  const colors=['#ffcb05','#ff6b6b','#74b9ff','#55efc4','#a29bfe','#fd79a8'];
+  const emojis=['⚡','🔥','💧','🌿','🔮','⭐','💥','🌙','☀️','❄️','🎵','💎'];
   for(let i=0;i<20;i++){
-    // Pokeballs
-    const pb = document.createElement('div');
-    pb.className='pokeball';
-    const size = 40+Math.random()*120;
+    const pb=document.createElement('div');pb.className='pokeball';
+    const size=40+Math.random()*120;
     pb.style.cssText=`width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};left:${Math.random()*100}%;animation-duration:${8+Math.random()*15}s;animation-delay:-${Math.random()*15}s;`;
     bg.appendChild(pb);
-    // Emojis
-    const em = document.createElement('div');
-    em.className='lightning';
+    const em=document.createElement('div');em.className='lightning';
     em.textContent=emojis[Math.floor(Math.random()*emojis.length)];
     em.style.cssText=`left:${Math.random()*100}%;font-size:${1+Math.random()*2}rem;animation-duration:${6+Math.random()*12}s;animation-delay:-${Math.random()*12}s;`;
     bg.appendChild(em);
   }
 }
 
-// Show/hide background only on home screens
 function updateBg(){
-  const bg = document.getElementById('pokemon-bg');
-  const hero = document.getElementById('main-hero');
-  if(!bg) return;
-  const cur = document.querySelector('.screen.active')?.id;
-  const showBg = ['screen-role','screen-rules'].includes(cur);
-  bg.style.display = showBg ? 'block' : 'none';
-  if(hero) hero.style.display = showBg ? 'block' : 'none';
+  const bg=document.getElementById('pokemon-bg');
+  const hero=document.getElementById('main-hero');
+  if(!bg)return;
+  const cur=document.querySelector('.screen.active')?.id;
+  const showBg=['screen-role','screen-rules'].includes(cur);
+  bg.style.display=showBg?'block':'none';
+  if(hero)hero.style.display=showBg?'block':'none';
 }
 
+// ═══════════════════════════════════════
+// AUTO-DETECT PLAYER LINK
+// ═══════════════════════════════════════
 window.addEventListener('load',()=>{
   initPokemonBg();
   updateBg();
-
   const params=new URLSearchParams(location.search);
   const roomParam=params.get('room');
   if(roomParam){
