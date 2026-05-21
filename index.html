@@ -45,9 +45,8 @@
     </div>
 
     <div class="home-buttons">
-      <button class="btn-primary big" onclick="showScreen('screen-login')">🎮 New Game</button>
+      <button class="btn-multiplayer big" onclick="showScreen('screen-join')">🎮 Join a Room</button>
       <button class="btn-secondary big" onclick="continueJourney()">▶️ Continue Journey</button>
-      <button class="btn-multiplayer big" onclick="showScreen('screen-multiplayer-menu')">👥 Multiplayer</button>
     </div>
 
     <div class="home-nav">
@@ -348,61 +347,10 @@
     </div>
   </div>
 
-  <!-- MULTIPLAYER MENU -->
-  <div id="screen-multiplayer-menu" class="screen">
-    <div class="screen-header">
-      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
-      <h2>👥 Multiplayer</h2>
-    </div>
-    <div class="mp-menu">
-      <button class="btn-primary big" onclick="showScreen('screen-host-setup')">👑 Host a Game</button>
-      <button class="btn-secondary big" onclick="showScreen('screen-join')">🎮 Join a Room</button>
-    </div>
-  </div>
-
-  <!-- HOST SETUP -->
-  <div id="screen-host-setup" class="screen">
-    <div class="screen-header">
-      <button class="back-btn" onclick="showScreen('screen-multiplayer-menu')">← Back</button>
-      <h2>👑 Create Room</h2>
-    </div>
-    <div class="login-card">
-      <div class="field-group">
-        <label>Your Name</label>
-        <input type="text" id="host-name" placeholder="Your name" maxlength="16">
-      </div>
-      <div class="field-group">
-        <label>Room Code</label>
-        <input type="text" id="host-code" placeholder="e.g. POKEMON" maxlength="8" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
-      </div>
-      <div class="err" id="host-err"></div>
-      <button class="btn-primary" id="host-create-btn" onclick="hostCreate()">🚀 Create Room</button>
-    </div>
-  </div>
-
-  <!-- HOST LOBBY -->
-  <div id="screen-host-lobby" class="screen">
-    <div class="screen-header">
-      <h2>👑 Room Ready!</h2>
-    </div>
-    <div class="lobby-card">
-      <p>Share this code with players:</p>
-      <div class="room-code-display" id="lobby-code-display">----</div>
-      <p class="sub">Or send this link:</p>
-      <div class="link-box" id="player-link-box">—</div>
-      <button class="btn-sm" onclick="copyPlayerLink()">📋 Copy Link</button>
-      <div class="ok" id="copy-ok" style="display:none">✅ Copied!</div>
-    </div>
-    <div class="player-slots" id="host-slots"></div>
-    <div class="lobby-status" id="host-lobby-status">Waiting for players…</div>
-    <button class="btn-primary btn-full" id="btn-start-mp" style="display:none" onclick="hostStartMP()">🎮 Start Game!</button>
-    <button class="btn-secondary btn-full" style="margin-top:8px" onclick="hostForceStart()">⚡ Start Anyway</button>
-  </div>
-
   <!-- JOIN SCREEN -->
   <div id="screen-join" class="screen">
     <div class="screen-header">
-      <button class="back-btn" onclick="showScreen('screen-multiplayer-menu')">← Back</button>
+      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
       <h2>🎮 Join Room</h2>
     </div>
     <div class="login-card">
@@ -410,28 +358,79 @@
         🔗 Joining room: <b id="join-banner-code" style="color:var(--gold)"></b>
       </div>
       <div class="field-group">
-        <label>Your Name</label>
-        <input type="text" id="join-name" placeholder="Your name" maxlength="16">
+        <label>Room Code</label>
+        <input type="text" id="join-code" placeholder="e.g. POKEMON" maxlength="8"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
       </div>
       <div class="field-group">
-        <label>Room Code</label>
-        <input type="text" id="join-code" placeholder="e.g. POKEMON" maxlength="8" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+        <label>Your Name</label>
+        <input type="text" id="join-name" placeholder="e.g. Maria" maxlength="16">
+      </div>
+      <div class="field-group">
+        <label>Pick Your Emoji</label>
+        <div class="emoji-grid" id="join-emoji-grid">
+          <span class="emoji-opt selected" onclick="selectJoinEmoji(this,'🦁')">🦁</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐯')">🐯</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐻')">🐻</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦊')">🦊</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐼')">🐼</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐸')">🐸</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦋')">🦋</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐬')">🐬</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦅')">🦅</span>
+          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐲')">🐲</span>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Age Group</label>
+        <div class="age-grid">
+          <button class="age-btn selected" id="join-age-senior" onclick="selectJoinAge('senior')">
+            🎓 Senior<br><small>12+ years · Standard timer</small>
+          </button>
+          <button class="age-btn" id="join-age-junior" onclick="selectJoinAge('junior')">
+            🌟 Junior<br><small>9-11 years · +5s bonus time</small>
+          </button>
+        </div>
       </div>
       <div class="err" id="join-err"></div>
-      <button class="btn-primary" id="join-btn" onclick="playerJoin()">🚀 Join!</button>
+      <button class="btn-primary" id="join-btn" onclick="playerJoin()">🚀 Join Room!</button>
     </div>
   </div>
 
-  <!-- PLAYER LOBBY (waiting) -->
-  <div id="screen-player-lobby" class="screen">
-    <div class="lobby-waiting">
+  <!-- WAITING LOBBY — all players see this after joining -->
+  <div id="screen-waiting-lobby" class="screen">
+    <div class="waiting-lobby-hero">
       <div class="waiting-gengar">👻</div>
-      <h2>✅ You're In!</h2>
-      <div class="waiting-dots">•••</div>
-      <p>Waiting for the Host to start…</p>
-      <div class="lobby-status" id="player-lobby-status"></div>
+      <div class="wl-room-code-label">Room Code</div>
+      <div class="wl-room-code" id="wl-room-code">----</div>
+      <div class="wl-status" id="wl-status">
+        <span class="waiting-dots">•••</span> Waiting for Papa to start...
+      </div>
     </div>
-    <div class="player-slots" id="player-slots"></div>
+
+    <!-- 8 Player Slots -->
+    <div class="wl-slots-section">
+      <div class="wl-slots-label">
+        <span id="wl-player-count">0</span> / 8 players joined
+      </div>
+      <div class="wl-slots-grid" id="wl-slots-grid">
+        <!-- 8 slots rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Host only: Start button -->
+    <div id="wl-host-controls" style="display:none">
+      <div style="padding:0 20px 14px">
+        <button class="btn-primary" id="wl-start-btn" onclick="hostStartGame()">
+          🚀 Start Game!
+        </button>
+      </div>
+    </div>
+
+    <!-- Player: waiting message -->
+    <div id="wl-player-msg" class="wl-player-msg">
+      ✋ Wait for Papa to start the game!
+    </div>
   </div>
 
   <!-- ABILITY CONFIRMATION MODAL -->
@@ -446,6 +445,107 @@
         <button class="btn-primary" id="modal-confirm-btn">✅ Use Ability</button>
         <button class="btn-secondary" onclick="closeModal()">❌ Cancel</button>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════ HOST DASHBOARD ═══════════════ -->
+  <div id="screen-host" class="screen">
+
+    <!-- Header -->
+    <div class="host-header">
+      <div class="host-title-row">
+        <div>
+          <div class="host-badge">👑 HOST DASHBOARD</div>
+          <div class="host-session-status">
+            <span class="host-live-dot"></span>
+            <span id="host-status-text">Waiting to start...</span>
+          </div>
+        </div>
+        <div class="host-phase-label" id="host-phase-label">PRE-GAME</div>
+      </div>
+    </div>
+
+    <!-- Phase Banner -->
+    <div class="host-phase-banner" id="host-phase-banner">
+      <div class="phase-icon" id="host-phase-icon">🎁</div>
+      <div class="phase-info">
+        <div class="phase-name" id="host-phase-name">Pre-Game Pokemon Catch</div>
+        <div class="phase-desc" id="host-phase-desc">Players are catching their starter Pokemon</div>
+      </div>
+    </div>
+
+    <!-- Player Status Cards -->
+    <div class="host-section-label">👥 PLAYER STATUS</div>
+    <div class="host-player-grid" id="host-player-grid">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- Game Controls -->
+    <div class="host-section-label">🎛️ GAME CONTROLS</div>
+    <div class="host-controls-grid">
+
+      <!-- Primary action — changes per phase -->
+      <button class="host-btn-primary" id="host-btn-next-phase" onclick="hostNextPhase()">
+        <span id="host-next-phase-icon">⏭️</span>
+        <span id="host-next-phase-label">End Catch → Start Game</span>
+      </button>
+
+      <!-- Pause / Resume -->
+      <button class="host-btn-control" id="host-btn-pause" onclick="hostTogglePause()">
+        <span id="host-pause-icon">⏸️</span>
+        <span id="host-pause-label">Pause Game</span>
+      </button>
+
+      <!-- Save All -->
+      <button class="host-btn-control" id="host-btn-save" onclick="hostSaveAll()">
+        <span>💾</span>
+        <span>Save All Players</span>
+      </button>
+
+      <!-- Restart Gym -->
+      <button class="host-btn-control host-btn-warn" id="host-btn-restart" onclick="hostRestartGym()" style="display:none">
+        <span>🔄</span>
+        <span>Restart Gym</span>
+      </button>
+
+    </div>
+
+    <!-- Save status message -->
+    <div class="host-save-msg" id="host-save-msg" style="display:none">
+      ✅ All players saved successfully!
+    </div>
+
+    <!-- Pause overlay message -->
+    <div class="host-paused-banner" id="host-paused-banner" style="display:none">
+      ⏸️ GAME IS PAUSED — Click Resume to continue
+    </div>
+
+    <!-- Live Leaderboard (shown during/after gyms) -->
+    <div id="host-leaderboard-section" style="display:none">
+      <div class="host-section-label">🏆 LIVE LEADERBOARD</div>
+      <div class="host-lb" id="host-lb">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Pokemon availability (shown during catch phases) -->
+    <div id="host-pokemon-section" style="display:none">
+      <div class="host-section-label">🐾 POKEMON AVAILABILITY</div>
+      <div class="host-pokemon-pool" id="host-pokemon-pool">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </div><!-- /screen-host -->
+
+  <!-- PAUSE OVERLAY (shown on player screens) -->
+  <div id="pause-overlay" class="pause-overlay" style="display:none">
+    <div class="pause-card">
+      <div class="pause-emoji">⏸️</div>
+      <h2>Game Paused</h2>
+      <p>Wait for Papa...</p>
+      <div class="pause-safe">💾 Your progress is safe!</div>
     </div>
   </div>
 
