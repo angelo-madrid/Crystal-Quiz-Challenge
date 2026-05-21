@@ -1,0 +1,115 @@
+{
+  "version": "1.0",
+  "regions": [
+    {
+      "id": 1,
+      "name": "Kanto",
+      "theme": "The Beginning",
+      "emoji": "🌿",
+      "badge": "r1",
+      "baseCorrectCrystals": 100,
+      "maxSpeedBonus": 50,
+      "pokeball_cost": 300,
+      "badge_min": 200,
+      "gyms": [
+        {
+          "id": 1,
+          "name": "The Starter Gym",
+          "format": "starter",
+          "questions": [
+            {
+              "id": "k1g1q1",
+              "category": "filipino",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What is the capital city of the Philippines?",
+              "answer": "Manila",
+              "options": ["Manila", "Cebu", "Davao", "Quezon City"]
+            },
+            {
+              "id": "k1g1q2",
+              "category": "geography",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What is the largest ocean in the world?",
+              "answer": "Pacific Ocean",
+              "options": ["Pacific Ocean", "Atlantic Ocean", "Indian Ocean", "Arctic Ocean"]
+            },
+            {
+              "id": "k1g1q3",
+              "category": "science",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What do plants need from the sun to make food?",
+              "answer": "Sunlight / Energy",
+              "options": ["Sunlight / Energy", "Water", "Soil", "Air"]
+            },
+            {
+              "id": "k1g1q4",
+              "category": "books",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What is the name of Harry Potter's owl?",
+              "answer": "Hedwig",
+              "options": ["Hedwig", "Errol", "Pigwidgeon", "Fawkes"]
+            },
+            {
+              "id": "k1g1q5",
+              "category": "pokemon",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What type is Squirtle?",
+              "answer": "Water",
+              "options": ["Water", "Fire", "Grass", "Normal"]
+            },
+            {
+              "id": "k1g1q6",
+              "category": "music",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What is the name of Simba's father in The Lion King?",
+              "answer": "Mufasa",
+              "options": ["Mufasa", "Scar", "Rafiki", "Zazu"]
+            },
+            {
+              "id": "k1g1q7",
+              "category": "sports",
+              "type": "tf",
+              "tier": "basic",
+              "question": "There are 11 players on a football/soccer team.",
+              "answer": "True",
+              "options": ["True", "False"]
+            },
+            {
+              "id": "k1g1q8",
+              "category": "food",
+              "type": "tf",
+              "tier": "basic",
+              "question": "Pasta originally comes from Italy.",
+              "answer": "True",
+              "options": ["True", "False"]
+            },
+            {
+              "id": "k1g1q9",
+              "category": "languages",
+              "type": "mc",
+              "tier": "holo",
+              "question": "What does 'Salamat' mean in English?",
+              "answer": "Thank you",
+              "options": ["Thank you", "Sorry", "Hello", "Goodbye"]
+            },
+            {
+              "id": "k1g1q10",
+              "category": "math",
+              "type": "mc",
+              "tier": "basic",
+              "question": "What is 5 × 8?",
+              "answer": "40",
+              "options": ["40", "35", "45", "48"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
