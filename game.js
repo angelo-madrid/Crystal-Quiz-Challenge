@@ -545,10 +545,13 @@ function showCatchResult(caught) {
   const doneBtn = document.getElementById('btn-done-catching');
 
   if (caught) {
-    // Add to team!
+    // Add to team — MAX 1 POKEMON, waive remaining pokeballs
     const newPokemon = { ...poke, level: 1, caughtAt: 'pregame' };
     PREGAME_STATE.caughtPokemon.push(newPokemon);
     STATE.save.pokemon_team = PREGAME_STATE.caughtPokemon;
+    // Waive all remaining pokeballs
+    PREGAME_STATE.pokeballs = 0;
+    STATE.save.pokeballs = 0;
 
     resultEl.innerHTML = `
       <div class="catch-result-emoji">🎉</div>
@@ -558,19 +561,15 @@ function showCatchResult(caught) {
         Ability: <span style="color:var(--crystal)">⚡ ${poke.ability}</span><br>
         <em>${poke.abilityDesc}</em>
       </p>
+      <p class="catch-result-msg" style="margin-top:10px;color:var(--gold);font-weight:800">
+        ✅ You can only catch 1 Pokemon at the start.<br>Remaining Pokeballs waived!
+      </p>
       <div class="pokeball-dots" id="pregame-pokeball-dots"></div>
     `;
 
-    // Mark as caught in grid
-    renderStarterGrid();
-
-    if (PREGAME_STATE.pokeballs > 0) {
-      catchAgainBtn.style.display = 'block';
-      catchAgainBtn.textContent = `🔴 Use Another Pokeball (${PREGAME_STATE.pokeballs} left)`;
-    } else {
-      catchAgainBtn.style.display = 'none';
-    }
-    doneBtn.textContent = `✅ Start My Journey! (${PREGAME_STATE.caughtPokemon.length} Pokemon caught)`;
+    // Never show catch again — only 1 allowed
+    catchAgainBtn.style.display = 'none';
+    doneBtn.textContent = `✅ Start My Journey! (${poke.emoji} ${poke.name} on your team)`;
 
   } else {
     resultEl.innerHTML = `
@@ -1146,7 +1145,11 @@ async function playerJoin() {
   try {
     const room = await dbReadRoom(code);
     if (!room) {
-      err.textContent = `❌ Room "${code}" not found. Ask Papa to create the room first!`;
+      err.textContent = `❌ Room "${code}" not found. Ask Papa to open the Host page first!`;
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
+    }
+    if (room.phase !== 'lobby') {
+      err.textContent = `❌ Game already started or not accepting players!`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
     if ((room.players||[]).length >= 8) {
@@ -1198,8 +1201,11 @@ function showWaitingLobby(code, players, myPlayerId, isHost) {
   document.getElementById('wl-host-controls').style.display = isHost ? 'block' : 'none';
   document.getElementById('wl-player-msg').style.display   = isHost ? 'none'  : 'block';
 
+  // Filter out any host entries from player slots
+  const realPlayers = (players||[]).filter(p => p.id !== 'HOST_VIEWER' && p.id !== 'host');
+
   // Render the 8 slots
-  renderWaitingSlots(players, myPlayerId);
+  renderWaitingSlots(realPlayers, myPlayerId);
 
   showScreen('screen-waiting-lobby');
 }
@@ -1209,7 +1215,11 @@ function renderWaitingSlots(players, myPlayerId) {
   const countEl = document.getElementById('wl-player-count');
   if (!grid) return;
 
-  const filledCount = (players||[]).length;
+  // Filter out host from player slots
+  const realPlayers = (players||[]).filter(p => p.id !== 'HOST_VIEWER' && p.id !== 'host');
+  players = realPlayers;
+
+  const filledCount = players.length;
   if (countEl) countEl.textContent = filledCount;
 
   grid.innerHTML = '';
@@ -1237,11 +1247,14 @@ function startWaitingPoll(code, myPlayerId, isHost) {
     const room = await dbReadRoom(code);
     if (!room) return;
 
-    // Update slots for everyone
-    renderWaitingSlots(room.players || [], myPlayerId);
+    // Filter out host — only show real players in slots
+    const realPlayers = (room.players || []).filter(p =>
+      p.id !== 'HOST_VIEWER' && p.id !== 'host' && !p.isHost
+    );
+    renderWaitingSlots(realPlayers, myPlayerId);
 
-    // If game started and I'm a player → go to pregame catch
-    if (!isHost && room.phase === 'playing') {
+    // If host started → players go to pregame catch
+    if (!isHost && room.phase === 'PREGAME_CATCH') {
       clearInterval(waitingPollInt);
       startPreGameCatch();
     }
@@ -1257,25 +1270,47 @@ async function hostStartGame() {
   btn.textContent = '⏳ Starting…'; btn.disabled = true;
 
   const code = HOST.roomCode || STATE.roomCode;
-  const room = await dbReadRoom(code);
-  if (!room) { btn.textContent = '🚀 Start Game!'; btn.disabled = false; return; }
+  if (!code) {
+    alert('No room code found. Please refresh and try again.');
+    btn.textContent = '🚀 Start Game!'; btn.disabled = false; return;
+  }
 
-  room.phase = 'playing';
-  room.currentRegion = 1;
-  room.currentGym = 1;
-  room.startedAt = new Date().toISOString();
-  await dbWriteRoom(code, room);
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) {
+      alert('Room not found. Please refresh.');
+      btn.textContent = '🚀 Start Game!'; btn.disabled = false; return;
+    }
 
-  stopWaitingPoll();
+    // Filter out any host entries from players
+    const realPlayers = (room.players||[]).filter(p =>
+      p.id !== 'HOST_VIEWER' && p.id !== 'host' && !p.isHost
+    );
 
-  // Update HOST state
-  HOST.currentPhase  = 'PREGAME_CATCH';
-  HOST.currentRegion = 1;
-  HOST.currentGym    = 1;
-  HOST.players       = room.players || [];
+    // Signal all players to start
+    room.phase = 'PREGAME_CATCH';
+    room.players = realPlayers;
+    room.currentRegion = 1;
+    room.currentGym = 1;
+    room.startedAt = new Date().toISOString();
+    await dbWriteRoom(code, room);
 
-  // Host goes to pre-game catch
-  startPreGameCatch();
+    stopWaitingPoll();
+
+    // Update HOST state
+    HOST.currentPhase  = 'PREGAME_CATCH';
+    HOST.currentRegion = 1;
+    HOST.currentGym    = 1;
+    HOST.players       = realPlayers;
+
+    // Host goes to HOST DASHBOARD
+    initHostDashboard();
+
+  } catch(e) {
+    console.error('Start game error:', e);
+    alert('Error starting game: ' + e.message);
+    btn.textContent = '🚀 Start Game!'; btn.disabled = false;
+  }
 }
 
 function copyPlayerLink() {
@@ -1343,15 +1378,22 @@ function checkHostMode() {
     if (roomCode) {
       HOST.roomCode  = roomCode;
       STATE.roomCode = roomCode;
-      // If game already started, go to dashboard; otherwise show waiting lobby
       dbReadRoom(roomCode).then(room => {
-        if (room && room.phase === 'playing') {
-          initHostDashboard();
-        } else if (room) {
-          showWaitingLobby(roomCode, room.players || [], 'host', true);
-          startWaitingPoll(roomCode, 'host', true);
-        } else {
+        if (!room) {
           showHostSetup();
+        } else if (['PREGAME_CATCH','GYM_ACTIVE','GYM_COMPLETE',
+                    'REGION_COMPLETE','REGION_CATCH','GAME_OVER'].includes(room.phase)) {
+          // Game in progress — go to dashboard
+          HOST.currentPhase  = room.phase;
+          HOST.players       = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
+          HOST.currentRegion = room.currentRegion || 1;
+          HOST.currentGym    = room.currentGym || 1;
+          initHostDashboard();
+        } else {
+          // Lobby phase — show waiting room
+          const players = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
+          showWaitingLobby(roomCode, players, 'HOST_VIEWER', true);
+          startWaitingPoll(roomCode, 'HOST_VIEWER', true);
         }
       });
     } else {
@@ -1370,13 +1412,14 @@ function showHostSetup() {
   setupDiv.innerHTML = `
     <div style="font-size:3rem;margin-bottom:16px">👑</div>
     <h2 style="font-size:1.6rem;font-weight:900;margin-bottom:8px;color:#ffcb05">Host Dashboard</h2>
-    <p style="opacity:0.7;margin-bottom:20px">Enter your room code to manage the game</p>
-    <input type="text" id="host-room-input" placeholder="Room Code (e.g. POKEMON)"
+    <p style="opacity:0.7;margin-bottom:6px">Create a room code for this session</p>
+    <p style="opacity:0.5;font-size:0.8rem;margin-bottom:20px">Each session should use a fresh code (e.g. GAME1, PAPA2)</p>
+    <input type="text" id="host-room-input" placeholder="e.g. PAPA2"
       style="width:100%;max-width:300px;padding:14px;border-radius:12px;border:2px solid rgba(255,203,5,0.4);background:rgba(255,255,255,0.08);color:white;font-size:1.2rem;font-weight:900;letter-spacing:4px;text-align:center;outline:none;margin-bottom:14px;font-family:monospace"
       oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
     <br>
     <button onclick="connectHostToRoom()" style="padding:14px 40px;background:linear-gradient(135deg,#ffcb05,#ff9800);border:none;border-radius:12px;font-weight:900;font-size:1rem;cursor:pointer;color:#1a1a2e">
-      🚀 Create & Open Room
+      🚀 Create Room & Wait for Players
     </button>
     <div id="host-connect-err" style="color:#ef4444;margin-top:10px;font-weight:700"></div>
   `;
@@ -1389,23 +1432,19 @@ async function connectHostToRoom() {
   const err = document.getElementById('host-connect-err');
   if (!code) { if(err) err.textContent = '⚠️ Enter a room code'; return; }
 
-  // Check if room exists, if not create it
-  let room = await dbReadRoom(code);
-  if (!room) {
-    // Create a new host room
-    room = {
-      code,
-      phase: 'PREGAME_CATCH',
-      isPaused: false,
-      currentRegion: 1,
-      currentGym: 1,
-      players: [],
-      pokemonCaught: {},
-      hostConnected: true,
-      updated_at: new Date().toISOString()
-    };
-    await dbWriteRoom(code, room);
-  }
+  // Always create a FRESH room — clears any old saved data
+  const room = {
+    code,
+    phase: 'lobby',
+    isPaused: false,
+    currentRegion: 1,
+    currentGym: 1,
+    players: [],           // starts empty — no host in player list
+    pokemonCaught: {},
+    hostConnected: true,
+    updated_at: new Date().toISOString()
+  };
+  await dbWriteRoom(code, room);
 
   HOST.roomCode = code;
   STATE.roomCode = code;
@@ -1415,9 +1454,9 @@ async function connectHostToRoom() {
   url.searchParams.set('room', code);
   history.replaceState({}, '', url);
 
-  // Show waiting lobby first — host sees the 8 slots + Start button
-  showWaitingLobby(code, room.players || [], 'host', true);
-  startWaitingPoll(code, 'host', true);
+  // Show waiting lobby — 0 players at start
+  showWaitingLobby(code, [], 'HOST_VIEWER', true);
+  startWaitingPoll(code, 'HOST_VIEWER', true);
 }
 
 async function initHostDashboard() {
