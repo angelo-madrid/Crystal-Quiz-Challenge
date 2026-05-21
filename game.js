@@ -207,7 +207,9 @@ function showScreen(id) {
 
 // ── LOGIN / PLAYER CREATION ──────────────────────────────────
 let selectedEmoji = '🦁';
-let selectedAge = 'senior';
+let selectedAge   = 'senior';
+let joinEmoji     = '🦁';
+let joinAge       = 'senior';
 
 function selectEmoji(el, emoji) {
   document.querySelectorAll('.emoji-opt').forEach(e => e.classList.remove('selected'));
@@ -219,6 +221,18 @@ function selectAge(age) {
   selectedAge = age;
   document.getElementById('age-senior').classList.toggle('selected', age === 'senior');
   document.getElementById('age-junior').classList.toggle('selected', age === 'junior');
+}
+
+function selectJoinEmoji(el, emoji) {
+  document.querySelectorAll('#join-emoji-grid .emoji-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  joinEmoji = emoji;
+}
+
+function selectJoinAge(age) {
+  joinAge = age;
+  document.getElementById('join-age-senior').classList.toggle('selected', age === 'senior');
+  document.getElementById('join-age-junior').classList.toggle('selected', age === 'junior');
 }
 
 async function createPlayer() {
@@ -1114,155 +1128,163 @@ function confirmReset() {
 let pollInt = null;
 
 async function hostCreate() {
-  const name = document.getElementById('host-name').value.trim();
-  const code = document.getElementById('host-code').value.trim();
-  const err = document.getElementById('host-err');
-  const btn = document.getElementById('host-create-btn');
-
-  if (!name) { err.textContent = '⚠️ Enter your name!'; return; }
-  if (!code) { err.textContent = '⚠️ Enter a room code!'; return; }
-
-  btn.textContent = '⏳ Creating…'; btn.disabled = true; err.textContent = '';
-
-  try {
-    STATE.isHost = true;
-    STATE.roomCode = code;
-
-    const room = {
-      code,
-      phase: 'lobby',
-      currentRegion: 1,
-      currentGym: 1,
-      currentQ: 0,
-      questionStartTime: 0,
-      players: [{
-        id: 'host_' + Date.now(),
-        name,
-        emoji: '👑',
-        total: 0,
-        correct: 0,
-        isHost: true
-      }]
-    };
-
-    await dbWriteRoom(code, room);
-
-    document.getElementById('lobby-code-display').textContent = code;
-    const base = location.href.split('?')[0].split('#')[0];
-    document.getElementById('player-link-box').textContent = `${base}?room=${code}`;
-
-    renderLobbySlots(room.players, 'host-slots');
-    document.getElementById('host-lobby-status').textContent = '1/8 players joined';
-    showScreen('screen-host-lobby');
-    startPoll();
-  } catch(e) {
-    err.textContent = '❌ Error: ' + e.message;
-    btn.textContent = '🚀 Create Room';
-    btn.disabled = false;
-  }
+  // Host creates room from host dashboard — handled by connectHostToRoom()
+  // This is kept as fallback
 }
 
 async function playerJoin() {
   const name = document.getElementById('join-name').value.trim();
   const code = document.getElementById('join-code').value.trim();
-  const err = document.getElementById('join-err');
-  const btn = document.getElementById('join-btn');
+  const err  = document.getElementById('join-err');
+  const btn  = document.getElementById('join-btn');
 
-  if (!name) { err.textContent = '⚠️ Enter your name!'; return; }
   if (!code) { err.textContent = '⚠️ Enter the room code!'; return; }
+  if (!name) { err.textContent = '⚠️ Enter your name!'; return; }
 
   btn.textContent = '⏳ Joining…'; btn.disabled = true; err.textContent = '';
 
   try {
     const room = await dbReadRoom(code);
-    if (!room) { err.textContent = `❌ Room "${code}" not found.`; btn.textContent='🚀 Join!'; btn.disabled=false; return; }
-    if (room.players.length >= 8) { err.textContent = '❌ Room is full!'; btn.textContent='🚀 Join!'; btn.disabled=false; return; }
+    if (!room) {
+      err.textContent = `❌ Room "${code}" not found. Ask Papa to create the room first!`;
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
+    }
+    if ((room.players||[]).length >= 8) {
+      err.textContent = '❌ Room is full (8/8)!';
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
+    }
+    if (room.phase === 'playing') {
+      err.textContent = '❌ Game already started!';
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
+    }
 
-    const EMOJIS = ['🦁','🐯','🐻','🦊','🐼','🐸','🦋','🐬'];
-    room.players.push({
-      id: 'p_' + Date.now(),
-      name,
-      emoji: EMOJIS[room.players.length % EMOJIS.length],
-      total: 0,
-      correct: 0,
-      isHost: false
-    });
-
+    // Create player identity
+    const playerId = name.substring(0,2).toUpperCase() + '-' + Math.floor(1000+Math.random()*9000);
+    const player = { id: playerId, name, emoji: joinEmoji, ageGroup: joinAge };
+    STATE.player  = player;
     STATE.roomCode = code;
-    STATE.isHost = false;
+    STATE.isHost  = false;
+
+    // Save to localStorage
+    localStorage.setItem('cqc_player_id', playerId);
+    localStorage.setItem('cqc_player', JSON.stringify(player));
+
+    // Create save
+    const save = newSave(player);
+    STATE.save = save;
+    await dbSave(playerId, save);
+
+    // Add to room
+    if (!room.players) room.players = [];
+    room.players.push({ id: playerId, name, emoji: joinEmoji, ageGroup: joinAge });
     await dbWriteRoom(code, room);
 
-    renderLobbySlots(room.players, 'player-slots');
-    document.getElementById('player-lobby-status').textContent = `${room.players.length}/8 joined — waiting for Host…`;
-    showScreen('screen-player-lobby');
-    startPoll();
+    // Show waiting lobby
+    showWaitingLobby(code, room.players, playerId, false);
+    startWaitingPoll(code, playerId, false);
+
   } catch(e) {
     err.textContent = '❌ Error: ' + e.message;
-    btn.textContent = '🚀 Join!';
-    btn.disabled = false;
+    btn.textContent = '🚀 Join Room!'; btn.disabled = false;
   }
 }
 
-function renderLobbySlots(players, containerId, max = 8) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  el.innerHTML = '';
-  for (let i = 0; i < Math.min(max, 8); i++) {
-    const p = players[i];
-    const d = document.createElement('div');
-    d.className = 'player-slot' + (p ? ' joined' : '');
-    d.innerHTML = p
-      ? `<div class="ps-emoji">${p.emoji}</div><div class="ps-name">${p.name}</div><div class="ps-tag">${p.isHost ? '👑 Host' : 'P'+i}</div>`
-      : `<div class="ps-emoji" style="opacity:.3">❓</div>`;
-    el.appendChild(d);
+// ── WAITING LOBBY ─────────────────────────────────────────────
+function showWaitingLobby(code, players, myPlayerId, isHost) {
+  // Set room code display
+  document.getElementById('wl-room-code').textContent = code;
+
+  // Show/hide host controls vs player message
+  document.getElementById('wl-host-controls').style.display = isHost ? 'block' : 'none';
+  document.getElementById('wl-player-msg').style.display   = isHost ? 'none'  : 'block';
+
+  // Render the 8 slots
+  renderWaitingSlots(players, myPlayerId);
+
+  showScreen('screen-waiting-lobby');
+}
+
+function renderWaitingSlots(players, myPlayerId) {
+  const grid = document.getElementById('wl-slots-grid');
+  const countEl = document.getElementById('wl-player-count');
+  if (!grid) return;
+
+  const filledCount = (players||[]).length;
+  if (countEl) countEl.textContent = filledCount;
+
+  grid.innerHTML = '';
+  for (let i = 0; i < 8; i++) {
+    const p = (players||[])[i];
+    const slot = document.createElement('div');
+    const isMe = p && p.id === myPlayerId;
+    slot.className = 'wl-slot' + (p ? ' filled' : '') + (isMe ? ' is-me' : '');
+    slot.innerHTML = p
+      ? `<div class="wl-slot-num">${i+1}</div>
+         <div class="wl-slot-emoji">${p.emoji}</div>
+         <div class="wl-slot-name">${p.name}${isMe ? ' 👈' : ''}</div>
+         <div class="wl-slot-tag">${p.ageGroup === 'junior' ? '🌟 Junior' : '🎓 Senior'}</div>`
+      : `<div class="wl-slot-num">${i+1}</div>
+         <div class="wl-slot-empty-icon">❓</div>
+         <div class="wl-slot-empty-txt">Empty</div>`;
+    grid.appendChild(slot);
   }
 }
 
-function startPoll() {
-  stopPoll();
-  pollInt = setInterval(doPoll, 2000);
+let waitingPollInt = null;
+function startWaitingPoll(code, myPlayerId, isHost) {
+  if (waitingPollInt) clearInterval(waitingPollInt);
+  waitingPollInt = setInterval(async () => {
+    const room = await dbReadRoom(code);
+    if (!room) return;
+
+    // Update slots for everyone
+    renderWaitingSlots(room.players || [], myPlayerId);
+
+    // If game started and I'm a player → go to pregame catch
+    if (!isHost && room.phase === 'playing') {
+      clearInterval(waitingPollInt);
+      startPreGameCatch();
+    }
+  }, 2000);
 }
 
-function stopPoll() {
-  if (pollInt) { clearInterval(pollInt); pollInt = null; }
+function stopWaitingPoll() {
+  if (waitingPollInt) { clearInterval(waitingPollInt); waitingPollInt = null; }
 }
 
-async function doPoll() {
-  const room = await dbReadRoom(STATE.roomCode);
-  if (!room) return;
-  const cur = document.querySelector('.screen.active')?.id;
+async function hostStartGame() {
+  const btn = document.getElementById('wl-start-btn');
+  btn.textContent = '⏳ Starting…'; btn.disabled = true;
 
-  if (cur === 'screen-host-lobby') {
-    renderLobbySlots(room.players, 'host-slots');
-    document.getElementById('host-lobby-status').textContent = `${room.players.length}/8 players joined`;
-    document.getElementById('btn-start-mp').style.display = room.players.length >= 2 ? 'block' : 'none';
-  }
-  if (cur === 'screen-player-lobby') {
-    renderLobbySlots(room.players, 'player-slots');
-    if (room.phase === 'playing') { stopPoll(); startGym(room.currentRegion, room.currentGym); }
-  }
+  const code = HOST.roomCode || STATE.roomCode;
+  const room = await dbReadRoom(code);
+  if (!room) { btn.textContent = '🚀 Start Game!'; btn.disabled = false; return; }
+
+  room.phase = 'playing';
+  room.currentRegion = 1;
+  room.currentGym = 1;
+  room.startedAt = new Date().toISOString();
+  await dbWriteRoom(code, room);
+
+  stopWaitingPoll();
+
+  // Update HOST state
+  HOST.currentPhase  = 'PREGAME_CATCH';
+  HOST.currentRegion = 1;
+  HOST.currentGym    = 1;
+  HOST.players       = room.players || [];
+
+  // Host goes to pre-game catch
+  startPreGameCatch();
 }
 
 function copyPlayerLink() {
-  const url = document.getElementById('player-link-box').textContent;
-  navigator.clipboard.writeText(url).then(() => {
-    const ok = document.getElementById('copy-ok');
-    ok.style.display = 'block';
-    setTimeout(() => ok.style.display = 'none', 2500);
-  }).catch(() => prompt('Copy this link:', url));
-}
-
-async function hostStartMP() { await doStartMP(); }
-async function hostForceStart() { await doStartMP(); }
-
-async function doStartMP() {
-  stopPoll();
-  const room = await dbReadRoom(STATE.roomCode);
-  if (!room) return;
-  room.phase = 'playing';
-  room.questionStartTime = Date.now();
-  await dbWriteRoom(STATE.roomCode, room);
-  startGym(1, 1);
+  const base = location.href.split('?')[0].split('#')[0];
+  const code = HOST.roomCode || STATE.roomCode;
+  const url  = `${base}?room=${code}`;
+  navigator.clipboard.writeText(url)
+    .then(() => alert('✅ Link copied! Send it to players.'))
+    .catch(() => prompt('Copy this link:', url));
 }
 
 // ── AUTO DETECT PLAYER LINK ───────────────────────────────────
@@ -1283,4 +1305,484 @@ window.addEventListener('load', () => {
       loadLeaderboard();
     };
   });
+});
+
+// ═══════════════════════════════════════════════════════════
+// HOST DASHBOARD
+// ═══════════════════════════════════════════════════════════
+
+const HOST_PHASES = {
+  PREGAME_CATCH:    { icon:'🎁', name:'Pre-Game Pokemon Catch',   desc:'Players are catching their starter Pokemon',    label:'PRE-GAME'  },
+  REGION_SELECT:    { icon:'🗺️', name:'Region Selection',          desc:'Players are choosing their region',             label:'SELECTING' },
+  GYM_ACTIVE:       { icon:'⚡', name:'Gym In Progress',           desc:'Players are answering questions',               label:'LIVE'      },
+  GYM_COMPLETE:     { icon:'🏅', name:'Gym Complete',              desc:'Review results before moving on',               label:'RESULTS'   },
+  REGION_COMPLETE:  { icon:'🌟', name:'Region Complete',           desc:'Pokemon catch phase available',                 label:'REGION ✅' },
+  REGION_CATCH:     { icon:'🔴', name:'Regional Pokemon Catch',   desc:'Players are catching regional Pokemon',         label:'CATCHING'  },
+  BREAK:            { icon:'💾', name:'Session Saved — On Break', desc:'Progress saved. Safe to close browsers.',       label:'BREAK'     },
+  GAME_OVER:        { icon:'🏆', name:'Game Complete!',           desc:'Final standings and prize conversion',          label:'FINAL'     }
+};
+
+let HOST = {
+  isHost: false,
+  roomCode: '',
+  currentPhase: 'PREGAME_CATCH',
+  isPaused: false,
+  pollInt: null,
+  players: [],        // latest from Supabase
+  pokemonCaught: {},  // { pokemonId: playerName }
+  currentRegion: 1,
+  currentGym: 1
+};
+
+// ── DETECT HOST MODE ──────────────────────────────────────────
+function checkHostMode() {
+  const params = new URLSearchParams(location.search);
+  if (params.get('host') === 'true') {
+    HOST.isHost = true;
+    const roomCode = params.get('room') || '';
+    if (roomCode) {
+      HOST.roomCode  = roomCode;
+      STATE.roomCode = roomCode;
+      // If game already started, go to dashboard; otherwise show waiting lobby
+      dbReadRoom(roomCode).then(room => {
+        if (room && room.phase === 'playing') {
+          initHostDashboard();
+        } else if (room) {
+          showWaitingLobby(roomCode, room.players || [], 'host', true);
+          startWaitingPoll(roomCode, 'host', true);
+        } else {
+          showHostSetup();
+        }
+      });
+    } else {
+      showHostSetup();
+    }
+    return true;
+  }
+  return false;
+}
+
+function showHostSetup() {
+  // Show a simple room code entry for host
+  const app = document.getElementById('app');
+  const setupDiv = document.createElement('div');
+  setupDiv.style.cssText = 'padding:40px 20px;text-align:center;';
+  setupDiv.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:16px">👑</div>
+    <h2 style="font-size:1.6rem;font-weight:900;margin-bottom:8px;color:#ffcb05">Host Dashboard</h2>
+    <p style="opacity:0.7;margin-bottom:20px">Enter your room code to manage the game</p>
+    <input type="text" id="host-room-input" placeholder="Room Code (e.g. POKEMON)"
+      style="width:100%;max-width:300px;padding:14px;border-radius:12px;border:2px solid rgba(255,203,5,0.4);background:rgba(255,255,255,0.08);color:white;font-size:1.2rem;font-weight:900;letter-spacing:4px;text-align:center;outline:none;margin-bottom:14px;font-family:monospace"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+    <br>
+    <button onclick="connectHostToRoom()" style="padding:14px 40px;background:linear-gradient(135deg,#ffcb05,#ff9800);border:none;border-radius:12px;font-weight:900;font-size:1rem;cursor:pointer;color:#1a1a2e">
+      🚀 Create & Open Room
+    </button>
+    <div id="host-connect-err" style="color:#ef4444;margin-top:10px;font-weight:700"></div>
+  `;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  app.appendChild(setupDiv);
+}
+
+async function connectHostToRoom() {
+  const code = document.getElementById('host-room-input')?.value.trim();
+  const err = document.getElementById('host-connect-err');
+  if (!code) { if(err) err.textContent = '⚠️ Enter a room code'; return; }
+
+  // Check if room exists, if not create it
+  let room = await dbReadRoom(code);
+  if (!room) {
+    // Create a new host room
+    room = {
+      code,
+      phase: 'PREGAME_CATCH',
+      isPaused: false,
+      currentRegion: 1,
+      currentGym: 1,
+      players: [],
+      pokemonCaught: {},
+      hostConnected: true,
+      updated_at: new Date().toISOString()
+    };
+    await dbWriteRoom(code, room);
+  }
+
+  HOST.roomCode = code;
+  STATE.roomCode = code;
+
+  // Update URL without reload
+  const url = new URL(location.href);
+  url.searchParams.set('room', code);
+  history.replaceState({}, '', url);
+
+  // Show waiting lobby first — host sees the 8 slots + Start button
+  showWaitingLobby(code, room.players || [], 'host', true);
+  startWaitingPoll(code, 'host', true);
+}
+
+async function initHostDashboard() {
+  // Load latest room state
+  const room = await dbReadRoom(HOST.roomCode);
+  if (room) {
+    HOST.currentPhase = room.phase || 'PREGAME_CATCH';
+    HOST.isPaused     = room.isPaused || false;
+    HOST.players      = room.players || [];
+    HOST.pokemonCaught= room.pokemonCaught || {};
+    HOST.currentRegion= room.currentRegion || 1;
+    HOST.currentGym   = room.currentGym || 1;
+  } else {
+    await syncHostRoom();
+  }
+
+  renderHostDashboard();
+  showScreen('screen-host');
+  startHostPoll();
+}
+
+// ── RENDER HOST DASHBOARD ─────────────────────────────────────
+function renderHostDashboard() {
+  const phase = HOST_PHASES[HOST.currentPhase] || HOST_PHASES.PREGAME_CATCH;
+  const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
+
+  // Phase info
+  document.getElementById('host-phase-icon').textContent = phase.icon;
+  document.getElementById('host-phase-name').textContent = phase.name;
+  document.getElementById('host-phase-desc').textContent = phase.desc;
+  document.getElementById('host-phase-label').textContent = phase.label;
+  document.getElementById('host-status-text').textContent =
+    `${region.emoji} ${region.name} · Gym ${HOST.currentGym}/5 · Room: ${HOST.roomCode}`;
+
+  // Paused state
+  const pausedBanner = document.getElementById('host-paused-banner');
+  pausedBanner.style.display = HOST.isPaused ? 'block' : 'none';
+
+  // Update next phase button
+  updateNextPhaseButton();
+
+  // Pause button state
+  const pauseIcon = document.getElementById('host-pause-icon');
+  const pauseLabel = document.getElementById('host-pause-label');
+  const pauseBtn = document.getElementById('host-btn-pause');
+  if (HOST.isPaused) {
+    pauseIcon.textContent = '▶️';
+    pauseLabel.textContent = 'Resume Game';
+    pauseBtn.classList.add('active');
+  } else {
+    pauseIcon.textContent = '⏸️';
+    pauseLabel.textContent = 'Pause Game';
+    pauseBtn.classList.remove('active');
+  }
+
+  // Show/hide restart button
+  const restartBtn = document.getElementById('host-btn-restart');
+  restartBtn.style.display = HOST.currentPhase === 'GYM_ACTIVE' ? 'flex' : 'none';
+
+  // Render player cards
+  renderHostPlayerCards();
+
+  // Show/hide leaderboard
+  const lbSection = document.getElementById('host-leaderboard-section');
+  const showLB = ['GYM_COMPLETE','REGION_COMPLETE','GAME_OVER'].includes(HOST.currentPhase);
+  lbSection.style.display = showLB ? 'block' : 'none';
+  if (showLB) renderHostLeaderboard();
+
+  // Show/hide pokemon pool
+  const pokeSection = document.getElementById('host-pokemon-section');
+  const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
+  pokeSection.style.display = showPoke ? 'block' : 'none';
+  if (showPoke) renderHostPokemonPool();
+}
+
+function updateNextPhaseButton() {
+  const btn = document.getElementById('host-btn-next-phase');
+  const icon = document.getElementById('host-next-phase-icon');
+  const label = document.getElementById('host-next-phase-label');
+
+  const configs = {
+    PREGAME_CATCH:   { icon:'🗺️', label:'End Catch → Open Region Map' },
+    REGION_SELECT:   { icon:'⚡', label:'Lock Regions → Start Gym 1'  },
+    GYM_ACTIVE:      { icon:'🏅', label:'End Gym → Show Results'      },
+    GYM_COMPLETE:    { icon:'▶️', label:`Continue → Gym ${Math.min(HOST.currentGym+1,5)}` },
+    REGION_COMPLETE: { icon:'🔴', label:'Open Pokemon Catch Phase'    },
+    REGION_CATCH:    { icon:'🌍', label:'End Catch → Next Region'     },
+    BREAK:           { icon:'▶️', label:'Resume Game'                  },
+    GAME_OVER:       { icon:'💾', label:'Save Final Results'           }
+  };
+
+  // Special case: last gym of region
+  if (HOST.currentPhase === 'GYM_COMPLETE' && HOST.currentGym >= 5) {
+    configs.GYM_COMPLETE = { icon:'🌟', label:'Region Complete → Catch Pokemon!' };
+  }
+
+  const cfg = configs[HOST.currentPhase] || { icon:'⏭️', label:'Next Phase' };
+  icon.textContent = cfg.icon;
+  label.textContent = cfg.label;
+}
+
+function renderHostPlayerCards() {
+  const container = document.getElementById('host-player-grid');
+
+  if (HOST.players.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:30px;opacity:0.5;font-size:0.9rem">
+        No players connected yet.<br>
+        Share room code: <b style="color:#ffcb05;letter-spacing:2px">${HOST.roomCode}</b>
+      </div>`;
+    return;
+  }
+
+  const sortedPlayers = [...HOST.players].sort((a,b) => (b.total_crystals||0) - (a.total_crystals||0));
+
+  container.innerHTML = sortedPlayers.map(p => {
+    const statusInfo = getPlayerStatusInfo(p);
+    const crystals = (p.total_crystals || 0).toLocaleString();
+    const gymProgress = p.current_gym_correct || 0;
+    const gymTotal = p.current_gym_questions || 10;
+    const progressPct = (gymProgress / gymTotal) * 100;
+    const pokemon = (p.pokemon_team || []).map(pk => pk.emoji).join('') || '—';
+
+    return `
+      <div class="host-player-card status-${statusInfo.statusClass}">
+        <div class="hpc-emoji">${p.player_emoji || '👤'}</div>
+        <div class="hpc-info">
+          <div class="hpc-name">${p.player_name || 'Unknown'}</div>
+          <div class="hpc-detail">${statusInfo.detail}</div>
+          <div class="hpc-detail" style="margin-top:2px">🐾 ${pokemon} · 🏅 ${p.badges_earned||0} badges</div>
+          ${HOST.currentPhase === 'GYM_ACTIVE' ? `
+            <div class="hpc-progress">
+              <div class="hpc-progress-fill" style="width:${progressPct}%"></div>
+            </div>` : ''}
+        </div>
+        <div style="text-align:right">
+          <div class="hpc-crystals">${crystals} 🔮</div>
+          <div class="hpc-crystal-sub">total</div>
+          <div class="hpc-status">${statusInfo.icon}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getPlayerStatusInfo(player) {
+  switch(HOST.currentPhase) {
+    case 'PREGAME_CATCH':
+    case 'REGION_CATCH':
+      const caught = (player.pokemon_team||[]).length > 0;
+      return {
+        icon: caught ? '✅' : '⏳',
+        statusClass: caught ? 'done' : 'active',
+        detail: caught
+          ? `Caught: ${(player.pokemon_team||[]).map(p=>p.emoji+' '+p.name).join(', ')}`
+          : `Pokeballs left: ${player.pokeballs ?? 3}`
+      };
+    case 'GYM_ACTIVE':
+      const answered = player.current_q_answered || false;
+      return {
+        icon: answered ? '✅' : '⏳',
+        statusClass: answered ? 'done' : 'active',
+        detail: `Q${(player.current_q||0)+1}/10 · ${player.current_gym_correct||0} correct`
+      };
+    case 'GYM_COMPLETE':
+      const gymCrystals = player.last_gym_crystals || 0;
+      const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
+      const passed = gymCrystals >= region.badgeMin;
+      return {
+        icon: passed ? '🏅' : '❌',
+        statusClass: passed ? 'done' : 'failed',
+        detail: `${player.last_gym_correct||0}/10 correct · ${gymCrystals} 🔮 · ${passed ? 'PASSED' : 'FAILED'}`
+      };
+    default:
+      return {
+        icon: '▶',
+        statusClass: 'waiting',
+        detail: `Region ${HOST.currentRegion} · Gym ${HOST.currentGym}`
+      };
+  }
+}
+
+function renderHostLeaderboard() {
+  const container = document.getElementById('host-lb');
+  const sorted = [...HOST.players].sort((a,b) => (b.total_crystals||0) - (a.total_crystals||0));
+
+  container.innerHTML = sorted.map((p, i) => {
+    const gymC = p.last_gym_crystals || 0;
+    const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
+    const passed = gymC >= region.badgeMin;
+    return `
+      <div class="host-lb-row rank-${i+1}">
+        <div class="hlb-rank">${MEDALS[i]||i+1}</div>
+        <div class="hlb-emoji">${p.player_emoji||'👤'}</div>
+        <div style="flex:1">
+          <div class="hlb-name">${p.player_name||'?'}</div>
+          <div class="hlb-pass">
+            ${HOST.currentPhase==='GYM_COMPLETE'
+              ? `<span class="gym-status-badge ${passed?'gsb-passed':'gsb-failed'}">${passed?'🏅 PASSED':'❌ FAILED'}</span>`
+              : `🏅 ${p.badges_earned||0} badges · 🐾 ${(p.pokemon_team||[]).length} pokemon`}
+          </div>
+        </div>
+        <div class="hlb-crystals">${(p.total_crystals||0).toLocaleString()} 🔮</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderHostPokemonPool() {
+  const container = document.getElementById('host-pokemon-pool');
+  const caughtMap = HOST.pokemonCaught || {};
+
+  container.innerHTML = STARTER_POKEMON.map(p => {
+    const catcher = caughtMap[p.id];
+    return `
+      <div class="host-poke-pill ${catcher ? 'caught' : 'available'}">
+        <div class="host-poke-pill-emoji">${p.emoji}</div>
+        <div class="host-poke-pill-name">${p.name}</div>
+        <div class="host-poke-pill-catcher">${catcher ? '✅ '+catcher : '🔓 Free'}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── HOST CONTROLS ─────────────────────────────────────────────
+async function hostNextPhase() {
+  const transitions = {
+    PREGAME_CATCH:   'REGION_SELECT',
+    REGION_SELECT:   'GYM_ACTIVE',
+    GYM_ACTIVE:      'GYM_COMPLETE',
+    GYM_COMPLETE:    HOST.currentGym >= 5 ? 'REGION_COMPLETE' : 'GYM_ACTIVE',
+    REGION_COMPLETE: 'REGION_CATCH',
+    REGION_CATCH:    'REGION_SELECT',
+    BREAK:           HOST.currentPhase,
+    GAME_OVER:       'GAME_OVER'
+  };
+
+  const nextPhase = transitions[HOST.currentPhase];
+  if (!nextPhase) return;
+
+  // Advance gym/region counters
+  if (HOST.currentPhase === 'GYM_COMPLETE' && HOST.currentGym < 5) {
+    HOST.currentGym++;
+  } else if (HOST.currentPhase === 'REGION_CATCH') {
+    HOST.currentRegion = Math.min(HOST.currentRegion + 1, 10);
+    HOST.currentGym = 1;
+  }
+
+  HOST.currentPhase = nextPhase;
+  await syncHostRoom();
+  renderHostDashboard();
+}
+
+async function hostTogglePause() {
+  HOST.isPaused = !HOST.isPaused;
+  await syncHostRoom();
+  renderHostDashboard();
+
+  // Show/hide pause overlay on THIS device if also playing
+  const overlay = document.getElementById('pause-overlay');
+  if (overlay) overlay.style.display = 'none'; // host never sees overlay
+}
+
+async function hostSaveAll() {
+  // Force save all players to Supabase (they already auto-save, this is a manual confirmation)
+  await syncHostRoom();
+
+  const msg = document.getElementById('host-save-msg');
+  msg.style.display = 'block';
+  msg.textContent = `✅ Game state saved at ${new Date().toLocaleTimeString()}`;
+  setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+async function hostRestartGym() {
+  if (!confirm(`⚠️ Restart Gym ${HOST.currentGym}?\nThis will reset all player progress for this gym.`)) return;
+
+  HOST.currentPhase = 'GYM_ACTIVE';
+  // Signal players to restart via room state
+  await syncHostRoom();
+  renderHostDashboard();
+}
+
+async function syncHostRoom() {
+  const roomData = {
+    code: HOST.roomCode,
+    phase: HOST.currentPhase,
+    isPaused: HOST.isPaused,
+    currentRegion: HOST.currentRegion,
+    currentGym: HOST.currentGym,
+    players: HOST.players,
+    pokemonCaught: HOST.pokemonCaught,
+    hostConnected: true,
+    updated_at: new Date().toISOString()
+  };
+  await dbWriteRoom(HOST.roomCode, roomData);
+}
+
+// ── HOST POLLING ──────────────────────────────────────────────
+function startHostPoll() {
+  if (HOST.pollInt) clearInterval(HOST.pollInt);
+  HOST.pollInt = setInterval(hostDoPoll, 2500);
+}
+
+async function hostDoPoll() {
+  const room = await dbReadRoom(HOST.roomCode);
+  if (!room) return;
+
+  // Load all player saves matching this room's players
+  const allSaves = await dbLoadAllPlayers();
+
+  HOST.players = allSaves;
+  HOST.pokemonCaught = room.pokemonCaught || {};
+
+  // Re-render player cards and leaderboard
+  renderHostPlayerCards();
+
+  const showLB = ['GYM_COMPLETE','REGION_COMPLETE','GAME_OVER'].includes(HOST.currentPhase);
+  if (showLB) renderHostLeaderboard();
+
+  const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
+  if (showPoke) renderHostPokemonPool();
+}
+
+// ── PLAYER: RESPOND TO HOST COMMANDS ─────────────────────────
+// Players poll for pause state
+async function checkPauseState() {
+  if (!HOST.roomCode && !STATE.roomCode) return;
+  const code = HOST.roomCode || STATE.roomCode;
+  const room = await dbReadRoom(code);
+  if (!room) return;
+
+  const overlay = document.getElementById('pause-overlay');
+  if (overlay && !HOST.isHost) {
+    overlay.style.display = room.isPaused ? 'flex' : 'none';
+  }
+}
+
+// ── INIT: CHECK HOST MODE ON LOAD ─────────────────────────────
+// Extend existing load listener
+const _origLoad = window.onload;
+window.addEventListener('load', () => {
+  // Check if host mode
+  if (checkHostMode()) return; // host mode takes over
+
+  // Otherwise normal player flow
+  const params = new URLSearchParams(location.search);
+  const roomParam = params.get('room');
+  if (roomParam) {
+    STATE.roomCode = roomParam;
+    document.getElementById('join-code').value = roomParam;
+    document.getElementById('join-banner-code').textContent = roomParam;
+    document.getElementById('join-banner').style.display = 'block';
+    showScreen('screen-join');
+  }
+
+  // Wire leaderboard
+  document.querySelectorAll('[onclick*="screen-leaderboard"]').forEach(btn => {
+    btn.onclick = () => { showScreen('screen-leaderboard'); loadLeaderboard(); };
+  });
+
+  // Poll for pause state every 3s when in a game
+  setInterval(() => {
+    const cur = document.querySelector('.screen.active')?.id;
+    if (['screen-quiz','screen-pregame-catch','screen-gym-complete'].includes(cur)) {
+      checkPauseState();
+    }
+  }, 3000);
 });
