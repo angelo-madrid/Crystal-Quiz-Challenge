@@ -185,7 +185,73 @@
     </div>
   </div>
 
-  <!-- CATCH POKEMON SCREEN -->
+  <!-- PRE-GAME CATCH SCREEN -->
+  <div id="screen-pregame-catch" class="screen">
+    <div class="pregame-catch-hero">
+      <div class="pregame-gengar">👻</div>
+      <div class="pregame-badge">🎁 Welcome Gift!</div>
+      <h2 class="pregame-title">Choose Your<br>Starter Pokemon!</h2>
+      <p class="pregame-sub">You have <span id="pregame-pokeballs">3</span> Pokeball(s) — answer a ✨ Holo question to catch!</p>
+    </div>
+
+    <!-- Step 1: Choose Pokemon -->
+    <div id="pregame-step-choose" class="pregame-step">
+      <div class="step-label">Step 1 — Pick a Pokemon to catch</div>
+      <div class="starter-grid" id="starter-grid">
+        <!-- Rendered by JS -->
+      </div>
+      <button class="btn-primary" id="btn-attempt-catch" onclick="attemptCatch()" style="margin:0 20px;display:none">
+        🔴 Throw Pokeball!
+      </button>
+    </div>
+
+    <!-- Step 2: Answer question -->
+    <div id="pregame-step-question" class="pregame-step" style="display:none">
+      <div class="step-label">Step 2 — Answer correctly to catch!</div>
+
+      <div class="pregame-selected-pokemon" id="pregame-selected-display">
+        <!-- shows chosen pokemon -->
+      </div>
+
+      <div class="timer-container">
+        <div class="timer-bar-wrap">
+          <div class="timer-bar" id="pregame-timer-bar"></div>
+        </div>
+        <div class="timer-text" id="pregame-timer-text">12</div>
+      </div>
+
+      <div class="question-card" id="pregame-question-card">
+        <div class="q-category" id="pregame-q-category">✨ Holo Question</div>
+        <div class="q-text" id="pregame-q-text">Loading...</div>
+      </div>
+
+      <div class="answers-grid" id="pregame-answers-grid">
+        <button class="ans-btn" id="pans0" onclick="checkCatchAnswer(0)"><span class="ans-icon">▲</span><span class="ans-txt" id="pans0-txt"></span></button>
+        <button class="ans-btn" id="pans1" onclick="checkCatchAnswer(1)"><span class="ans-icon">◆</span><span class="ans-txt" id="pans1-txt"></span></button>
+        <button class="ans-btn" id="pans2" onclick="checkCatchAnswer(2)"><span class="ans-icon">●</span><span class="ans-txt" id="pans2-txt"></span></button>
+        <button class="ans-btn" id="pans3" onclick="checkCatchAnswer(3)"><span class="ans-icon">■</span><span class="ans-txt" id="pans3-txt"></span></button>
+      </div>
+
+      <div class="feedback-bar" id="pregame-feedback"></div>
+    </div>
+
+    <!-- Step 3: Result -->
+    <div id="pregame-step-result" class="pregame-step" style="display:none">
+      <div class="catch-result" id="catch-result-display">
+        <!-- Rendered by JS -->
+      </div>
+      <div style="padding:0 20px;display:flex;flex-direction:column;gap:10px">
+        <button class="btn-primary" id="btn-catch-again" onclick="catchAgain()" style="display:none">
+          🔴 Use Another Pokeball
+        </button>
+        <button class="btn-secondary" id="btn-done-catching" onclick="finishPreGame()">
+          ✅ Start My Journey!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- IN-GAME CATCH SCREEN (after region complete) -->
   <div id="screen-catch" class="screen">
     <div class="screen-header">
       <h2>🎯 Catch a Pokemon!</h2>
