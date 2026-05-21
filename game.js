@@ -244,7 +244,8 @@ async function createPlayer() {
     return;
   }
 
-  showMap();
+  // Go to pre-game Pokemon catch before the map
+  startPreGameCatch();
 }
 
 async function continueJourney() {
@@ -278,6 +279,348 @@ async function loadQuestions() {
     console.error('Failed to load questions:', e);
     return null;
   }
+}
+
+
+// ── PRE-GAME POKEMON CATCH ────────────────────────────────────
+const PREGAME_QUESTIONS = [
+  { q:"What type is Pikachu?", a:"Electric", opts:["Electric","Fire","Water","Normal"] },
+  { q:"What is the name of Harry Potter's school?", a:"Hogwarts", opts:["Hogwarts","Beauxbatons","Durmstrang","Ilvermorny"] },
+  { q:"What is the capital city of Japan?", a:"Tokyo", opts:["Tokyo","Osaka","Kyoto","Hiroshima"] },
+  { q:"True or False: Pasta originally comes from Italy.", a:"True", opts:["True","False","Maybe","Sometimes"] },
+  { q:"What does 'Salamat' mean in English?", a:"Thank you", opts:["Thank you","Sorry","Hello","Goodbye"] },
+  { q:"What is the national flower of the Philippines?", a:"Sampaguita", opts:["Sampaguita","Rose","Sunflower","Orchid"] },
+  { q:"What color is Elphaba's skin in Wicked?", a:"Green", opts:["Green","Blue","Purple","Grey"] },
+  { q:"How many members are in BTS?", a:"7", opts:["7","5","6","8"] },
+  { q:"What is the main ingredient in guacamole?", a:"Avocado", opts:["Avocado","Tomato","Onion","Lime"] },
+  { q:"What planet is closest to the Sun?", a:"Mercury", opts:["Mercury","Venus","Mars","Earth"] },
+  { q:"How many legs does a spider have?", a:"8", opts:["8","6","10","12"] },
+  { q:"What does 'Buenos días' mean in English?", a:"Good morning", opts:["Good morning","Good night","Goodbye","Good evening"] },
+  { q:"What is 12 × 12?", a:"144", opts:["144","124","132","148"] },
+  { q:"What is the name of Annie's dog?", a:"Sandy", opts:["Sandy","Buddy","Max","Spot"] },
+  { q:"Who plays Buddy the Elf in the movie?", a:"Will Ferrell", opts:["Will Ferrell","Jim Carrey","Adam Sandler","Jack Black"] },
+  { q:"True or False: The Moon produces its own light.", a:"False", opts:["False","True","Sometimes","Only at night"] },
+  { q:"What is the largest ocean in the world?", a:"Pacific Ocean", opts:["Pacific Ocean","Atlantic Ocean","Indian Ocean","Arctic Ocean"] },
+  { q:"What is the Filipino word for 'house'?", a:"Bahay", opts:["Bahay","Kalsada","Tubig","Langit"] },
+  { q:"What is 100 ÷ 4?", a:"25", opts:["25","20","30","40"] },
+  { q:"What does Magikarp evolve into?", a:"Gyarados", opts:["Gyarados","Lapras","Dragonair","Vaporeon"] },
+  { q:"What is the name of Simba's father in The Lion King?", a:"Mufasa", opts:["Mufasa","Scar","Rafiki","Zazu"] },
+  { q:"True or False: BTS is from South Korea.", a:"True", opts:["True","False","Japan","China"] },
+  { q:"What is the national animal of the Philippines?", a:"Carabao", opts:["Carabao","Eagle","Tarsier","Tamaraw"] },
+  { q:"What is the Spanish word for 'water'?", a:"Agua", opts:["Agua","Fuego","Tierra","Aire"] },
+  { q:"How many continents are there on Earth?", a:"7", opts:["7","5","6","8"] },
+  { q:"In The BFG what does BFG stand for?", a:"Big Friendly Giant", opts:["Big Friendly Giant","Big Funny Giraffe","Bold Flying Giant","Brave Friendly Goblin"] },
+  { q:"What is the powerhouse of the cell?", a:"Mitochondria", opts:["Mitochondria","Nucleus","Ribosome","Cell Wall"] },
+  { q:"What is 5 × 8?", a:"40", opts:["40","35","45","48"] },
+  { q:"True or False: Lionel Messi is from Argentina.", a:"True", opts:["True","False","Brazil","Spain"] },
+  { q:"What is the first Pokemon in the Pokedex?", a:"Bulbasaur", opts:["Bulbasaur","Caterpie","Charmander","Squirtle"] }
+];
+
+let PREGAME_STATE = {
+  pokeballs: 3,
+  selectedPokemon: null,
+  usedQuestions: [],
+  currentQuestion: null,
+  currentChoices: [],
+  answered: false,
+  timerInt: null,
+  timeLeft: 12,
+  caughtPokemon: []
+};
+
+function startPreGameCatch() {
+  PREGAME_STATE = {
+    pokeballs: STATE.save.pokeballs || 3,
+    selectedPokemon: null,
+    usedQuestions: [],
+    currentQuestion: null,
+    currentChoices: [],
+    answered: false,
+    timerInt: null,
+    timeLeft: 12,
+    caughtPokemon: STATE.save.pokemon_team || []
+  };
+
+  renderStarterGrid();
+  updatePokeballDisplay();
+
+  // Show step 1, hide others
+  document.getElementById('pregame-step-choose').style.display = 'block';
+  document.getElementById('pregame-step-question').style.display = 'none';
+  document.getElementById('pregame-step-result').style.display = 'none';
+
+  showScreen('screen-pregame-catch');
+}
+
+function renderStarterGrid() {
+  const container = document.getElementById('starter-grid');
+  const alreadyCaught = PREGAME_STATE.caughtPokemon.map(p => p.id);
+
+  container.innerHTML = STARTER_POKEMON.map(p => {
+    const isCaught = alreadyCaught.includes(p.id);
+    return `
+      <div class="starter-card${isCaught ? ' caught' : ''}" 
+           id="sc-${p.id}"
+           onclick="${isCaught ? '' : `selectStarterPokemon('${p.id}')`}">
+        <div class="sc-emoji">${p.emoji}</div>
+        <div class="sc-name">${p.name}</div>
+        <div class="sc-type">${p.type}</div>
+        <div class="sc-ability">⚡ ${p.ability}</div>
+        <div class="sc-desc">${p.abilityDesc}</div>
+        ${isCaught ? '<div class="sc-caught">✅ Already caught!</div>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function selectStarterPokemon(pokeId) {
+  // Clear previous selection
+  document.querySelectorAll('.starter-card').forEach(c => c.classList.remove('selected'));
+
+  const card = document.getElementById(`sc-${pokeId}`);
+  if (card) card.classList.add('selected');
+
+  PREGAME_STATE.selectedPokemon = STARTER_POKEMON.find(p => p.id === pokeId);
+
+  // Show throw button
+  const btn = document.getElementById('btn-attempt-catch');
+  btn.style.display = 'block';
+  btn.textContent = `🔴 Throw Pokeball at ${PREGAME_STATE.selectedPokemon.emoji} ${PREGAME_STATE.selectedPokemon.name}!`;
+}
+
+function updatePokeballDisplay() {
+  const el = document.getElementById('pregame-pokeballs');
+  if (el) el.textContent = PREGAME_STATE.pokeballs;
+
+  // Update dots if they exist
+  const dots = document.getElementById('pregame-pokeball-dots');
+  if (dots) {
+    dots.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'pokeball-dot' + (i >= PREGAME_STATE.pokeballs ? ' used' : '');
+      dots.appendChild(dot);
+    }
+  }
+}
+
+function attemptCatch() {
+  if (!PREGAME_STATE.selectedPokemon) return;
+  if (PREGAME_STATE.pokeballs <= 0) {
+    alert('No Pokeballs left!');
+    return;
+  }
+
+  // Use a pokeball
+  PREGAME_STATE.pokeballs--;
+  STATE.save.pokeballs = PREGAME_STATE.pokeballs;
+  updatePokeballDisplay();
+
+  // Show selected pokemon
+  const poke = PREGAME_STATE.selectedPokemon;
+  document.getElementById('pregame-selected-display').innerHTML = `
+    <div class="psd-emoji">${poke.emoji}</div>
+    <div class="psd-info">
+      <div class="psd-name">${poke.name}</div>
+      <div class="psd-ability">⚡ ${poke.ability} — ${poke.abilityDesc}</div>
+      <div class="psd-hint">✨ Answer correctly to catch!</div>
+    </div>
+  `;
+
+  // Pick a random unused question
+  const available = PREGAME_QUESTIONS.filter((_, i) => !PREGAME_STATE.usedQuestions.includes(i));
+  const idx = Math.floor(Math.random() * available.length);
+  const originalIdx = PREGAME_QUESTIONS.indexOf(available[idx]);
+  PREGAME_STATE.usedQuestions.push(originalIdx);
+  PREGAME_STATE.currentQuestion = available[idx];
+
+  // Shuffle choices
+  const choices = [...PREGAME_STATE.currentQuestion.opts].sort(() => Math.random() - 0.5);
+  PREGAME_STATE.currentChoices = choices;
+  PREGAME_STATE.answered = false;
+
+  // Render question
+  document.getElementById('pregame-q-category').textContent = '✨ Holo Question — Answer to Catch!';
+  document.getElementById('pregame-q-text').textContent = PREGAME_STATE.currentQuestion.q;
+
+  const colors = ['#e21b3c','#1368ce','#d89e00','#26890c'];
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`pans${i}`);
+    const txt = document.getElementById(`pans${i}-txt`);
+    txt.textContent = choices[i] || '';
+    btn.style.background = colors[i];
+    btn.style.opacity = '';
+    btn.classList.remove('correct','wrong');
+    btn.disabled = false;
+  }
+
+  const fb = document.getElementById('pregame-feedback');
+  fb.textContent = '';
+  fb.className = 'feedback-bar';
+
+  // Show question step
+  document.getElementById('pregame-step-choose').style.display = 'none';
+  document.getElementById('pregame-step-question').style.display = 'block';
+  document.getElementById('pregame-step-result').style.display = 'none';
+
+  // Start timer (Holo = 12s + age modifier)
+  startPregameTimer();
+}
+
+function startPregameTimer() {
+  clearInterval(PREGAME_STATE.timerInt);
+  const ageMod = AGE_TIME_MOD[STATE.player?.ageGroup] || 0;
+  const total = 12 + ageMod; // Holo base = 12s
+  PREGAME_STATE.timeLeft = total;
+
+  const bar = document.getElementById('pregame-timer-bar');
+  const txt = document.getElementById('pregame-timer-text');
+  bar.style.width = '100%';
+  bar.className = 'timer-bar';
+
+  PREGAME_STATE.timerInt = setInterval(() => {
+    PREGAME_STATE.timeLeft = Math.max(0, PREGAME_STATE.timeLeft - 0.1);
+    const pct = (PREGAME_STATE.timeLeft / total) * 100;
+    bar.style.width = pct + '%';
+    txt.textContent = Math.ceil(PREGAME_STATE.timeLeft);
+    if (pct < 25) bar.className = 'timer-bar danger';
+    else if (pct < 50) bar.className = 'timer-bar warning';
+    if (PREGAME_STATE.timeLeft <= 0) {
+      clearInterval(PREGAME_STATE.timerInt);
+      if (!PREGAME_STATE.answered) pregameTimeUp();
+    }
+  }, 100);
+}
+
+function checkCatchAnswer(idx) {
+  if (PREGAME_STATE.answered) return;
+  PREGAME_STATE.answered = true;
+  clearInterval(PREGAME_STATE.timerInt);
+
+  const chosen = PREGAME_STATE.currentChoices[idx];
+  const correct = PREGAME_STATE.currentQuestion.a;
+  const correctIdx = PREGAME_STATE.currentChoices.indexOf(correct);
+
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`pans${i}`);
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+
+  const caught = chosen === correct;
+  setTimeout(() => showCatchResult(caught), 1500);
+}
+
+function pregameTimeUp() {
+  PREGAME_STATE.answered = true;
+  const correctIdx = PREGAME_STATE.currentChoices.indexOf(PREGAME_STATE.currentQuestion.a);
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`pans${i}`);
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+  setTimeout(() => showCatchResult(false), 1500);
+}
+
+function showCatchResult(caught) {
+  const poke = PREGAME_STATE.selectedPokemon;
+  const resultEl = document.getElementById('catch-result-display');
+  const catchAgainBtn = document.getElementById('btn-catch-again');
+  const doneBtn = document.getElementById('btn-done-catching');
+
+  if (caught) {
+    // Add to team!
+    const newPokemon = { ...poke, level: 1, caughtAt: 'pregame' };
+    PREGAME_STATE.caughtPokemon.push(newPokemon);
+    STATE.save.pokemon_team = PREGAME_STATE.caughtPokemon;
+
+    resultEl.innerHTML = `
+      <div class="catch-result-emoji">🎉</div>
+      <h3>${poke.emoji} ${poke.name} was caught!</h3>
+      <p class="catch-result-msg">
+        <b>${poke.name}</b> joins your team!<br>
+        Ability: <span style="color:var(--crystal)">⚡ ${poke.ability}</span><br>
+        <em>${poke.abilityDesc}</em>
+      </p>
+      <div class="pokeball-dots" id="pregame-pokeball-dots"></div>
+    `;
+
+    // Mark as caught in grid
+    renderStarterGrid();
+
+    if (PREGAME_STATE.pokeballs > 0) {
+      catchAgainBtn.style.display = 'block';
+      catchAgainBtn.textContent = `🔴 Use Another Pokeball (${PREGAME_STATE.pokeballs} left)`;
+    } else {
+      catchAgainBtn.style.display = 'none';
+    }
+    doneBtn.textContent = `✅ Start My Journey! (${PREGAME_STATE.caughtPokemon.length} Pokemon caught)`;
+
+  } else {
+    resultEl.innerHTML = `
+      <div class="catch-result-emoji">💨</div>
+      <h3>${poke.emoji} ${poke.name} broke free!</h3>
+      <p class="catch-result-msg">
+        The Pokemon escaped! Wrong answer or time ran out.<br>
+        ${PREGAME_STATE.pokeballs > 0
+          ? `You have <b style="color:var(--gold)">${PREGAME_STATE.pokeballs} Pokeball(s)</b> left. Try again!`
+          : `No more Pokeballs! Start your journey with what you have.`}
+      </p>
+      <div class="pokeball-dots" id="pregame-pokeball-dots"></div>
+    `;
+
+    if (PREGAME_STATE.pokeballs > 0) {
+      catchAgainBtn.style.display = 'block';
+      catchAgainBtn.textContent = `🔴 Try Again (${PREGAME_STATE.pokeballs} Pokeball(s) left)`;
+    } else {
+      catchAgainBtn.style.display = 'none';
+    }
+
+    const label = PREGAME_STATE.caughtPokemon.length > 0
+      ? `✅ Start Journey! (${PREGAME_STATE.caughtPokemon.length} Pokemon caught)`
+      : `✅ Start Journey Without Pokemon`;
+    doneBtn.textContent = label;
+  }
+
+  // Show dots
+  document.getElementById('pregame-step-choose').style.display = 'none';
+  document.getElementById('pregame-step-question').style.display = 'none';
+  document.getElementById('pregame-step-result').style.display = 'block';
+
+  updatePokeballDisplay();
+  setTimeout(() => {
+    const dotsEl = document.getElementById('pregame-pokeball-dots');
+    if (dotsEl) {
+      dotsEl.innerHTML = '';
+      for (let i = 0; i < 3; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'pokeball-dot' + (i >= PREGAME_STATE.pokeballs ? ' used' : '');
+        dotsEl.appendChild(dot);
+      }
+    }
+  }, 100);
+}
+
+function catchAgain() {
+  // Go back to choose step
+  PREGAME_STATE.selectedPokemon = null;
+  document.getElementById('btn-attempt-catch').style.display = 'none';
+
+  // Re-render grid (in case a pokemon was just caught)
+  renderStarterGrid();
+
+  document.getElementById('pregame-step-choose').style.display = 'block';
+  document.getElementById('pregame-step-question').style.display = 'none';
+  document.getElementById('pregame-step-result').style.display = 'none';
+}
+
+async function finishPreGame() {
+  // Save progress to Supabase
+  STATE.save.updated_at = new Date().toISOString();
+  await dbSave(STATE.player.id, STATE.save);
+  showMap();
 }
 
 // ── MAP SCREEN ────────────────────────────────────────────────
