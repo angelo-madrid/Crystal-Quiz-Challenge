@@ -80,6 +80,12 @@ body {
   margin-bottom: 12px;
 }
 .gengar-svg { width: 120px; height: 120px; }
+.gengar-img {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px rgba(123,94,167,0.9));
+}
 @keyframes gengarFloat {
   0%,100% { transform: translateY(0) scale(1); }
   50%      { transform: translateY(-14px) scale(1.04); }
