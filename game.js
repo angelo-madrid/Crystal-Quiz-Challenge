@@ -2754,6 +2754,12 @@ async function playerJoin() {
       err.textContent = `❌ Game already started — only returning players can rejoin.`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
+    // Room Lock — host has frozen new joiners. Returning players (handled
+    // above) bypass this; only first-time joiners are rejected.
+    if (room.locked) {
+      err.textContent = '🔒 Room is locked — ask Papa to open it before joining.';
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
+    }
     if ((room.players||[]).length >= 8) {
       err.textContent = '❌ Room is full (8/8)!';
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
@@ -3455,66 +3461,737 @@ async function initHostDashboard() {
   startHostPoll();
 }
 
-// ── RENDER HOST DASHBOARD ─────────────────────────────────────
-function renderHostDashboard() {
-  const phase = HOST_PHASES[HOST.currentPhase] || HOST_PHASES.PREGAME_CATCH;
-  const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
+// ═══════════════════════════════════════════════════════════
+// HOST DASHBOARD — three-column landscape layout
+// ═══════════════════════════════════════════════════════════
+// The legacy single-column renderHostDashboard has been replaced by
+// the three column renderers below. They reuse all existing handlers
+// (hostNextPhase, hostTogglePause, dbBumpCrystals, etc.) — only the
+// presentation surface changed.
 
-  // Phase B: persistent room-code banner at the very top.
-  const bannerEl = document.getElementById('host-persistent-banner');
+// State scoped to the new dashboard layout
+const HOST_UI = {
+  activeRoomCode: null,        // most-recently-active non-archived room
+  archivedExpanded: false,     // Column 1 archived rooms section
+  archivedAccountsExpanded: false,
+  searchTerm: '',
+  detailRoomCode: null,        // currently-open Room Detail Overlay
+  ledgerModalPid: null,        // currently-open ledger modal
+  uiPollInt: null,             // 15s slow poll for the 3-col data
+};
+
+function renderHostDashboard() {
+  // Persistent banner at the very top — visible whenever a room is set.
+  const bannerEl   = document.getElementById('host-persistent-banner');
   const bannerCode = document.getElementById('hpb-code');
   if (bannerEl && bannerCode) {
     bannerCode.textContent = HOST.roomCode || '----';
     bannerEl.style.display = HOST.roomCode ? 'flex' : 'none';
   }
+  // Render all three columns; each is independently scrollable.
+  renderCol1Rooms();
+  renderCol2Accounts();
+  renderCol3Controls();
+}
 
-  // Phase info
-  document.getElementById('host-phase-icon').textContent = phase.icon;
-  document.getElementById('host-phase-name').textContent = phase.name;
-  document.getElementById('host-phase-desc').textContent = phase.desc;
-  document.getElementById('host-phase-label').textContent = phase.label;
-  document.getElementById('host-status-text').textContent =
-    `${region.emoji} ${region.name} · Gym ${HOST.currentGym}/5 · Room: ${HOST.roomCode}`;
+// ═══════════════════════════════════════════════════════════
+// COLUMN 1 — ROOMS
+// ═══════════════════════════════════════════════════════════
+async function renderCol1Rooms() {
+  const rooms = await dbListRooms();
+  const norm = rooms.map(r => ({
+    code: r.id, data: r.data || {}, updated_at: r.updated_at,
+    archived: !!(r.data && r.data.archived),
+  }));
+  // Bucketing — non-overlapping per design call we surfaced to the user.
+  const live = norm.filter(r =>
+    !r.archived && r.data.phase !== 'lobby' && r.data.phase !== 'GAME_OVER');
+  const waiting  = norm.filter(r => !r.archived && r.data.phase === 'lobby');
+  const archived = norm.filter(r =>  r.archived || r.data.phase === 'GAME_OVER');
 
-  // Paused state
-  const pausedBanner = document.getElementById('host-paused-banner');
-  pausedBanner.style.display = HOST.isPaused ? 'block' : 'none';
+  document.getElementById('col1-live-count').textContent     = live.length;
+  document.getElementById('col1-waiting-count').textContent  = waiting.length;
+  document.getElementById('col1-archived-count').textContent = archived.length;
 
-  // Update next phase button
-  updateNextPhaseButton();
+  const renderList = (list, type) => list.length
+    ? list.map(r => col1RoomCard(r, type)).join('')
+    : `<div class="col1-empty">No ${type} rooms.</div>`;
+  document.getElementById('col1-live-list').innerHTML     = renderList(live,     'live');
+  document.getElementById('col1-waiting-list').innerHTML  = renderList(waiting,  'waiting');
+  document.getElementById('col1-archived-list').innerHTML = renderList(archived, 'archived');
 
-  // Pause button state
-  const pauseIcon = document.getElementById('host-pause-icon');
-  const pauseLabel = document.getElementById('host-pause-label');
-  const pauseBtn = document.getElementById('host-btn-pause');
-  if (HOST.isPaused) {
-    pauseIcon.textContent = '▶️';
-    pauseLabel.textContent = 'Resume Game';
-    pauseBtn.classList.add('active');
+  // Track the active room — most-recently-updated, non-archived.
+  const candidates = norm.filter(r => !r.archived);
+  if (candidates.length) {
+    HOST_UI.activeRoomCode = candidates[0].code;   // already sorted desc by updated_at
   } else {
-    pauseIcon.textContent = '⏸️';
-    pauseLabel.textContent = 'Pause Game';
-    pauseBtn.classList.remove('active');
+    HOST_UI.activeRoomCode = null;
+  }
+}
+
+function col1RoomCard(r, type) {
+  const status = deriveRoomStatus(r.data);
+  const playerCount = (r.data.players || []).length;
+  const region = REGIONS.find(x => x.id === r.data.currentRegion) || REGIONS[0];
+  return `
+    <div class="room-card-mini">
+      <div class="rcm-top">
+        <div class="rcm-code">${escapeHTML(r.code)}</div>
+        <span class="status-pill status-${status.cls}">${status.label}</span>
+      </div>
+      <div class="rcm-meta">
+        <span>👥 ${playerCount} player${playerCount === 1 ? '' : 's'}</span>
+        <span class="meta-sep">·</span>
+        <span>${region.emoji} ${region.name} · Gym ${r.data.currentGym || 1}/5</span>
+        <span class="meta-sep">·</span>
+        <span>🕒 ${relTime(r.updated_at)}</span>
+      </div>
+      <div class="rcm-actions">
+        <button class="btn-secondary" onclick="openRoomDetail('${escapeAttr(r.code)}')">View →</button>
+        ${type === 'archived' ? `<button class="btn-secondary" onclick="col1UnarchiveRoom('${escapeAttr(r.code)}')">📤 Unarchive</button>` : ''}
+      </div>
+    </div>`;
+}
+
+function col1ToggleArchived() {
+  HOST_UI.archivedExpanded = !HOST_UI.archivedExpanded;
+  document.getElementById('col1-archived-list').style.display = HOST_UI.archivedExpanded ? 'block' : 'none';
+  document.getElementById('col1-archived-chevron').textContent = HOST_UI.archivedExpanded ? '▼' : '▶';
+}
+
+function col1ShowCreateForm() {
+  const zone = document.getElementById('host-col1-create');
+  zone.innerHTML = `
+    <input type="text" id="col1-create-input" placeholder="e.g. GAME1" maxlength="8"
+      style="width:100%;padding:10px;font-family:var(--font-mono);letter-spacing:3px;text-align:center;text-transform:uppercase;font-weight:900;font-size:1rem;background:rgba(255,255,255,0.06);border:2px solid rgba(255,203,5,0.4);border-radius:10px;color:white;margin-bottom:8px;outline:none"
+      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+    <div style="display:flex;gap:8px">
+      <button class="btn-primary" style="flex:1;padding:9px;font-size:0.85rem" onclick="col1ConfirmCreate()">Create</button>
+      <button class="btn-secondary" style="flex:1;padding:9px;font-size:0.85rem" onclick="col1ResetCreateZone()">Cancel</button>
+    </div>`;
+  setTimeout(() => document.getElementById('col1-create-input')?.focus(), 50);
+}
+function col1ResetCreateZone() {
+  document.getElementById('host-col1-create').innerHTML =
+    `<button class="btn-primary" onclick="col1ShowCreateForm()">＋ Create New Game</button>`;
+}
+async function col1ConfirmCreate() {
+  const code = (document.getElementById('col1-create-input')?.value || '').trim();
+  if (!code) { showToast('⚠️ Enter a room code'); return; }
+  const room = {
+    code, phase: 'lobby', isPaused: false, archived: false, locked: false,
+    currentRegion: 1, currentGym: 1, players: [], pokemonCaught: {},
+    hostConnected: true, updated_at: new Date().toISOString(),
+  };
+  await dbWriteRoom(code, room);
+  HOST.roomCode = code; HOST.archived = false;
+  STATE.roomCode = code;
+  const url = new URL(location.href);
+  url.searchParams.set('room', code); history.replaceState({}, '', url);
+  // Don't switch to waiting lobby — stay in the 3-col dashboard
+  showToast(`✅ Room ${code} created`);
+  col1ResetCreateZone();
+  renderHostDashboard();
+}
+
+async function col1UnarchiveRoom(code) {
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.archived = false;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(`📤 ${code} unarchived`);
+  renderHostDashboard();
+}
+
+// ═══════════════════════════════════════════════════════════
+// COLUMN 2 — CRYSTALS
+// ═══════════════════════════════════════════════════════════
+async function renderCol2Accounts() {
+  // Pull every player save + every pending redemption row.
+  const allSaves = await dbLoadAllPlayersFull();
+  const pending  = await dbLedgerPending();
+  // Index pending by player for fast attach.
+  const pendingByPid = {};
+  for (const e of pending) {
+    if (!pendingByPid[e.player_id]) pendingByPid[e.player_id] = e;  // oldest first
   }
 
-  // Show/hide restart button
-  const restartBtn = document.getElementById('host-btn-restart');
-  restartBtn.style.display = HOST.currentPhase === 'GYM_ACTIVE' ? 'flex' : 'none';
+  const term = (HOST_UI.searchTerm || '').toLowerCase();
+  const matches = save => {
+    if (!term) return true;
+    const t = `${save.player_id || ''} ${save.name || ''}`.toLowerCase();
+    return t.includes(term);
+  };
 
-  // Render player cards
-  renderHostPlayerCards();
+  const active = allSaves.filter(s => !s.archivedAccount && matches(s));
+  const archived = allSaves.filter(s => s.archivedAccount && matches(s));
 
-  // Show/hide leaderboard
-  const lbSection = document.getElementById('host-leaderboard-section');
-  const showLB = ['GYM_COMPLETE','REGION_COMPLETE','GAME_OVER'].includes(HOST.currentPhase);
-  lbSection.style.display = showLB ? 'block' : 'none';
-  if (showLB) renderHostLeaderboard();
+  // Sort active: pending first (oldest first), then by total_crystals desc.
+  active.sort((a, b) => {
+    const ap = pendingByPid[a.player_id];
+    const bp = pendingByPid[b.player_id];
+    if (ap && !bp) return -1;
+    if (bp && !ap) return 1;
+    if (ap && bp)  return new Date(ap.created_at) - new Date(bp.created_at);
+    return (b.total_crystals || 0) - (a.total_crystals || 0);
+  });
 
-  // Show/hide pokemon pool
-  const pokeSection = document.getElementById('host-pokemon-section');
-  const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
+  document.getElementById('col2-active-count').textContent   = active.length;
+  document.getElementById('col2-archived-count').textContent = archived.length;
+
+  const activeEl   = document.getElementById('col2-active-list');
+  const archivedEl = document.getElementById('col2-archived-list');
+  activeEl.innerHTML = active.length
+    ? active.map(s => col2AccountCard(s, pendingByPid[s.player_id])).join('')
+    : `<div class="col1-empty">${term ? 'No matches.' : 'No active accounts.'}</div>`;
+  archivedEl.innerHTML = archived.length
+    ? archived.map(s => col2ArchivedAccountCard(s)).join('')
+    : `<div class="col1-empty">No archived accounts.</div>`;
+  archivedEl.style.display = HOST_UI.archivedAccountsExpanded ? 'block' : 'none';
+  document.getElementById('col2-archived-chevron').textContent = HOST_UI.archivedAccountsExpanded ? '▼' : '▶';
+}
+
+function col2AccountCard(s, pendingEntry) {
+  const ageBand = ageGroupFromAge(s.age);
+  const bandLabel = ageBand === 'junior' ? '🌟 Junior' : '🎓 Senior';
+  const balance = s.total_crystals || 0;
+  const peso = (balance / 100).toFixed(2);
+  const pendingHTML = pendingEntry
+    ? col2PendingBlock(pendingEntry, s)
+    : `<div class="ac-no-pending">No pending requests</div>`;
+  return `
+    <div class="account-card${pendingEntry ? ' has-pending' : ''}" id="ac-${escapeAttr(s.player_id)}">
+      <div class="ac-header">
+        <span class="ac-name">${escapeHTML(s.name || s.player_id)}</span>
+        <span class="ac-pid">${escapeHTML(s.player_id)}</span>
+        <span class="ac-band-pill">${bandLabel}</span>
+      </div>
+      <div class="ac-balance">💎 ${balance.toLocaleString()}<span class="ac-peso">≈ ₱${peso}</span></div>
+      ${pendingHTML}
+      <div class="ac-bottom-actions">
+        <button class="btn-secondary" onclick="openLedgerModal('${escapeAttr(s.player_id)}')">📋 View Ledger</button>
+        <button class="btn-secondary" onclick="col2ArchiveAccount('${escapeAttr(s.player_id)}','${escapeAttr(s.name||s.player_id)}')">··· Archive</button>
+      </div>
+    </div>`;
+}
+
+function col2PendingBlock(entry, save) {
+  const abs = Math.abs(entry.amount);
+  const peso = (abs / 100).toFixed(2);
+  return `
+    <div class="ac-pending">
+      <div class="ac-pending-label">⏳ Redemption Request</div>
+      <div class="ac-pending-amount">−${abs.toLocaleString()} 💎 <span style="color:var(--crystal);font-size:0.78rem">≈ ₱${peso}</span></div>
+      ${entry.note ? `<div class="ac-pending-note">Note: ${escapeHTML(entry.note)}</div>` : ''}
+      <div class="ac-pending-time">Submitted ${relTime(entry.created_at)}</div>
+      <div class="ac-pending-actions">
+        <button class="btn-primary" onclick="col2ApproveRequest('${escapeAttr(entry.id)}')">✅ Approve</button>
+        <button class="btn-secondary" onclick="col2ShowModifyForm('${escapeAttr(entry.id)}', ${abs})">✏️ Modify</button>
+        <button class="btn-danger" onclick="col2DeclineRequest('${escapeAttr(entry.id)}')">❌ Decline</button>
+      </div>
+      <div id="ac-mod-${escapeAttr(entry.id)}" style="display:none" class="ac-modify-form"></div>
+    </div>`;
+}
+
+function col2ArchivedAccountCard(s) {
+  const balance = s.total_crystals || 0;
+  return `
+    <div class="account-card archived">
+      <div class="ac-header">
+        <span class="ac-name">${escapeHTML(s.name || s.player_id)}</span>
+        <span class="ac-pid">${escapeHTML(s.player_id)}</span>
+      </div>
+      <div class="ac-balance">💎 ${balance.toLocaleString()}</div>
+      <div class="ac-bottom-actions">
+        <button class="btn-secondary" onclick="col2UnarchiveAccount('${escapeAttr(s.player_id)}')">📤 Unarchive</button>
+      </div>
+    </div>`;
+}
+
+function col2ToggleArchived() {
+  HOST_UI.archivedAccountsExpanded = !HOST_UI.archivedAccountsExpanded;
+  renderCol2Accounts();
+}
+
+function col2ApplySearch() {
+  const inp = document.getElementById('col2-search');
+  HOST_UI.searchTerm = inp ? inp.value : '';
+  renderCol2Accounts();
+}
+
+async function col2ApproveRequest(entryId) {
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'approved', resolved_at: new Date().toISOString(),
+  });
+  if (!row) { showToast('❌ Could not approve'); return; }
+  await dbBumpCrystals(row.player_id, row.amount);  // amount is negative
+  const save = await dbLookupPlayer(row.player_id);
+  showToast(`✅ ${save?.name || row.player_id}'s redemption approved`);
+  renderCol2Accounts();
+}
+function col2ShowModifyForm(entryId, original) {
+  const el = document.getElementById('ac-mod-' + entryId);
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = `
+    <label style="font-size:0.72rem;letter-spacing:1px;color:var(--gold);text-transform:uppercase;font-weight:800;display:block;margin-bottom:4px">Revised amount</label>
+    <input type="number" id="mod-${escapeAttr(entryId)}" min="1" value="${original}" style="width:100%">
+    <div style="display:flex;gap:6px;margin-top:6px">
+      <button class="btn-primary" style="flex:1;padding:6px;font-size:0.78rem" onclick="col2ConfirmModify('${escapeAttr(entryId)}')">Confirm Modify</button>
+      <button class="btn-secondary" style="flex:1;padding:6px;font-size:0.78rem" onclick="document.getElementById('ac-mod-${escapeAttr(entryId)}').style.display='none'">Cancel</button>
+    </div>`;
+}
+async function col2ConfirmModify(entryId) {
+  const v = parseInt(document.getElementById('mod-' + entryId)?.value, 10);
+  if (!v || v <= 0) { showToast('⚠️ Enter a positive amount'); return; }
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'modified', amount: -Math.abs(v), resolved_at: new Date().toISOString(),
+  });
+  if (!row) { showToast('❌ Could not modify'); return; }
+  await dbBumpCrystals(row.player_id, row.amount);
+  showToast(`✏️ Redemption modified and approved`);
+  renderCol2Accounts();
+}
+async function col2DeclineRequest(entryId) {
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'declined', resolved_at: new Date().toISOString(),
+  });
+  if (!row) { showToast('❌ Could not decline'); return; }
+  showToast(`❌ Redemption declined`);
+  renderCol2Accounts();
+}
+
+// Account archive flag lives inside data.account_archived (JSONB, no schema change).
+async function col2ArchiveAccount(pid, name) {
+  confirmDialog(`Archive ${name}'s account?`,
+    `They won't appear in active accounts. You can unarchive any time.`,
+    async () => {
+      const save = await dbLoad(pid);
+      if (!save) return;
+      save.account_archived = true;
+      save.updated_at = new Date().toISOString();
+      await dbSave(pid, save);
+      showToast(`📦 ${name} archived`);
+      renderCol2Accounts();
+    });
+}
+async function col2UnarchiveAccount(pid) {
+  const save = await dbLoad(pid);
+  if (!save) return;
+  delete save.account_archived;
+  save.updated_at = new Date().toISOString();
+  await dbSave(pid, save);
+  showToast(`📤 Account restored`);
+  renderCol2Accounts();
+}
+
+function col2BonusValidate() {
+  const pid  = (document.getElementById('host-add-pid')?.value || '').trim();
+  const amt  = parseInt(document.getElementById('host-add-amount')?.value, 10);
+  const note = (document.getElementById('host-add-note')?.value || '').trim();
+  const ok = isValidPlayerId(pid) && amt > 0 && note.length > 0;
+  const btn = document.getElementById('col2-bonus-submit');
+  if (btn) { btn.disabled = !ok; btn.style.opacity = ok ? '' : '0.4'; }
+}
+
+// Helper: load all player_saves rows with the new identity columns
+// so the dashboard knows name/age/gender/archived without parsing the
+// data blob. dbLoadAllPlayers returns only the data blob, so we use
+// a direct call here that includes everything we need.
+async function dbLoadAllPlayersFull() {
+  const { data, error } = await sb.from('player_saves')
+    .select('player_id, name, age, gender, data, updated_at')
+    .order('updated_at', { ascending: false });
+  if (error || !data) { console.warn('dbLoadAllPlayersFull error:', error); return []; }
+  return data.map(r => ({
+    player_id: r.player_id,
+    name:      r.name || (r.data && r.data.player_name) || r.player_id,
+    age:       r.age,
+    gender:    r.gender,
+    updated_at: r.updated_at,
+    total_crystals: (r.data && r.data.total_crystals) || 0,
+    last_seen:      (r.data && r.data.last_seen) || null,
+    pokemon_team:   (r.data && r.data.pokemon_team) || [],
+    archivedAccount: !!(r.data && r.data.account_archived),
+    _data: r.data,
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════
+// COLUMN 3 — CONTROLS (active-room scoped)
+// ═══════════════════════════════════════════════════════════
+async function renderCol3Controls() {
+  const code = HOST_UI.activeRoomCode;
+  const label = document.getElementById('col3-active-room-label');
+  const phaseEl = document.getElementById('col3-current-phase');
+  const advLbl  = document.getElementById('col3-advance-label');
+  const pauseLbl = document.getElementById('col3-pause-label');
+  const lockBtn  = document.getElementById('col3-lock-toggle');
+
+  if (!code) {
+    if (label)   label.textContent = 'No active room';
+    if (phaseEl) phaseEl.textContent = 'Current phase: —';
+    if (advLbl)  advLbl.textContent  = 'Advance Phase';
+    if (pauseLbl) pauseLbl.textContent = 'Pause All Players';
+    if (lockBtn) { lockBtn.textContent = 'OFF'; lockBtn.classList.remove('on'); }
+    return;
+  }
+
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  if (label)   label.textContent = `Active room: ${code}`;
+  const niceMap = {
+    PREGAME_CATCH: 'Pre-Game Catch', REGION_SELECT: 'Region Select',
+    GYM_ACTIVE: 'Playing', GYM_COMPLETE: 'Gym Complete',
+    REGION_COMPLETE: 'Region Complete', REGION_CATCH: 'Regional Catch',
+    BREAK: 'Break', GAME_OVER: 'Game Over', lobby: 'Lobby (Waiting)',
+  };
+  const phaseName = niceMap[room.phase] || room.phase;
+  if (phaseEl) phaseEl.textContent = `Current phase: ${room.isPaused ? 'Paused — ' : ''}${phaseName}`;
+  // Compute next-phase label for the Advance button
+  const transitions = {
+    lobby:'PREGAME_CATCH', PREGAME_CATCH:'REGION_SELECT', REGION_SELECT:'GYM_ACTIVE',
+    GYM_ACTIVE:'GYM_COMPLETE', GYM_COMPLETE:'GYM_ACTIVE',
+    REGION_COMPLETE:'REGION_CATCH', REGION_CATCH:'REGION_SELECT',
+    BREAK:'GYM_ACTIVE', GAME_OVER:'GAME_OVER',
+  };
+  const next = transitions[room.phase] || room.phase;
+  if (advLbl) advLbl.textContent = `${phaseName} → ${niceMap[next] || next}`;
+  if (pauseLbl) pauseLbl.textContent = room.isPaused ? 'Resume All Players' : 'Pause All Players';
+  if (lockBtn) {
+    lockBtn.textContent = room.locked ? 'ON' : 'OFF';
+    lockBtn.classList.toggle('on', !!room.locked);
+  }
+}
+
+async function col3AdvancePhase() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  // Point HOST.* at this room so the existing hostNextPhase works.
+  HOST.roomCode = code;
+  HOST.currentPhase = room.phase; HOST.isPaused = !!room.isPaused;
+  HOST.archived = !!room.archived;
+  HOST.players = room.players || []; HOST.pokemonCaught = room.pokemonCaught || {};
+  HOST.currentRegion = room.currentRegion || 1; HOST.currentGym = room.currentGym || 1;
+  await hostNextPhase();
+  showToast(`▶️ Advanced`);
+  renderHostDashboard();
+}
+
+async function col3TogglePause() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.isPaused = !room.isPaused;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  // Keep HOST.* in sync if it points at this room
+  if (HOST.roomCode === code) HOST.isPaused = room.isPaused;
+  showToast(room.isPaused ? '⏸️ Paused' : '▶️ Resumed');
+  renderHostDashboard();
+}
+
+async function col3EndGame() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  confirmDialog('End the game?',
+    'This sets the room to GAME_OVER and auto-archives it. This cannot be undone.',
+    async () => {
+      const room = await dbReadRoom(code);
+      if (!room) return;
+      room.phase = 'GAME_OVER'; room.archived = true;
+      room.updated_at = new Date().toISOString();
+      await dbWriteRoom(code, room);
+      if (HOST.roomCode === code) { HOST.currentPhase = 'GAME_OVER'; HOST.archived = true; }
+      showToast('🏁 Game ended');
+      renderHostDashboard();
+    });
+}
+
+async function col3ToggleLock() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.locked = !room.locked;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(room.locked ? '🔒 Room locked' : '🔓 Room open');
+  renderHostDashboard();
+}
+
+async function col3ForceSaveAll() {
+  // The actual saves are written by players themselves (auto-save). The
+  // host's "Force Save All" is a sync ack — bumps room.updated_at so the
+  // poll picks up immediately.
+  const code = HOST_UI.activeRoomCode;
+  if (code) {
+    const room = await dbReadRoom(code);
+    if (room) { room.updated_at = new Date().toISOString(); await dbWriteRoom(code, room); }
+  }
+  showToast('✅ All players saved');
+}
+
+async function col3SendBroadcast() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  const inp = document.getElementById('col3-broadcast-input');
+  const text = (inp?.value || '').trim();
+  if (!text) { showToast('⚠️ Enter a message'); return; }
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.announcement = { text, ts: new Date().toISOString() };
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  if (inp) inp.value = '';
+  showToast('📢 Announcement sent');
+}
+function col3PresetBroadcast(text) {
+  const inp = document.getElementById('col3-broadcast-input');
+  if (inp) inp.value = text;
+  col3SendBroadcast();
+}
+
+async function col3ResetRoom() {
+  const code = HOST_UI.activeRoomCode;
+  if (!code) { showToast('⚠️ No active room'); return; }
+  confirmDialog(`Reset room ${code}?`,
+    `This kicks all players, clears Pokemon availability, and returns the room to lobby. Player accounts and crystal balances stay intact. This cannot be undone.`,
+    async () => {
+      const room = await dbReadRoom(code);
+      if (!room) return;
+      room.phase = 'lobby'; room.isPaused = false;
+      room.players = []; room.pokemonCaught = {};
+      room.currentRegion = 1; room.currentGym = 1;
+      room.announcement = null;
+      room.updated_at = new Date().toISOString();
+      await dbWriteRoom(code, room);
+      if (HOST.roomCode === code) {
+        HOST.currentPhase = 'lobby'; HOST.players = []; HOST.pokemonCaught = {};
+        HOST.currentRegion = 1; HOST.currentGym = 1;
+      }
+      showToast(`🗑️ Room ${code} reset to lobby`);
+      renderHostDashboard();
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+// ROOM DETAIL OVERLAY
+// ═══════════════════════════════════════════════════════════
+async function openRoomDetail(code) {
+  HOST_UI.detailRoomCode = code;
+  await renderRoomDetail();
+  document.getElementById('room-detail-overlay').style.display = 'flex';
+}
+function closeRoomDetail() {
+  HOST_UI.detailRoomCode = null;
+  document.getElementById('room-detail-overlay').style.display = 'none';
+}
+function roomDetailMaybeClose(e) {
+  if (e.target.classList.contains('modal-overlay')) closeRoomDetail();
+}
+
+async function renderRoomDetail() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  const room = await dbReadRoom(code);
+  if (!room) { closeRoomDetail(); return; }
+  document.getElementById('rd-code').textContent = code;
+  const status = deriveRoomStatus(room);
+  const statusEl = document.getElementById('rd-status');
+  statusEl.className = `status-pill status-${status.cls}`;
+  statusEl.textContent = status.label;
+
+  // Players — pull saves and sort by presence then crystals
+  const ids = (room.players || []).map(p => p.id);
+  let saves = [];
+  if (ids.length) {
+    const { data } = await sb.from('player_saves')
+      .select('player_id, name, age, data, updated_at')
+      .in('player_id', ids);
+    saves = data || [];
+  }
+  const enriched = (room.players || []).map(p => {
+    const s = saves.find(x => x.player_id === p.id) || {};
+    const blob = s.data || {};
+    return {
+      player_id: p.id, name: s.name || p.name || p.id,
+      age: s.age, ageGroup: ageGroupFromAge(s.age),
+      total_crystals: blob.total_crystals || 0,
+      pokemon_team: blob.pokemon_team || [],
+      regions: blob.regions || {},
+      last_seen: blob.last_seen || null,
+    };
+  });
+  const PRESENCE_RANK = { connected: 0, reconnecting: 1, absent: 2 };
+  const presenceFor = ls => presenceStatus(ls).cls;
+  enriched.sort((a, b) => {
+    const pa = PRESENCE_RANK[presenceFor(a.last_seen)] ?? 9;
+    const pb = PRESENCE_RANK[presenceFor(b.last_seen)] ?? 9;
+    if (pa !== pb) return pa - pb;
+    return (b.total_crystals || 0) - (a.total_crystals || 0);
+  });
+  const connectedCount = enriched.filter(p => presenceFor(p.last_seen) !== 'absent').length;
+  document.getElementById('rd-player-count').textContent = `${connectedCount}/${enriched.length} connected`;
+
+  document.getElementById('rd-player-list').innerHTML = enriched.length
+    ? enriched.map(p => {
+        const pres = presenceStatus(p.last_seen);
+        const region = REGIONS.find(r => r.id === room.currentRegion) || REGIONS[0];
+        const pokeNames = (p.pokemon_team || []).slice(0, 3).map(pk => pk.name).join(', ') || '—';
+        const band = p.ageGroup === 'junior' ? 'Junior' : 'Senior';
+        return `
+          <div class="rd-player">
+            <div class="rd-player-presence">${pres.label.split(' ')[0]}</div>
+            <div class="rd-player-info">
+              <div class="rd-player-name">${escapeHTML(p.name)} <span class="ac-pid">${escapeHTML(p.player_id)}</span> <span class="ac-band-pill">${band}</span></div>
+              <div class="rd-player-sub">${region.emoji} ${region.name} · Gym ${room.currentGym}/5</div>
+              <div class="rd-player-pokemon">🐾 ${escapeHTML(pokeNames)}</div>
+            </div>
+            <div class="rd-player-crystals">💎 ${(p.total_crystals||0).toLocaleString()}</div>
+          </div>`;
+      }).join('')
+    : '<div class="col1-empty">No players yet.</div>';
+
+  // Game progress R1..R10
+  const progressHTML = REGIONS.map(r => {
+    let cls = 'rd-progress-pill';
+    let icon = '○';
+    if (r.id < room.currentRegion) { cls += ' done'; icon = '✅'; }
+    else if (r.id === room.currentRegion) { cls += ' active'; icon = '🔄'; }
+    return `<span class="${cls}">${icon} R${r.id}</span>`;
+  }).join('');
+  document.getElementById('rd-progress').innerHTML = progressHTML;
+
+  // Pokemon Available — only show during catch phases
+  const pokeSection = document.getElementById('rd-pokemon-section');
+  const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(room.phase);
   pokeSection.style.display = showPoke ? 'block' : 'none';
-  if (showPoke) renderHostPokemonPool();
+  if (showPoke) {
+    await loadPokemon();
+    const pool = room.phase === 'REGION_CATCH'
+      ? getRegionalList(room.currentRegion)
+      : getStartersList();
+    const caughtMap = room.pokemonCaught || {};
+    document.getElementById('rd-pokemon-pool').innerHTML = pool.map(p => {
+      const catcher = caughtMap[p.id];
+      return `
+        <div class="rd-pokemon-pill ${catcher ? 'caught' : ''}">
+          <div class="rdp-emoji">${p.emoji}</div>
+          <div>${escapeHTML(p.name)}</div>
+          <div style="opacity:0.65">${catcher ? '✅ ' + escapeHTML(catcher) : '🔓 Free'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Action button labels
+  document.getElementById('rd-pause-btn').textContent = room.isPaused ? '▶️ Resume Room' : '⏸️ Pause Room';
+  document.getElementById('rd-archive-btn').textContent = room.archived ? '📤 Unarchive' : '🗄️ Archive';
+}
+
+async function rdTogglePause() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.isPaused = !room.isPaused;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(room.isPaused ? '⏸️ Paused' : '▶️ Resumed');
+  renderRoomDetail();
+  renderHostDashboard();
+}
+function rdCopyCode() {
+  if (HOST_UI.detailRoomCode) landingCopyCode(HOST_UI.detailRoomCode);
+}
+async function rdArchive() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.archived = !room.archived;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(room.archived ? '🗄️ Archived ✓' : '📤 Unarchived ✓');
+  renderRoomDetail();
+  renderHostDashboard();
+}
+async function rdEndGame() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  confirmDialog('End this game?', 'This sets the room to GAME_OVER and auto-archives it. This cannot be undone.', async () => {
+    const room = await dbReadRoom(code);
+    if (!room) return;
+    room.phase = 'GAME_OVER'; room.archived = true;
+    room.updated_at = new Date().toISOString();
+    await dbWriteRoom(code, room);
+    showToast('🏁 Game ended');
+    closeRoomDetail();
+    renderHostDashboard();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// PER-PLAYER LEDGER MODAL
+// ═══════════════════════════════════════════════════════════
+async function openLedgerModal(pid) {
+  HOST_UI.ledgerModalPid = pid;
+  const save = await dbLookupPlayer(pid);
+  document.getElementById('lm-name').textContent = save?.name || pid;
+  document.getElementById('lm-pid').textContent  = pid;
+  const bal = save?.total_crystals || 0;
+  document.getElementById('lm-balance').textContent = bal.toLocaleString();
+  document.getElementById('lm-peso').textContent    = (bal / 100).toFixed(2);
+
+  const rows = await dbLedgerForPlayer(pid, 200);
+  const body = document.getElementById('lm-body');
+  if (!rows.length) { body.innerHTML = '<div class="lm-empty">No ledger entries yet.</div>'; }
+  else body.innerHTML = `<div class="lm-table">${rows.map(lmRow).join('')}</div>`;
+  document.getElementById('ledger-modal-overlay').style.display = 'flex';
+}
+function closeLedgerModal() {
+  HOST_UI.ledgerModalPid = null;
+  document.getElementById('ledger-modal-overlay').style.display = 'none';
+}
+function ledgerModalMaybeClose(e) {
+  if (e.target.classList.contains('modal-overlay')) closeLedgerModal();
+}
+function lmRow(row) {
+  const icon = { approved: '✅', pending: '⏳', declined: '❌', modified: '✏️' }[row.status] || '·';
+  const sign = row.amount > 0 ? '+' : (row.amount < 0 ? '−' : '');
+  const abs = Math.abs(row.amount).toLocaleString();
+  const amtCls = row.amount > 0 ? 'amt-credit' : (row.amount < 0 ? 'amt-debit' : '');
+  const typeLabel = {
+    'earn':'Gym clear','bonus':'Papa bonus',
+    'redeem_request':'Redemption','adjustment':'Adjustment',
+  }[row.type] || row.type;
+  return `
+    <div class="lm-row status-${row.status}">
+      <div>${icon}</div>
+      <div class="lm-amount ${amtCls}">${sign}${abs} 💎</div>
+      <div>${typeLabel}</div>
+      <div class="lm-room">${row.room_code ? escapeHTML(row.room_code) : '—'}</div>
+      <div class="lm-note">${row.note ? escapeHTML(row.note) : ''}</div>
+      <div class="lm-when">${relTime(row.created_at)}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// GENERIC CONFIRMATION DIALOG
+// ═══════════════════════════════════════════════════════════
+function confirmDialog(title, message, onConfirm) {
+  document.getElementById('confirm-dialog-title').textContent = title;
+  document.getElementById('confirm-dialog-message').textContent = message;
+  const yes = document.getElementById('confirm-dialog-yes');
+  yes.onclick = () => { confirmDialogCancel(); onConfirm(); };
+  document.getElementById('confirm-dialog-overlay').style.display = 'flex';
+}
+function confirmDialogCancel() {
+  document.getElementById('confirm-dialog-overlay').style.display = 'none';
 }
 
 function updateNextPhaseButton() {
@@ -3768,26 +4445,36 @@ function startHostPoll() {
 }
 
 async function hostDoPoll() {
-  const room = await dbReadRoom(HOST.roomCode);
-  if (!room) return;
+  // Three-column dashboard refresh. We refresh ALL columns on every poll
+  // because the host needs near-real-time visibility into rooms (col 1),
+  // pending crystal requests (col 2), and the active room's phase (col 3).
+  // Each column renderer is self-contained; legacy renderHost*Cards / *Leaderboard
+  // / *PokemonPool functions are retained only for the Room-Detail overlay's
+  // helper logic and are no longer invoked from the poll loop.
+  if (HOST.roomCode) {
+    const room = await dbReadRoom(HOST.roomCode);
+    if (room) {
+      HOST.currentPhase = room.phase || HOST.currentPhase;
+      HOST.isPaused     = !!room.isPaused;
+      HOST.archived     = !!room.archived;
+      HOST.locked       = !!room.locked;
+      HOST.players      = room.players || [];
+      HOST.pokemonCaught= room.pokemonCaught || {};
+      HOST.currentRegion= room.currentRegion || HOST.currentRegion || 1;
+      HOST.currentGym   = room.currentGym   || HOST.currentGym   || 1;
+    }
+  }
 
-  // Load all player saves matching this room's players
-  const allSaves = await dbLoadAllPlayers();
+  // Re-render every column on every tick. Each renderer is async and
+  // independently safe — failures in one don't block the others.
+  try { await renderCol1Rooms();    } catch(e) { console.error('col1 render', e); }
+  try { await renderCol2Accounts(); } catch(e) { console.error('col2 render', e); }
+  try { await renderCol3Controls(); } catch(e) { console.error('col3 render', e); }
 
-  HOST.players = allSaves;
-  HOST.pokemonCaught = room.pokemonCaught || {};
-
-  // Re-render player cards and leaderboard
-  renderHostPlayerCards();
-
-  const showLB = ['GYM_COMPLETE','REGION_COMPLETE','GAME_OVER'].includes(HOST.currentPhase);
-  if (showLB) renderHostLeaderboard();
-
-  const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
-  if (showPoke) renderHostPokemonPool();
-
-  // Crystal-banking: refresh the pending-requests panel on every host poll.
-  await renderHostCrystalRequests();
+  // If the room-detail overlay is open, refresh its body live too.
+  if (HOST_UI.detailRoomCode) {
+    try { await renderRoomDetail(HOST_UI.detailRoomCode); } catch(e) { /* swallow */ }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -3986,6 +4673,10 @@ async function checkPauseState() {
     overlay.style.display = room.isPaused ? 'flex' : 'none';
   }
 
+  // Broadcast banner — show host announcement until the player dismisses
+  // THIS specific message (keyed by ts) or the host clears it.
+  if (!HOST.isHost) renderPlayerBroadcast(room.announcement);
+
   // 1.4: refresh local mirror of pokemonCaught so catch grids grey out
   // Pokemon that other players caught in the last few seconds.
   const remoteCaught = room.pokemonCaught || {};
@@ -4004,6 +4695,29 @@ async function checkPauseState() {
       if (!qPanel || qPanel.style.display !== 'block') renderRegionalCatch();
     }
   }
+}
+
+// ── BROADCAST BANNER (player side) ────────────────────────────
+// Host writes `room.announcement = { text, ts }` (or null to clear).
+// Players show the banner until either the host clears it OR the player
+// dismisses this specific timestamp (so a new message re-pops).
+function renderPlayerBroadcast(ann) {
+  const el = document.getElementById('player-broadcast-banner');
+  const txt = document.getElementById('player-broadcast-text');
+  if (!el || !txt) return;
+  if (!ann || !ann.text) { el.style.display = 'none'; return; }
+  const dismissed = localStorage.getItem('cqc_broadcast_dismissed_ts');
+  if (dismissed && dismissed === ann.ts) { el.style.display = 'none'; return; }
+  txt.textContent = ann.text;
+  el.style.display = 'flex';
+  el.dataset.ts = ann.ts || '';
+}
+function dismissPlayerBroadcast() {
+  const el = document.getElementById('player-broadcast-banner');
+  if (!el) return;
+  const ts = el.dataset.ts || '';
+  if (ts) localStorage.setItem('cqc_broadcast_dismissed_ts', ts);
+  el.style.display = 'none';
 }
 
 // ── INIT: CHECK HOST MODE ON LOAD ─────────────────────────────

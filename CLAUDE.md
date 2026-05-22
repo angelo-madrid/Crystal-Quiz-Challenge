@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.4.0
+Version: 0.4.1
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -27,6 +27,22 @@ Last updated: 2026-05-22
 > screen-account-gate), crystal banking layer (crystal_ledger, wallet
 > screen, redeem flow), host Add Crystals panel, ledger wiring for
 > game earnings. Supabase migrations run. All committed and pushed.
+>
+> **Session 2026-05-22 (late evening) shipped:** Host Dashboard
+> rewritten as a three-column landscape layout for laptop use.
+> Column 1 (ROOMS): Create New Game + LIVE/WAITING/ARCHIVED room
+> lists with View → opening a Room Detail Overlay (player list
+> sorted presence-then-crystals, game progress, Pokemon Available
+> in catch phases, Pause/Archive/EndGame actions). Column 2
+> (CRYSTALS): search bar, Active Accounts (pending redemptions
+> float top, then sorted by balance desc) with Approve/Modify/
+> Decline + View Ledger modal + Archive, Archived Accounts,
+> Award Bonus Crystals form. Column 3 (CONTROLS): Game Flow
+> (Advance/Pause/EndGame), Room Access (Lock toggle + Force
+> Save All), Broadcast input + 4 presets, Danger Zone (Reset
+> Room). Player side: `room.locked` blocks fresh joiners (returning
+> players still reconnect), `room.announcement` shows a dismissible
+> broadcast banner on every player screen.
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -178,10 +194,60 @@ row so the audit is complete:
 - STEAL ability → paired `adjustment` rows (leader −X, stealer +X).
 - `buyRegionalPokeball` → `adjustment` row (−cost).
 
-## Host Dashboard (`?host=true`)
+## Host Dashboard — three-column landscape layout
+The in-game host dashboard (`screen-host`) is a **three-column laptop
+landscape view** — no mobile responsiveness, designed for Papa's laptop
+beside the play table. The persistent room-code banner sits across the
+top; below it the viewport splits into three equal columns:
+
+- **🎮 ROOMS** — `+ Create New Game` button at the top opens an inline
+  code-entry form and writes a fresh `lobby` room. Rooms are bucketed
+  into LIVE (non-archived, non-lobby, non-GAME_OVER), WAITING (lobby),
+  and ARCHIVED (archived flag OR GAME_OVER). Each room card shows the
+  code, status pill, player count, region/gym, and relative time. The
+  `View →` button opens the **Room Detail Overlay** modal — a centered
+  ~70vw card with player list (sorted by presence → crystals desc),
+  game progress (R1..R10 pills), Pokemon Available (catch phases
+  only), and actions (Pause/Resume, Copy Code, Archive/Unarchive, End
+  Game).
+
+- **💎 CRYSTALS** — search bar (filters by name or ID, real-time);
+  Active Accounts (pending redemptions float top, then sorted by
+  total_crystals desc); per account: balance, peso conversion, pending
+  block with Approve/Modify/Decline, View Ledger button (opens
+  per-player ledger modal with all rows), Archive button. Archived
+  Accounts section collapses by default. Award Bonus Crystals form
+  (player ID lookup → live name preview, positive amount, required
+  note) writes an `approved` `bonus` row.
+
+- **⚙️ CONTROLS** — scoped to the active room (most-recently-updated
+  non-archived). Sections: Game Flow (Advance Phase with next-phase
+  hint, Pause/Resume All, End Game with confirmation); Room Access
+  (Lock Room toggle — blocks fresh joiners but lets returning players
+  reconnect; Force Save All bumps `room.updated_at`); Broadcast
+  (input + 4 presets, writes `room.announcement = { text, ts }`
+  picked up by every player's poll); Danger Zone (Reset Current Room
+  with confirmation, kicks players + clears Pokemon, balances stay).
+
+**Player side hooks**:
+- `playerJoin` rejects with "🔒 Room is locked" when `room.locked` is
+  true (only for fresh joiners — returning players bypass this).
+- `checkPauseState` reads `room.announcement` on every poll and
+  shows a fixed-position dismissible **broadcast banner** at the top.
+  Dismissal is keyed by the announcement timestamp so new messages
+  re-pop. When the host clears `room.announcement`, the banner clears
+  too.
+
+**Polling**: the host dashboard polls every 2.5 s (`hostDoPoll`). On
+every tick it reads `rooms` (col 1), `player_saves` + `crystal_ledger`
+(col 2), and refreshes col 3 against `HOST_UI.activeRoomCode`. If a
+Room Detail Overlay is open, its body refreshes live too.
+
+## Host Dashboard Landing (`?host=true`)
 Opening `?host=true` with no `?room=` lands on `screen-host-landing`, a
 game manager that lists every room (active and archived). Opening with
-`?host=true&room=CODE` jumps straight to the room (lobby or dashboard).
+`?host=true&room=CODE` jumps straight to the three-column dashboard
+above.
 
 - **+ Create New Game** at the top — opens an inline code-entry form,
   writes a fresh `lobby` room with `archived=false`.

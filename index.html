@@ -600,10 +600,9 @@
   </div>
 
   <!-- ═══════════════ HOST DASHBOARD ═══════════════ -->
-  <div id="screen-host" class="screen">
+  <div id="screen-host" class="screen host-3col-screen">
 
-    <!-- Phase B: persistent room-code banner — non-dismissible so the host
-         can read the code aloud while kids trickle back in. -->
+    <!-- Persistent room-code banner pinned to the top, full width -->
     <div id="host-persistent-banner" class="host-persistent-banner">
       <div class="hpb-label">📢 Room</div>
       <div class="hpb-code" id="hpb-code">----</div>
@@ -611,126 +610,223 @@
       <div class="hpb-hint">Players rejoin with this code</div>
     </div>
 
-    <!-- Header -->
-    <div class="host-header">
-      <div class="host-title-row">
-        <div>
-          <div class="host-badge">👑 HOST DASHBOARD</div>
-          <div class="host-session-status">
-            <span class="host-live-dot"></span>
-            <span id="host-status-text">Waiting to start...</span>
+    <!-- Three-column landscape layout -->
+    <div class="host-3col">
+
+      <!-- ════════ COLUMN 1 — ROOMS ════════ -->
+      <section class="host-col" id="host-col-rooms">
+        <header class="host-col-header"><span>🎮 ROOMS</span></header>
+        <div class="host-col-body">
+
+          <div id="host-col1-create" class="col1-create-zone">
+            <button class="btn-primary" onclick="col1ShowCreateForm()">＋ Create New Game</button>
           </div>
+
+          <div class="col1-section">
+            <div class="col1-section-label">
+              <span>🟢 LIVE</span>
+              <span class="col1-count" id="col1-live-count">0</span>
+            </div>
+            <div id="col1-live-list" class="col1-rooms"></div>
+          </div>
+
+          <div class="col1-section">
+            <div class="col1-section-label">
+              <span>⏳ WAITING</span>
+              <span class="col1-count" id="col1-waiting-count">0</span>
+            </div>
+            <div id="col1-waiting-list" class="col1-rooms"></div>
+          </div>
+
+          <div class="col1-section">
+            <button class="col1-archived-toggle" id="col1-archived-toggle" onclick="col1ToggleArchived()">
+              <span id="col1-archived-chevron">▶</span>
+              <span>📦 ARCHIVED</span>
+              <span class="col1-count" id="col1-archived-count">0</span>
+            </button>
+            <div id="col1-archived-list" class="col1-rooms" style="display:none"></div>
+          </div>
+
         </div>
-        <div class="host-phase-label" id="host-phase-label">PRE-GAME</div>
-      </div>
-    </div>
+      </section>
 
-    <!-- Phase Banner -->
-    <div class="host-phase-banner" id="host-phase-banner">
-      <div class="phase-icon" id="host-phase-icon">🎁</div>
-      <div class="phase-info">
-        <div class="phase-name" id="host-phase-name">Pre-Game Pokemon Catch</div>
-        <div class="phase-desc" id="host-phase-desc">Players are catching their starter Pokemon</div>
-      </div>
-    </div>
+      <!-- ════════ COLUMN 2 — CRYSTALS ════════ -->
+      <section class="host-col" id="host-col-crystals">
+        <header class="host-col-header"><span>💎 CRYSTALS</span></header>
+        <div class="host-col-body">
 
-    <!-- Player Status Cards -->
-    <div class="host-section-label">👥 PLAYER STATUS</div>
-    <div class="host-player-grid" id="host-player-grid">
-      <!-- Rendered by JS -->
-    </div>
+          <div class="col2-search">
+            <input type="text" id="col2-search" placeholder="🔍 Search by name or ID…"
+              oninput="col2ApplySearch()">
+          </div>
 
-    <!-- Game Controls -->
-    <div class="host-section-label">🎛️ GAME CONTROLS</div>
-    <div class="host-controls-grid">
+          <div class="col2-section">
+            <div class="col2-section-label">
+              <span>👤 ACTIVE ACCOUNTS</span>
+              <span class="col1-count" id="col2-active-count">0</span>
+            </div>
+            <div id="col2-active-list" class="col2-accounts"></div>
+          </div>
 
-      <!-- Primary action — changes per phase -->
-      <button class="host-btn-primary" id="host-btn-next-phase" onclick="hostNextPhase()">
-        <span id="host-next-phase-icon">⏭️</span>
-        <span id="host-next-phase-label">End Catch → Start Game</span>
-      </button>
+          <div class="col2-section">
+            <button class="col1-archived-toggle" id="col2-archived-toggle" onclick="col2ToggleArchived()">
+              <span id="col2-archived-chevron">▶</span>
+              <span>📦 ARCHIVED ACCOUNTS</span>
+              <span class="col1-count" id="col2-archived-count">0</span>
+            </button>
+            <div id="col2-archived-list" class="col2-accounts" style="display:none"></div>
+          </div>
 
-      <!-- Pause / Resume -->
-      <button class="host-btn-control" id="host-btn-pause" onclick="hostTogglePause()">
-        <span id="host-pause-icon">⏸️</span>
-        <span id="host-pause-label">Pause Game</span>
-      </button>
+          <div class="col2-bonus-card">
+            <div class="col2-section-label"><span>🎁 AWARD BONUS CRYSTALS</span></div>
+            <div class="field-group">
+              <label>Player ID</label>
+              <input type="text" id="host-add-pid" placeholder="e.g. ASH007" maxlength="6"
+                oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,6); hostAddCrystalsLookup(); col2BonusValidate()">
+              <div class="host-add-preview" id="host-add-preview">Enter a player ID to look up their name.</div>
+            </div>
+            <div class="field-group">
+              <label>Amount (positive only)</label>
+              <input type="number" id="host-add-amount" min="1" placeholder="e.g. 500" oninput="col2BonusValidate()">
+            </div>
+            <div class="field-group">
+              <label>Note (required)</label>
+              <input type="text" id="host-add-note" maxlength="80" placeholder="e.g. tiebreaker bonus"
+                oninput="col2BonusValidate()">
+            </div>
+            <div class="err" id="host-add-err"></div>
+            <button class="btn-primary" id="col2-bonus-submit" onclick="hostAddCrystals()" disabled style="opacity:0.4">💎 Award Crystals</button>
+          </div>
 
-      <!-- Save All -->
-      <button class="host-btn-control" id="host-btn-save" onclick="hostSaveAll()">
-        <span>💾</span>
-        <span>Save All Players</span>
-      </button>
-
-      <!-- Restart Gym -->
-      <button class="host-btn-control host-btn-warn" id="host-btn-restart" onclick="hostRestartGym()" style="display:none">
-        <span>🔄</span>
-        <span>Restart Gym</span>
-      </button>
-
-    </div>
-
-    <!-- Save status message -->
-    <div class="host-save-msg" id="host-save-msg" style="display:none">
-      ✅ All players saved successfully!
-    </div>
-
-    <!-- Pause overlay message -->
-    <div class="host-paused-banner" id="host-paused-banner" style="display:none">
-      ⏸️ GAME IS PAUSED — Click Resume to continue
-    </div>
-
-    <!-- Live Leaderboard (shown during/after gyms) -->
-    <div id="host-leaderboard-section" style="display:none">
-      <div class="host-section-label">🏆 LIVE LEADERBOARD</div>
-      <div class="host-lb" id="host-lb">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Pokemon availability (shown during catch phases) -->
-    <div id="host-pokemon-section" style="display:none">
-      <div class="host-section-label">🐾 POKEMON AVAILABILITY</div>
-      <div class="host-pokemon-pool" id="host-pokemon-pool">
-        <!-- Rendered by JS -->
-      </div>
-    </div>
-
-    <!-- Crystal-banking: pending redemption requests across all players -->
-    <div id="host-crystal-requests-section">
-      <div class="host-section-label">
-        💎 CRYSTAL REQUESTS
-        <span class="host-request-badge" id="host-request-badge">0</span>
-      </div>
-      <div class="host-crystal-requests" id="host-crystal-requests">
-        <div class="host-landing-empty">No pending requests.</div>
-      </div>
-    </div>
-
-    <!-- Crystal-banking: host-initiated bonus credit -->
-    <div id="host-add-crystals-section">
-      <div class="host-section-label">💎 ADD CRYSTALS (Host bonus)</div>
-      <div class="host-add-crystals-card">
-        <div class="field-group">
-          <label>Player ID</label>
-          <input type="text" id="host-add-pid" placeholder="e.g. MA-1234"
-            oninput="hostAddCrystalsLookup()">
-          <div class="host-add-preview" id="host-add-preview">Enter a player ID to look up their name.</div>
         </div>
-        <div class="field-group">
-          <label>Amount (positive only)</label>
-          <input type="number" id="host-add-amount" min="1" placeholder="e.g. 500">
+      </section>
+
+      <!-- ════════ COLUMN 3 — CONTROLS ════════ -->
+      <section class="host-col" id="host-col-controls">
+        <header class="host-col-header"><span>⚙️ CONTROLS</span></header>
+        <div class="host-col-body">
+
+          <div class="col3-active-room-label" id="col3-active-room-label">No active room</div>
+
+          <!-- ── GAME FLOW ── -->
+          <div class="col3-section">
+            <div class="col3-section-label">🎮 GAME FLOW</div>
+            <div class="col3-current-phase" id="col3-current-phase">Current phase: —</div>
+            <button class="btn-primary" onclick="col3AdvancePhase()">
+              ▶️ <span id="col3-advance-label">Advance Phase</span>
+            </button>
+            <button class="btn-secondary" id="col3-pause-btn" onclick="col3TogglePause()">
+              ⏸️ <span id="col3-pause-label">Pause All Players</span>
+            </button>
+            <button class="btn-danger" onclick="col3EndGame()">🏁 End Game</button>
+          </div>
+
+          <!-- ── ROOM ACCESS ── -->
+          <div class="col3-section">
+            <div class="col3-section-label">🔐 ROOM ACCESS</div>
+            <div class="col3-toggle-row">
+              <span>🔒 Lock Room joining</span>
+              <button class="col3-toggle" id="col3-lock-toggle" onclick="col3ToggleLock()">OFF</button>
+            </div>
+            <button class="btn-secondary" onclick="col3ForceSaveAll()">💾 Force Save All</button>
+          </div>
+
+          <!-- ── BROADCAST ── -->
+          <div class="col3-section">
+            <div class="col3-section-label">📢 BROADCAST</div>
+            <input type="text" id="col3-broadcast-input" placeholder="Message to all players…" maxlength="120">
+            <button class="btn-primary" onclick="col3SendBroadcast()">📢 Send Announcement</button>
+            <div class="col3-broadcast-presets">
+              <button class="col3-preset" onclick="col3PresetBroadcast('⏱️ 5 minutes left!')">⏱️ 5 min left</button>
+              <button class="col3-preset" onclick="col3PresetBroadcast('🎮 Get ready for the next region!')">🎮 Next region</button>
+              <button class="col3-preset" onclick="col3PresetBroadcast('🏆 Final round — give it your all!')">🏆 Final round</button>
+              <button class="col3-preset" onclick="col3PresetBroadcast('🛑 Please wait for Papa\\'s instructions.')">🛑 Wait for Papa</button>
+            </div>
+          </div>
+
+          <!-- ── DANGER ZONE ── -->
+          <div class="col3-section col3-danger-zone">
+            <div class="col3-section-label">⚠️ DANGER ZONE</div>
+            <button class="btn-danger" onclick="col3ResetRoom()">🗑️ Reset Current Room</button>
+          </div>
+
         </div>
-        <div class="field-group">
-          <label>Note (required)</label>
-          <input type="text" id="host-add-note" maxlength="80" placeholder="e.g. tiebreaker bonus">
-        </div>
-        <div class="err" id="host-add-err"></div>
-        <button class="btn-primary" onclick="hostAddCrystals()">💎 Credit Player</button>
-      </div>
+      </section>
     </div>
+
+    <!-- Toast for host actions (reuse existing .host-toast styles) -->
+    <div id="host-toast-anchor"></div>
 
   </div><!-- /screen-host -->
+
+  <!-- ROOM DETAIL OVERLAY (centered modal, ~70% width) -->
+  <div id="room-detail-overlay" class="modal-overlay" style="display:none" onclick="roomDetailMaybeClose(event)">
+    <div class="modal-card room-detail-card" onclick="event.stopPropagation()">
+      <header class="modal-header">
+        <button class="back-btn" onclick="closeRoomDetail()">← Close</button>
+        <div class="modal-title-row">
+          <span class="modal-room-label">Room:</span>
+          <span class="modal-room-code" id="rd-code">----</span>
+          <span class="status-pill" id="rd-status">—</span>
+        </div>
+      </header>
+
+      <section class="modal-section">
+        <div class="modal-section-label">
+          <span>👥 PLAYERS</span>
+          <span id="rd-player-count">0/5 connected</span>
+        </div>
+        <div id="rd-player-list"></div>
+      </section>
+
+      <section class="modal-section">
+        <div class="modal-section-label">🗺️ GAME PROGRESS</div>
+        <div class="rd-progress-row" id="rd-progress"></div>
+      </section>
+
+      <section class="modal-section" id="rd-pokemon-section" style="display:none">
+        <div class="modal-section-label">🐾 POKEMON AVAILABLE</div>
+        <div class="rd-pokemon-pool" id="rd-pokemon-pool"></div>
+      </section>
+
+      <section class="modal-section">
+        <div class="modal-section-label">🎛️ ACTIONS</div>
+        <div class="rd-actions">
+          <button class="btn-secondary" id="rd-pause-btn" onclick="rdTogglePause()">⏸️ Pause Room</button>
+          <button class="btn-secondary" onclick="rdCopyCode()">📋 Copy Code</button>
+          <button class="btn-secondary" id="rd-archive-btn" onclick="rdArchive()">🗄️ Archive</button>
+          <button class="btn-danger" onclick="rdEndGame()">🏁 End Game</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- PER-PLAYER LEDGER MODAL -->
+  <div id="ledger-modal-overlay" class="modal-overlay" style="display:none" onclick="ledgerModalMaybeClose(event)">
+    <div class="modal-card ledger-modal-card" onclick="event.stopPropagation()">
+      <header class="modal-header">
+        <button class="back-btn" onclick="closeLedgerModal()">← Close</button>
+        <div class="modal-title-row">
+          <span class="modal-room-label" id="lm-name">—</span>
+          <span class="modal-room-code" id="lm-pid">------</span>
+        </div>
+        <div class="lm-balance">Balance: 💎 <span id="lm-balance">0</span> ≈ ₱<span id="lm-peso">0.00</span></div>
+      </header>
+      <div class="ledger-modal-body" id="lm-body"></div>
+    </div>
+  </div>
+
+  <!-- CONFIRMATION DIALOG (generic) -->
+  <div id="confirm-dialog-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-card confirm-dialog-card">
+      <h3 id="confirm-dialog-title">Are you sure?</h3>
+      <p id="confirm-dialog-message">This action cannot be undone.</p>
+      <div class="confirm-dialog-actions">
+        <button class="btn-danger" id="confirm-dialog-yes">Confirm</button>
+        <button class="btn-secondary" onclick="confirmDialogCancel()">Cancel</button>
+      </div>
+    </div>
+  </div>
 
   <!-- PAUSE OVERLAY (shown on player screens) -->
   <div id="pause-overlay" class="pause-overlay" style="display:none">
@@ -740,6 +836,13 @@
       <p>Wait for Papa...</p>
       <div class="pause-safe">💾 Your progress is safe!</div>
     </div>
+  </div>
+
+  <!-- BROADCAST BANNER (shown on player screens when host sends a message) -->
+  <div id="player-broadcast-banner" class="player-broadcast-banner" style="display:none">
+    <span class="pbb-icon">📢</span>
+    <span class="pbb-text" id="player-broadcast-text"></span>
+    <button class="pbb-close" onclick="dismissPlayerBroadcast()" aria-label="Dismiss">✕</button>
   </div>
 
 </div><!-- /app -->
