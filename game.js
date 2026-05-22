@@ -157,22 +157,28 @@ async function dbLedgerUpdate(id, patch) {
   return data;
 }
 
-// List a single player's entries, newest first.
+// List a single player's entries, newest first. Reads ALL statuses
+// (approved, pending, declined, modified) — no status filter. The
+// player ledger UI shows the kid every entry they ever touched.
 async function dbLedgerForPlayer(playerId, limit = 50) {
   const { data, error } = await sb.from('crystal_ledger')
     .select('*').eq('player_id', playerId)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) { console.error('Ledger fetch error:', JSON.stringify(error)); return []; }
+  console.log(`[LEDGER CHECK] ${playerId} entries:`, data ? data.length : 0, data);
   return data || [];
 }
 
-// List every pending redemption request across all players (host view).
+// List every pending row across all players (host view). Includes
+// redeem_request rows (redemption) AND adjustment rows whose note
+// starts "Abandon request" (player wants to abandon a room).
 async function dbLedgerPending() {
   const { data, error } = await sb.from('crystal_ledger')
     .select('*').eq('status', 'pending')
     .order('created_at', { ascending: true });   // oldest pending first
   if (error) { console.error('Ledger pending fetch error:', JSON.stringify(error)); return []; }
+  console.log('[REDEEM READ] pending requests:', data ? data.length : 0, data);
   return data || [];
 }
 
@@ -820,6 +826,13 @@ async function renderPlayerDashboard() {
   const fresh = await dbLoad(player.id);
   if (fresh) STATE.save = fresh;
 
+  // Diagnostic — log the canonical balance and trigger a balance-vs-
+  // ledger drift check on every dashboard mount. If the player has
+  // pre-ledger crystals (saves predating the ledger layer), the drift
+  // warning makes it visible immediately.
+  console.log('[SAVE CHECK]', player.id, 'crystals:', (STATE.save && STATE.save.total_crystals) || 0);
+  balanceFromLedger(player.id);
+
   pdcRenderHeader();
   await Promise.all([
     pdcRenderCol1Rooms(),
@@ -1262,7 +1275,7 @@ async function pdcSubmitRedeem() {
   if (amount > balance)       { if(err) err.textContent = `⚠️ You only have ${balance.toLocaleString()} 💎`; return; }
   const already = await dbHasPendingRedemption(player.id);
   if (already) { await pdcRenderCol2Wallet(); return; }
-  await dbLedgerInsert({
+  const ledgerRow = {
     player_id:  player.id,
     room_code:  STATE.roomCode || null,
     type:       'redeem_request',
@@ -1270,7 +1283,9 @@ async function pdcSubmitRedeem() {
     status:     'pending',
     note:       note || null,
     resolved_at: null,
-  });
+  };
+  const inserted = await dbLedgerInsert(ledgerRow);
+  console.log('[REDEEM WRITE]', inserted || ledgerRow);
   // Inline confirmation block; refresh after a beat.
   const zone = document.getElementById('pdc-redeem-zone');
   zone.innerHTML = `<div class="pdc-redeem-confirm">✅ Request sent! Papa will approve your redemption.</div>`;
@@ -2472,7 +2487,7 @@ async function walletSubmitRedeem() {
   const already = await dbHasPendingRedemption(player.id);
   if (already) { await renderWallet(); return; }
 
-  await dbLedgerInsert({
+  const ledgerRow = {
     player_id:  player.id,
     room_code:  STATE.roomCode || null,
     type:       'redeem_request',
@@ -2480,7 +2495,9 @@ async function walletSubmitRedeem() {
     status:     'pending',
     note:       note || null,
     resolved_at: null,
-  });
+  };
+  const inserted = await dbLedgerInsert(ledgerRow);
+  console.log('[REDEEM WRITE]', inserted || ledgerRow);
   // Confirmation banner — re-render replaces the form with the pending notice.
   await renderWallet();
   const sec = document.getElementById('wallet-redeem-section');
@@ -4375,13 +4392,16 @@ async function col1UnarchiveRoom(code) {
 // COLUMN 2 — CRYSTALS
 // ═══════════════════════════════════════════════════════════
 async function renderCol2Accounts() {
-  // Pull every player save + every pending redemption row.
+  // Pull every player save + every pending row (redemption + abandon).
   const allSaves = await dbLoadAllPlayersFull();
   const pending  = await dbLedgerPending();
-  // Index pending by player for fast attach.
+  // Index pending by player as an ARRAY — a player may have multiple
+  // pending rows (e.g. one abandon + one redemption). Showing only the
+  // first hid newer requests behind older ones. Bug-fix 2026-05-23.
   const pendingByPid = {};
   for (const e of pending) {
-    if (!pendingByPid[e.player_id]) pendingByPid[e.player_id] = e;  // oldest first
+    if (!pendingByPid[e.player_id]) pendingByPid[e.player_id] = [];
+    pendingByPid[e.player_id].push(e);
   }
 
   const term = (HOST_UI.searchTerm || '').toLowerCase();
@@ -4394,13 +4414,14 @@ async function renderCol2Accounts() {
   const active = allSaves.filter(s => !s.archivedAccount && matches(s));
   const archived = allSaves.filter(s => s.archivedAccount && matches(s));
 
-  // Sort active: pending first (oldest first), then by total_crystals desc.
+  // Sort active: any pending first (oldest pending first), then by
+  // total_crystals desc among non-pending players.
   active.sort((a, b) => {
     const ap = pendingByPid[a.player_id];
     const bp = pendingByPid[b.player_id];
     if (ap && !bp) return -1;
     if (bp && !ap) return 1;
-    if (ap && bp)  return new Date(ap.created_at) - new Date(bp.created_at);
+    if (ap && bp)  return new Date(ap[0].created_at) - new Date(bp[0].created_at);
     return (b.total_crystals || 0) - (a.total_crystals || 0);
   });
 
@@ -4419,16 +4440,19 @@ async function renderCol2Accounts() {
   document.getElementById('col2-archived-chevron').textContent = HOST_UI.archivedAccountsExpanded ? '▼' : '▶';
 }
 
-function col2AccountCard(s, pendingEntry) {
+function col2AccountCard(s, pendingEntries) {
+  // pendingEntries is now an ARRAY (or undefined). Render one block per
+  // pending row so multiple requests show separately. Bug-fix 2026-05-23.
   const ageBand = ageGroupFromAge(s.age);
   const bandLabel = ageBand === 'junior' ? '🌟 Junior' : '🎓 Senior';
   const balance = s.total_crystals || 0;
   const peso = (balance / 100).toFixed(2);
-  const pendingHTML = pendingEntry
-    ? col2PendingBlock(pendingEntry, s)
+  const entries = Array.isArray(pendingEntries) ? pendingEntries : (pendingEntries ? [pendingEntries] : []);
+  const pendingHTML = entries.length
+    ? entries.map(e => col2PendingBlock(e, s)).join('')
     : `<div class="ac-no-pending">No pending requests</div>`;
   return `
-    <div class="account-card${pendingEntry ? ' has-pending' : ''}" id="ac-${escapeAttr(s.player_id)}">
+    <div class="account-card${entries.length ? ' has-pending' : ''}" id="ac-${escapeAttr(s.player_id)}">
       <div class="ac-header">
         <span class="ac-name">${escapeHTML(s.name || s.player_id)}</span>
         <span class="ac-pid">${escapeHTML(s.player_id)}</span>
