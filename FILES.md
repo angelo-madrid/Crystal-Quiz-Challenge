@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge — File Manifest
-Manifest version: 1.12
+Manifest version: 1.13
 Last updated: 2026-05-22
 
 | File | Version | Last Updated | Purpose | Status |
@@ -11,9 +11,9 @@ Last updated: 2026-05-22
 | questions-junior.json | 3.3 | 2026-05-22 | Junior bank (9-11), 729 questions: 590 source + 49 R1-3 gym topups + 90 catch topups; every region catch >=15, pokeball=30, every R1-3 bucket >=6 | Active |
 | questions-senior.json | 3.3 | 2026-05-22 | Senior bank (12-13), 729 questions: 590 source + 49 R1-3 gym topups + 90 catch topups; every region catch >=15, pokeball=30, every R1-3 bucket >=6 | Active |
 | pokemon.json | 1.1 | 2026-05-22 | Pokemon library: 10 starters + 100 regional. Every Pokemon has a unique ability NAME and unique effect across 10 mechanics; rarity scales power; baseValue inflates per region. v1.1: Groudon corrected to legendary; 5 ability names renamed for uniqueness | Active |
-| gengar.png | 1.0 | 2026-05-22 | Home mascot | Active |
+| gengar.png | 1.1 | 2026-05-22 | Home mascot — new mascot image (Pikachu vs Gengar battle scene), 1024×1024 PNG | Active |
 | CLAUDE.md | 0.3.1 | 2026-05-22 | Master project doc — Phase 1 complete + post-Phase-1 UAT additions (Review Mode, rejoin fix, Host Dashboard manager) + Phase 3 Backlog | Active |
-| FILES.md | 1.12 | 2026-05-22 | This manifest | Active |
+| FILES.md | 1.13 | 2026-05-22 | This manifest | Active |
 
 Maintain this manifest on every future file change — it's the single
 source of truth for what's deployed.
