@@ -295,6 +295,11 @@ const CATEGORY_LABELS = {
 
 const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
 
+// Cap on simultaneous kids per room — kept in sync with CLAUDE.md
+// "Up to 5 kids per game". Drives the waiting-lobby slot grid, the
+// "X/5 players joined" counter, and the playerJoin "Room is full" guard.
+const MAX_PLAYERS = 5;
+
 // ── PHASE 1 TEST BUILD GATE ──────────────────────────────────
 // Step 1.6: the engine is being tested on Regions 1-2 only. Bump this when
 // Regions 3+ are validated. Every code path that would advance past this
@@ -2760,8 +2765,8 @@ async function playerJoin() {
       err.textContent = '🔒 Room is locked — ask Papa to open it before joining.';
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
-    if ((room.players||[]).length >= 8) {
-      err.textContent = '❌ Room is full (8/8)!';
+    if ((room.players||[]).length >= MAX_PLAYERS) {
+      err.textContent = `❌ Room is full (${MAX_PLAYERS}/${MAX_PLAYERS})!`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
 
@@ -2906,7 +2911,7 @@ function renderWaitingSlots(players, myPlayerId) {
   if (countEl) countEl.textContent = filledCount;
 
   grid.innerHTML = '';
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < MAX_PLAYERS; i++) {
     const p = (players||[])[i];
     const slot = document.createElement('div');
     const isMe = p && p.id === myPlayerId;
@@ -3352,36 +3357,63 @@ function checkHostMode() {
     HOST.isHost = true;
     const roomCode = params.get('room') || '';
     if (roomCode) {
+      // Scoped entry — Papa opened ?host=true&room=CODE. Bind HOST.* to
+      // that room and land on the three-column dashboard (Column 3
+      // controls that specific room).
       HOST.roomCode  = roomCode;
       STATE.roomCode = roomCode;
       dbReadRoom(roomCode).then(room => {
-        if (!room) {
-          // Room code in URL but no row exists → land on the dashboard
-          // (host can pick another room or create from there).
-          showHostLanding();
-        } else if (['PREGAME_CATCH','GYM_ACTIVE','GYM_COMPLETE',
-                    'REGION_COMPLETE','REGION_CATCH','GAME_OVER'].includes(room.phase)) {
-          // Game in progress — go to dashboard
-          HOST.currentPhase  = room.phase;
+        if (room) {
+          HOST.currentPhase  = room.phase || 'lobby';
           HOST.archived      = !!room.archived;
-          HOST.players       = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
+          HOST.isPaused      = !!room.isPaused;
+          HOST.locked        = !!room.locked;
+          HOST.players       = (room.players || []).filter(p => p.id !== 'HOST_VIEWER');
+          HOST.pokemonCaught = room.pokemonCaught || {};
           HOST.currentRegion = room.currentRegion || 1;
           HOST.currentGym    = room.currentGym || 1;
-          initHostDashboard();
-        } else {
-          // Lobby phase — show waiting room
-          const players = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
-          showWaitingLobby(roomCode, players, 'HOST_VIEWER', true);
-          startWaitingPoll(roomCode, 'HOST_VIEWER', true);
         }
+        // Always land on the three-column dashboard — whether the
+        // ?room=CODE row exists or not. The renderer handles "no
+        // active room" gracefully.
+        initHostDashboard();
       });
     } else {
-      // Phase B: no ?room= → land on the dashboard with active/archived lists.
-      showHostLanding();
+      // Unscoped entry — Papa opened ?host=true with no room. Skip
+      // screen-host-landing and go straight to the three-column
+      // dashboard. Column 1 shows all rooms, Column 2 shows all
+      // accounts, Column 3 auto-targets the most-recently-active
+      // non-archived room.
+      HOST.roomCode = null;
+      STATE.roomCode = null;
+      showHostDashboardUnscoped();
     }
     return true;
   }
   return false;
+}
+
+// Land on the three-column dashboard with no specific room binding.
+// renderCol1Rooms() discovers the most-recently-updated non-archived
+// room and writes it to HOST_UI.activeRoomCode for Column 3 to scope to.
+async function showHostDashboardUnscoped() {
+  HOST.isHost = true;
+  // Clear any stale URL ?room= so a refresh doesn't accidentally
+  // re-scope. We're intentionally global here.
+  try {
+    const url = new URL(location.href);
+    url.searchParams.delete('room');
+    history.replaceState({}, '', url);
+  } catch (_) {}
+  // Reset scoped fields so col 3 doesn't display stale data from a
+  // previous in-memory state.
+  HOST.currentPhase = null; HOST.isPaused = false;
+  HOST.archived = false;    HOST.locked = false;
+  HOST.players  = [];       HOST.pokemonCaught = {};
+  HOST.currentRegion = 1;   HOST.currentGym = 1;
+  showScreen('screen-host');
+  renderHostDashboard();
+  startHostPoll();
 }
 
 function showHostSetup() {
@@ -3480,18 +3512,24 @@ const HOST_UI = {
   uiPollInt: null,             // 15s slow poll for the 3-col data
 };
 
-function renderHostDashboard() {
-  // Persistent banner at the very top — visible whenever a room is set.
+async function renderHostDashboard() {
+  // Render Column 1 first so HOST_UI.activeRoomCode is populated by the
+  // time the banner and Column 3 read it. Columns 2/3 are independent of
+  // col1's side-effects so they can fire concurrently.
+  await renderCol1Rooms();
+  await Promise.all([renderCol2Accounts(), renderCol3Controls()]);
+
+  // Persistent banner — shows the most-recent active room code.
+  // If Papa opened ?host=true&room=CODE we use that; otherwise we fall
+  // back to whichever room renderCol1Rooms picked (most-recently-updated
+  // non-archived). If neither exists we hide the banner entirely.
   const bannerEl   = document.getElementById('host-persistent-banner');
   const bannerCode = document.getElementById('hpb-code');
+  const code = HOST.roomCode || HOST_UI.activeRoomCode || null;
   if (bannerEl && bannerCode) {
-    bannerCode.textContent = HOST.roomCode || '----';
-    bannerEl.style.display = HOST.roomCode ? 'flex' : 'none';
+    bannerCode.textContent = code || '----';
+    bannerEl.style.display = code ? 'flex' : 'none';
   }
-  // Render all three columns; each is independently scrollable.
-  renderCol1Rooms();
-  renderCol2Accounts();
-  renderCol3Controls();
 }
 
 // ═══════════════════════════════════════════════════════════

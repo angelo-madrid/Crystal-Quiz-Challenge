@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.4.1
+Version: 0.4.2
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -243,11 +243,24 @@ every tick it reads `rooms` (col 1), `player_saves` + `crystal_ledger`
 (col 2), and refreshes col 3 against `HOST_UI.activeRoomCode`. If a
 Room Detail Overlay is open, its body refreshes live too.
 
-## Host Dashboard Landing (`?host=true`)
-Opening `?host=true` with no `?room=` lands on `screen-host-landing`, a
-game manager that lists every room (active and archived). Opening with
-`?host=true&room=CODE` jumps straight to the three-column dashboard
-above.
+## Host Entry Flow (`?host=true`)
+Opening `?host=true` (with or without `?room=`) lands Papa **directly
+on the three-column dashboard**. There is no separate landing /
+"pick a game" screen — every room is already visible in Column 1.
+
+- **`?host=true`** (no room param) → `showHostDashboardUnscoped()`:
+  Column 1 lists every room (Live / Waiting / Archived) across all
+  of Supabase; Column 2 lists every player account; Column 3
+  auto-scopes to the most-recently-updated non-archived room (found
+  by Column 1's renderer and written to `HOST_UI.activeRoomCode`).
+  The persistent banner shows that room's code, or hides entirely if
+  no rooms exist yet.
+- **`?host=true&room=CODE`** → `initHostDashboard()`: same layout,
+  but Column 3 is bound to that specific room (HOST.* is hydrated
+  from `dbReadRoom(roomCode)`).
+- **`screen-host-landing`** still exists in the markup but is no
+  longer reachable from the URL — kept as dead code until we decide
+  to remove it.
 
 - **+ Create New Game** at the top — opens an inline code-entry form,
   writes a fresh `lobby` room with `archived=false`.
