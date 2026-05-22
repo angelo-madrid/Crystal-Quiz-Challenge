@@ -47,6 +47,17 @@ async function dbReadRoom(roomId) {
   return data.data;
 }
 
+// Phase B: list every room (active and archived) for the host landing
+// screen. Read-only — never mutates a room. Returns rows ordered by
+// recency desc, each row { id, data, updated_at }.
+async function dbListRooms() {
+  const { data, error } = await sb.from('rooms')
+    .select('id, data, updated_at')
+    .order('updated_at', { ascending: false });
+  if (error || !data) return [];
+  return data;
+}
+
 // ── CONSTANTS ────────────────────────────────────────────────
 const TIER_TIME = { basic: 10, holo: 12, rare: 15, super: 18, ultra: 20 };
 const TIER_BASE = { basic: 100, holo: 150, rare: 200, super: 300, ultra: 400 };
@@ -2094,32 +2105,45 @@ async function playerJoin() {
       err.textContent = `❌ Room "${code}" not found. Ask Papa to open the Host page first!`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
+
+    // Phase A rejoin: if my stored playerId is already on this room's
+    // roster, restore my save and reconnect instead of creating a new
+    // player. Same-device only (cross-device rejoin via name matching is
+    // out of scope per the agreed plan).
+    const storedId = localStorage.getItem('cqc_player_id');
+    const isReturning = !!storedId && (room.players || []).some(p => p.id === storedId);
+    if (isReturning) {
+      const ok = await reconnectExistingPlayer(code, room, storedId);
+      if (!ok) { btn.textContent = '🚀 Join Room!'; btn.disabled = false; }
+      return;
+    }
+
+    // Not a returning player. Game already started? Reject strangers.
     if (room.phase !== 'lobby') {
-      err.textContent = `❌ Game already started or not accepting players!`;
+      err.textContent = `❌ Game already started — only returning players can rejoin.`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
     if ((room.players||[]).length >= 8) {
       err.textContent = '❌ Room is full (8/8)!';
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
-    if (room.phase === 'playing') {
-      err.textContent = '❌ Game already started!';
-      btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
-    }
 
-    // Create player identity
+    // Brand-new lobby joiner. Existing fresh-save path.
     const playerId = name.substring(0,2).toUpperCase() + '-' + Math.floor(1000+Math.random()*9000);
     const player = { id: playerId, name, emoji: joinEmoji, ageGroup: joinAge };
-    STATE.player  = player;
+    STATE.player   = player;
     STATE.roomCode = code;
-    STATE.isHost  = false;
+    STATE.isHost   = false;
 
-    // Save to localStorage
+    // Save to localStorage (include room code so the home screen can
+    // discover an active multiplayer context if the player navigates away).
     localStorage.setItem('cqc_player_id', playerId);
     localStorage.setItem('cqc_player', JSON.stringify(player));
+    localStorage.setItem('cqc_room_code', code);
 
     // Create save
     const save = newSave(player);
+    save.last_seen = new Date().toISOString();
     STATE.save = save;
     await dbSave(playerId, save);
 
@@ -2128,7 +2152,7 @@ async function playerJoin() {
     room.players.push({ id: playerId, name, emoji: joinEmoji, ageGroup: joinAge });
     await dbWriteRoom(code, room);
 
-    // Show waiting lobby
+    ensureHeartbeat();
     showWaitingLobby(code, room.players, playerId, false);
     startWaitingPoll(code, playerId, false);
 
@@ -2136,6 +2160,68 @@ async function playerJoin() {
     err.textContent = '❌ Error: ' + e.message;
     btn.textContent = '🚀 Join Room!'; btn.disabled = false;
   }
+}
+
+// ── PHASE A: reconnect a returning player whose ID is already in the room.
+// Restores their full save (crystals, Pokemon, gymsCompleted, gymResults,
+// seen-question set) and routes them to the right screen based on the
+// current room phase. Never creates a new player object, never overwrites
+// the existing save. Returns true on success.
+async function reconnectExistingPlayer(code, room, playerId) {
+  const err = document.getElementById('join-err');
+  // Restore the player's authoritative save from Supabase.
+  const save = await dbLoad(playerId);
+  if (!save) {
+    if (err) {
+      err.textContent = `⚠️ Your save couldn't be loaded. Please clear and rejoin as new.`;
+    }
+    return false;
+  }
+
+  // Prefer the localStorage player object (camelCase ageGroup); fall back
+  // to reconstituting from save's snake_case fields.
+  let player;
+  const storedPlayer = localStorage.getItem('cqc_player');
+  if (storedPlayer) {
+    try { player = JSON.parse(storedPlayer); } catch (_) { player = null; }
+  }
+  if (!player || player.id !== playerId) {
+    player = {
+      id:       playerId,
+      name:     save.player_name,
+      emoji:    save.player_emoji,
+      ageGroup: save.age_group,
+    };
+    localStorage.setItem('cqc_player', JSON.stringify(player));
+    localStorage.setItem('cqc_player_id', playerId);
+  }
+  localStorage.setItem('cqc_room_code', code);
+
+  STATE.player   = player;
+  STATE.save     = save;
+  STATE.roomCode = code;
+  STATE.isHost   = false;
+
+  // Bump heartbeat immediately so the host sees the player rejoined within
+  // one dashboard poll.
+  STATE.save.last_seen = new Date().toISOString();
+  await dbSave(playerId, STATE.save);
+  ensureHeartbeat();
+
+  // Route based on the current room phase.
+  if (room.phase === 'lobby') {
+    showWaitingLobby(code, room.players, playerId, false);
+    startWaitingPoll(code, playerId, false);
+  } else if (room.phase === 'PREGAME_CATCH'
+             && (STATE.save.pokemon_team || []).length === 0) {
+    // They never finished the pre-game catch — drop them back into it.
+    startPreGameCatch();
+  } else {
+    // Mid-game (any of GYM_ACTIVE, GYM_COMPLETE, REGION_CATCH, etc.) — send
+    // them to the map; their gymsCompleted / current state guides them.
+    showMap();
+  }
+  return true;
 }
 
 // ── WAITING LOBBY ─────────────────────────────────────────────
@@ -2268,6 +2354,298 @@ function copyPlayerLink() {
     .catch(() => prompt('Copy this link:', url));
 }
 
+// ═══════════════════════════════════════════════════════════
+// PHASE B — HOST LANDING SCREEN
+// ═══════════════════════════════════════════════════════════
+// Lists every room with active/archived sections. Reading from rooms
+// table never mutates a row. The only writes triggered here are:
+//   - Archive / Unarchive (explicit user action)
+//   - Auto-archive on GAME_OVER (in hostNextPhase — already wired)
+//   - Fresh-room creation (via existing connectHostToRoom)
+
+let _archivedExpanded = false;
+
+function deriveRoomStatus(roomData) {
+  const phase = roomData?.phase || 'lobby';
+  if (phase === 'GAME_OVER')        return { label: '🏁 Finished',    cls: 'finished'    };
+  if (roomData?.isPaused)           return { label: '⏸️ Paused',      cls: 'paused'      };
+  if (phase === 'lobby')            return { label: '⏳ Waiting',      cls: 'waiting'     };
+  return { label: '🟢 In progress', cls: 'in-progress' };
+}
+
+function relTime(iso) {
+  if (!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (isNaN(ms) || ms < 0)    return '—';
+  if (ms < 60_000)            return 'just now';
+  if (ms < 3_600_000)         return `${Math.floor(ms/60_000)} min ago`;
+  if (ms < 86_400_000)        return `${Math.floor(ms/3_600_000)} hr ago`;
+  return `${Math.floor(ms/86_400_000)} days ago`;
+}
+
+function presenceStatus(lastSeenIso) {
+  if (!lastSeenIso) return { label: '⚪ Not yet rejoined', cls: 'absent' };
+  const ms = Date.now() - new Date(lastSeenIso).getTime();
+  if (isNaN(ms) || ms < 0) return { label: '⚪ Not yet rejoined', cls: 'absent' };
+  if (ms < 20_000)         return { label: '🟢 Connected',       cls: 'connected'    };
+  if (ms < 60_000)         return { label: '⏳ Reconnecting',     cls: 'reconnecting' };
+  return { label: '⚪ Not yet rejoined', cls: 'absent' };
+}
+
+async function showHostLanding() {
+  HOST.isHost = true;
+  // Clear any URL room param so the landing isn't immediately overridden
+  // by checkHostMode on a manual refresh — we expose Resume buttons.
+  try {
+    const url = new URL(location.href);
+    url.searchParams.delete('room');
+    history.replaceState({}, '', url);
+  } catch (_) {}
+  showScreen('screen-host-landing');
+  await renderHostLanding();
+}
+
+async function renderHostLanding() {
+  const rows = await dbListRooms();
+  // Defend against legacy rows missing the archived flag.
+  const norm = rows.map(r => ({
+    code:       r.id,
+    data:       r.data || {},
+    updated_at: r.updated_at || r.data?.updated_at || null,
+    archived:   !!(r.data && r.data.archived),
+  }));
+  const active   = norm.filter(r => !r.archived).slice(0, 15);
+  const archived = norm.filter(r =>  r.archived);
+
+  document.getElementById('host-active-count').textContent   = active.length;
+  document.getElementById('host-archived-count').textContent = `(${archived.length})`;
+
+  const activeEl   = document.getElementById('host-active-list');
+  const archivedEl = document.getElementById('host-archived-list');
+  activeEl.innerHTML   = active.length   ? active.map(renderActiveCard).join('')     : '<div class="host-landing-empty">No active games. Create one to start.</div>';
+  archivedEl.innerHTML = archived.length ? archived.map(renderArchivedCard).join('') : '<div class="host-landing-empty">No archived games.</div>';
+
+  // Persist expanded state across renders
+  archivedEl.style.display = _archivedExpanded ? 'block' : 'none';
+  document.getElementById('host-archive-chevron').textContent = _archivedExpanded ? '▼' : '▶';
+}
+
+function renderActiveCard(r) {
+  const status = deriveRoomStatus(r.data);
+  const players = (r.data.players || []).length;
+  const updated = relTime(r.updated_at);
+  return `
+    <div class="game-card">
+      <div class="game-card-top">
+        <div class="room-code-box" title="Room code">${escapeHTML(r.code)}</div>
+        <button class="copy-btn" onclick="landingCopyCode('${escapeAttr(r.code)}')">📋 Copy</button>
+      </div>
+      <div class="game-card-meta">
+        <span class="status-pill status-${status.cls}">${status.label}</span>
+        <span class="meta-sep">·</span>
+        <span>👥 ${players} player${players === 1 ? '' : 's'}</span>
+        <span class="meta-sep">·</span>
+        <span>🕒 ${updated}</span>
+      </div>
+      <div class="game-card-actions">
+        <button class="btn-primary" onclick="landingResumeRoom('${escapeAttr(r.code)}')">▶ Resume</button>
+        <button class="btn-secondary" onclick="landingArchiveRoom('${escapeAttr(r.code)}')">📥 Archive</button>
+      </div>
+    </div>`;
+}
+
+function renderArchivedCard(r) {
+  const status = deriveRoomStatus(r.data);
+  const finished = r.data?.phase === 'GAME_OVER';
+  const players = (r.data.players || []).length;
+  const updated = relTime(r.updated_at);
+
+  if (finished) {
+    // Finished games: no Resume, no prominent room code reuse.
+    return `
+      <div class="game-card archived">
+        <div class="game-card-top compact">
+          <div class="room-code-box small">${escapeHTML(r.code)}</div>
+          <span class="status-pill status-${status.cls}">${status.label}</span>
+        </div>
+        <div class="game-card-meta">
+          <span>👥 ${players}</span>
+          <span class="meta-sep">·</span>
+          <span>🕒 ${updated}</span>
+        </div>
+        <div class="game-card-actions">
+          <button class="btn-primary" onclick="landingViewResults('${escapeAttr(r.code)}')">📊 View Results</button>
+          <button class="btn-secondary" onclick="landingUnarchiveRoom('${escapeAttr(r.code)}')">📤 Unarchive</button>
+        </div>
+      </div>`;
+  }
+  // Abandoned (manually archived, not finished). Still resumable — code stays prominent.
+  return `
+    <div class="game-card archived abandoned">
+      <div class="game-card-top">
+        <div class="room-code-box">${escapeHTML(r.code)}</div>
+        <button class="copy-btn" onclick="landingCopyCode('${escapeAttr(r.code)}')">📋 Copy</button>
+      </div>
+      <div class="game-card-meta">
+        <span class="status-pill status-${status.cls}">${status.label}</span>
+        <span class="meta-sep">·</span>
+        <span>👥 ${players}</span>
+        <span class="meta-sep">·</span>
+        <span>🕒 ${updated}</span>
+      </div>
+      <div class="game-card-actions">
+        <button class="btn-primary" onclick="landingResumeRoom('${escapeAttr(r.code)}')">▶ Resume</button>
+        <button class="btn-secondary" onclick="landingUnarchiveRoom('${escapeAttr(r.code)}')">📤 Unarchive</button>
+      </div>
+    </div>`;
+}
+
+function landingToggleArchived() {
+  _archivedExpanded = !_archivedExpanded;
+  const el = document.getElementById('host-archived-list');
+  if (el) el.style.display = _archivedExpanded ? 'block' : 'none';
+  const chev = document.getElementById('host-archive-chevron');
+  if (chev) chev.textContent = _archivedExpanded ? '▼' : '▶';
+}
+
+// + Create — show the inline code-entry form within the landing.
+function landingShowCreate() {
+  const zone = document.getElementById('host-landing-create-zone');
+  if (!zone) return;
+  zone.innerHTML = `
+    <div class="host-landing-create-inline">
+      <input type="text" id="landing-room-input" placeholder="Pick a room code (e.g. PAPA2)"
+        maxlength="8"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+      <div class="host-landing-create-actions">
+        <button class="btn-primary" onclick="landingConfirmCreate()">🚀 Create</button>
+        <button class="btn-secondary" onclick="renderHostLanding()">Cancel</button>
+      </div>
+      <div id="landing-create-err" class="err"></div>
+    </div>`;
+  setTimeout(() => document.getElementById('landing-room-input')?.focus(), 50);
+}
+
+async function landingConfirmCreate() {
+  const input = document.getElementById('landing-room-input');
+  const err   = document.getElementById('landing-create-err');
+  const code  = (input?.value || '').trim();
+  if (!code) { if (err) err.textContent = '⚠️ Enter a room code'; return; }
+
+  // Reuse the existing fresh-room logic but skip the showHostSetup DOM
+  // shim (we render directly).
+  const room = {
+    code, phase: 'lobby', isPaused: false, archived: false,
+    currentRegion: 1, currentGym: 1,
+    players: [], pokemonCaught: {},
+    hostConnected: true,
+    updated_at: new Date().toISOString(),
+  };
+  await dbWriteRoom(code, room);
+  HOST.roomCode  = code;
+  HOST.archived  = false;
+  STATE.roomCode = code;
+  const url = new URL(location.href);
+  url.searchParams.set('room', code);
+  history.replaceState({}, '', url);
+  showWaitingLobby(code, [], 'HOST_VIEWER', true);
+  startWaitingPoll(code, 'HOST_VIEWER', true);
+}
+
+async function landingResumeRoom(code) {
+  // Reconnect the host viewer to an existing room. Reuses the same path
+  // as ?host=true&room=CODE — load the latest state from Supabase, then
+  // route to either the waiting lobby (if still in lobby phase) or the
+  // active dashboard.
+  HOST.roomCode = code;
+  STATE.roomCode = code;
+  const url = new URL(location.href);
+  url.searchParams.set('room', code);
+  history.replaceState({}, '', url);
+  const room = await dbReadRoom(code);
+  if (!room) { showToast('Room not found.'); return; }
+  if (['PREGAME_CATCH','GYM_ACTIVE','GYM_COMPLETE','REGION_COMPLETE',
+       'REGION_CATCH','GAME_OVER','BREAK'].includes(room.phase)) {
+    HOST.currentPhase  = room.phase;
+    HOST.isPaused      = !!room.isPaused;
+    HOST.archived      = !!room.archived;
+    HOST.players       = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
+    HOST.currentRegion = room.currentRegion || 1;
+    HOST.currentGym    = room.currentGym || 1;
+    HOST.pokemonCaught = room.pokemonCaught || {};
+    initHostDashboard();
+  } else {
+    const players = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
+    showWaitingLobby(code, players, 'HOST_VIEWER', true);
+    startWaitingPoll(code, 'HOST_VIEWER', true);
+  }
+}
+
+async function landingArchiveRoom(code) {
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.archived = true;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast('Archived ✓');
+  await renderHostLanding();
+}
+
+async function landingUnarchiveRoom(code) {
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.archived = false;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast('Unarchived ✓');
+  await renderHostLanding();
+}
+
+async function landingViewResults(code) {
+  // Finished rooms — open the host dashboard in read-only-ish form. The
+  // existing renderHostDashboard already shows the leaderboard panel
+  // when phase === GAME_OVER. We pass through landingResumeRoom which
+  // routes correctly.
+  await landingResumeRoom(code);
+}
+
+function landingCopyCode(code) {
+  if (!code) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code)
+      .then(() => showToast(`Room code copied: ${code}`))
+      .catch(() => showToast(`Code: ${code}`));
+  } else {
+    showToast(`Code: ${code}`);
+  }
+}
+
+function copyRoomCodeFromBanner() {
+  const code = HOST.roomCode;
+  if (code) landingCopyCode(code);
+}
+
+// ── Toast ────────────────────────────────────────────────────
+let _toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('host-landing-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+
+// ── Small escape helpers (room codes are uppercase alnum, but be safe) ──
+function escapeHTML(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function escapeAttr(s) {
+  return String(s == null ? '' : s).replace(/'/g, "\\'");
+}
+
 // ── AUTO DETECT PLAYER LINK ───────────────────────────────────
 window.addEventListener('load', () => {
   const params = new URLSearchParams(location.search);
@@ -2308,9 +2686,10 @@ let HOST = {
   roomCode: '',
   currentPhase: 'PREGAME_CATCH',
   isPaused: false,
+  archived: false,         // Phase B: surfaces on landing; auto-true on GAME_OVER
   pollInt: null,
-  players: [],        // latest from Supabase
-  pokemonCaught: {},  // { pokemonId: playerName }
+  players: [],             // latest from Supabase
+  pokemonCaught: {},       // { pokemonId: playerName }
   currentRegion: 1,
   currentGym: 1
 };
@@ -2326,11 +2705,14 @@ function checkHostMode() {
       STATE.roomCode = roomCode;
       dbReadRoom(roomCode).then(room => {
         if (!room) {
-          showHostSetup();
+          // Room code in URL but no row exists → land on the dashboard
+          // (host can pick another room or create from there).
+          showHostLanding();
         } else if (['PREGAME_CATCH','GYM_ACTIVE','GYM_COMPLETE',
                     'REGION_COMPLETE','REGION_CATCH','GAME_OVER'].includes(room.phase)) {
           // Game in progress — go to dashboard
           HOST.currentPhase  = room.phase;
+          HOST.archived      = !!room.archived;
           HOST.players       = (room.players||[]).filter(p => p.id !== 'HOST_VIEWER');
           HOST.currentRegion = room.currentRegion || 1;
           HOST.currentGym    = room.currentGym || 1;
@@ -2343,7 +2725,8 @@ function checkHostMode() {
         }
       });
     } else {
-      showHostSetup();
+      // Phase B: no ?room= → land on the dashboard with active/archived lists.
+      showHostLanding();
     }
     return true;
   }
@@ -2383,6 +2766,7 @@ async function connectHostToRoom() {
     code,
     phase: 'lobby',
     isPaused: false,
+    archived: false,        // Phase B
     currentRegion: 1,
     currentGym: 1,
     players: [],           // starts empty — no host in player list
@@ -2391,6 +2775,7 @@ async function connectHostToRoom() {
     updated_at: new Date().toISOString()
   };
   await dbWriteRoom(code, room);
+  HOST.archived = false;
 
   HOST.roomCode = code;
   STATE.roomCode = code;
@@ -2411,6 +2796,7 @@ async function initHostDashboard() {
   if (room) {
     HOST.currentPhase = room.phase || 'PREGAME_CATCH';
     HOST.isPaused     = room.isPaused || false;
+    HOST.archived     = !!room.archived;          // Phase B
     HOST.players      = room.players || [];
     HOST.pokemonCaught= room.pokemonCaught || {};
     HOST.currentRegion= room.currentRegion || 1;
@@ -2428,6 +2814,14 @@ async function initHostDashboard() {
 function renderHostDashboard() {
   const phase = HOST_PHASES[HOST.currentPhase] || HOST_PHASES.PREGAME_CATCH;
   const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
+
+  // Phase B: persistent room-code banner at the very top.
+  const bannerEl = document.getElementById('host-persistent-banner');
+  const bannerCode = document.getElementById('hpb-code');
+  if (bannerEl && bannerCode) {
+    bannerCode.textContent = HOST.roomCode || '----';
+    bannerEl.style.display = HOST.roomCode ? 'flex' : 'none';
+  }
 
   // Phase info
   document.getElementById('host-phase-icon').textContent = phase.icon;
@@ -2525,6 +2919,8 @@ function renderHostPlayerCards() {
     const gymTotal = p.current_gym_questions || 10;
     const progressPct = (gymProgress / gymTotal) * 100;
     const pokemon = (p.pokemon_team || []).map(pk => pk.emoji).join('') || '—';
+    // Phase B: presence from the 15s heartbeat in save.last_seen
+    const presence = presenceStatus(p.last_seen);
 
     return `
       <div class="host-player-card status-${statusInfo.statusClass}">
@@ -2532,6 +2928,7 @@ function renderHostPlayerCards() {
         <div class="hpc-info">
           <div class="hpc-name">${p.player_name || 'Unknown'}</div>
           <div class="hpc-detail">${statusInfo.detail}</div>
+          <div class="hpc-detail presence-${presence.cls}" style="margin-top:2px">${presence.label}</div>
           <div class="hpc-detail" style="margin-top:2px">🐾 ${pokemon} · 🏅 ${p.badges_earned||0} badges</div>
           ${HOST.currentPhase === 'GYM_ACTIVE' ? `
             <div class="hpc-progress">
@@ -2668,6 +3065,8 @@ async function hostNextPhase() {
   }
 
   HOST.currentPhase = nextPhase;
+  // Phase B: auto-archive any room that reaches GAME_OVER.
+  if (HOST.currentPhase === 'GAME_OVER') HOST.archived = true;
   await syncHostRoom();
   renderHostDashboard();
 }
@@ -2706,6 +3105,7 @@ async function syncHostRoom() {
     code: HOST.roomCode,
     phase: HOST.currentPhase,
     isPaused: HOST.isPaused,
+    archived: !!HOST.archived,    // Phase B: write-through
     currentRegion: HOST.currentRegion,
     currentGym: HOST.currentGym,
     players: HOST.players,
@@ -2740,6 +3140,28 @@ async function hostDoPoll() {
 
   const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
   if (showPoke) renderHostPokemonPool();
+}
+
+// ── PHASE A: PLAYER PRESENCE HEARTBEAT ────────────────────────
+// Every 15 seconds while STATE.roomCode is set, the player upserts
+// their save with a fresh `last_seen` timestamp. The host's dashboard
+// reads this field to render presence ("Connected / Reconnecting /
+// Not yet rejoined"). Heartbeat is throttled to avoid hot writes.
+const HEARTBEAT_INTERVAL_MS = 15000;
+let _heartbeatInt = null;
+function ensureHeartbeat() {
+  if (_heartbeatInt) return;
+  _heartbeatInt = setInterval(async () => {
+    if (!STATE.player || !STATE.roomCode || !STATE.save) return;
+    // Skip if we're the host viewer (shouldn't write a player save).
+    if (typeof HOST !== 'undefined' && HOST.isHost) return;
+    STATE.save.last_seen = new Date().toISOString();
+    try { await dbSave(STATE.player.id, STATE.save); }
+    catch (e) { console.warn('heartbeat write failed:', e); }
+  }, HEARTBEAT_INTERVAL_MS);
+}
+function stopHeartbeat() {
+  if (_heartbeatInt) { clearInterval(_heartbeatInt); _heartbeatInt = null; }
 }
 
 // ── PLAYER: RESPOND TO HOST COMMANDS ─────────────────────────
@@ -2792,6 +3214,10 @@ window.addEventListener('load', () => {
     document.getElementById('join-banner-code').textContent = roomParam;
     document.getElementById('join-banner').style.display = 'block';
     showScreen('screen-join');
+    // Phase A: try a silent auto-rejoin if localStorage knows who we are
+    // AND we're already on this room's roster. Falls through to the join
+    // form if no match.
+    tryAutoRejoinFromURL(roomParam);
   }
 
   // Wire leaderboard
@@ -2807,4 +3233,32 @@ window.addEventListener('load', () => {
       checkPauseState();
     }
   }, 3000);
+
+  // Phase A: start the heartbeat. The interval no-ops while STATE.roomCode
+  // is unset, so it's safe to start once globally.
+  ensureHeartbeat();
 });
+
+// Phase A: silent auto-rejoin attempt fired from the `?room=CODE` URL path.
+// If localStorage holds a player ID that's already in the room's roster,
+// we restore their save and skip the join form entirely. If anything fails
+// (no localStorage, room missing, no roster match), we leave the join form
+// up — the user can manually retry.
+async function tryAutoRejoinFromURL(code) {
+  const storedId = localStorage.getItem('cqc_player_id');
+  if (!storedId) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) return;
+    const isOnRoster = (room.players || []).some(p => p.id === storedId);
+    if (!isOnRoster) return;
+    // Show a small "Reconnecting…" status in the existing banner so the
+    // user knows something's happening if there's lag.
+    const bc = document.getElementById('join-banner-code');
+    if (bc) bc.textContent = `${code} — reconnecting…`;
+    const ok = await reconnectExistingPlayer(code, room, storedId);
+    if (!ok && bc) bc.textContent = code;  // restore the banner on failure
+  } catch (e) {
+    console.warn('auto-rejoin failed:', e);
+  }
+}

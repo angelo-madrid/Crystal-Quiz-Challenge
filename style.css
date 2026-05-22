@@ -1639,3 +1639,170 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .review-fallback .btn-primary { margin-top: 14px; }
 
 .review-footer { margin-top: 18px; padding: 0 4px; }
+
+/* ═══════════════════════════════════════════════
+   HOST LANDING SCREEN (Phase B)
+   ═══════════════════════════════════════════════ */
+.host-landing-hero {
+  padding: 32px 20px 16px; text-align: center;
+}
+.host-landing-crown {
+  font-size: 3rem; margin-bottom: 4px;
+  filter: drop-shadow(0 0 18px rgba(255,203,5,0.55));
+}
+.host-landing-title {
+  font-family: var(--font-title); font-size: 2.4rem; letter-spacing: 2px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2), #fff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 4px 0;
+}
+.host-landing-sub { opacity: 0.65; font-size: 0.9rem; font-weight: 700; }
+
+.host-landing-create {
+  padding: 0 20px 8px;
+}
+.host-landing-create-inline {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 14px;
+}
+.host-landing-create-inline input[type=text] {
+  text-align: center; letter-spacing: 4px; font-family: var(--font-mono);
+  font-size: 1.15rem; font-weight: 900;
+}
+.host-landing-create-actions {
+  display: flex; gap: 10px; margin-top: 10px;
+}
+.host-landing-create-actions .btn-primary,
+.host-landing-create-actions .btn-secondary { flex: 1; padding: 12px; font-size: 0.95rem; }
+
+.host-landing-section { padding: 14px 20px; }
+.host-landing-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.82rem; font-weight: 900; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 8px;
+}
+.host-landing-count { opacity: 0.7; font-weight: 800; }
+
+.host-landing-empty {
+  background: var(--card); border: 1px dashed var(--card-border);
+  border-radius: 12px; padding: 18px; text-align: center;
+  opacity: 0.6; font-size: 0.85rem; font-weight: 700;
+}
+
+.host-landing-archive-toggle {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 12px 14px; color: var(--white);
+  font-family: var(--font-body); font-weight: 800; font-size: 0.92rem;
+  cursor: pointer; text-align: left; transition: all 0.15s;
+}
+.host-landing-archive-toggle:hover { background: rgba(255,255,255,0.10); }
+
+/* Game card on landing */
+.game-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 16px; padding: 14px; margin-bottom: 12px;
+}
+.game-card.archived { opacity: 0.85; border-style: dashed; }
+.game-card-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.game-card-top.compact { gap: 12px; }
+
+.room-code-box {
+  background: linear-gradient(135deg, rgba(255,203,5,0.15), rgba(123,94,167,0.15));
+  border: 2px solid var(--gold); border-radius: 12px;
+  padding: 10px 16px; min-width: 110px; text-align: center;
+  font-family: var(--font-mono); font-size: 1.4rem;
+  font-weight: 900; letter-spacing: 3px; color: var(--gold);
+  text-shadow: 0 0 12px rgba(255,203,5,0.4);
+}
+.room-code-box.small {
+  font-size: 1rem; padding: 6px 10px; min-width: 80px;
+  letter-spacing: 2px;
+}
+
+.copy-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 10px; padding: 8px 12px;
+  color: var(--white); font-weight: 800; font-size: 0.82rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.copy-btn:hover { background: rgba(255,203,5,0.15); border-color: var(--gold); }
+
+.game-card-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: 0.82rem; opacity: 0.85; margin-bottom: 12px;
+}
+.meta-sep { opacity: 0.4; }
+
+.status-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: 0.74rem; font-weight: 800;
+  background: rgba(255,255,255,0.06);
+}
+.status-waiting     { background: rgba(167,139,250,0.18); color: var(--crystal); }
+.status-in-progress { background: rgba(34,197,94,0.18);  color: #22c55e; }
+.status-paused      { background: rgba(249,115,22,0.18); color: #f97316; }
+.status-finished    { background: rgba(255,203,5,0.20);  color: var(--gold); }
+
+.game-card-actions {
+  display: flex; gap: 10px;
+}
+.game-card-actions .btn-primary,
+.game-card-actions .btn-secondary {
+  flex: 1; padding: 10px; font-size: 0.88rem;
+}
+
+.host-toast {
+  position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--purple), var(--purple2));
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 999px; padding: 10px 22px;
+  font-weight: 800; font-size: 0.9rem; color: var(--white);
+  z-index: 9999; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  animation: toastIn 0.2s ease;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ═══════════════════════════════════════════════
+   PERSISTENT ROOM-CODE BANNER (host dashboard)
+   ═══════════════════════════════════════════════ */
+.host-persistent-banner {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 10px; margin: 14px 20px 8px;
+  background: linear-gradient(135deg, rgba(255,203,5,0.18), rgba(123,94,167,0.18));
+  border: 2px solid var(--gold); border-radius: 14px;
+  padding: 12px 16px;
+  box-shadow: 0 0 24px rgba(255,203,5,0.20);
+}
+.hpb-label { font-size: 0.78rem; font-weight: 900; color: var(--gold); letter-spacing: 1px; }
+.hpb-code {
+  font-family: var(--font-mono); font-size: 1.6rem;
+  font-weight: 900; letter-spacing: 3px; color: var(--gold);
+  text-shadow: 0 0 14px rgba(255,203,5,0.5);
+  flex: 1;
+}
+.hpb-copy {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px; padding: 7px 12px;
+  color: var(--white); font-weight: 800; font-size: 0.82rem;
+  cursor: pointer;
+}
+.hpb-copy:hover { background: rgba(255,203,5,0.20); border-color: var(--gold); }
+.hpb-hint {
+  width: 100%; font-size: 0.74rem; opacity: 0.7; font-weight: 700;
+}
+
+/* ═══════════════════════════════════════════════
+   PRESENCE INDICATOR (host player card)
+   ═══════════════════════════════════════════════ */
+.presence-connected     { color: #22c55e; font-weight: 800; }
+.presence-reconnecting  { color: #f97316; font-weight: 800; }
+.presence-absent        { color: rgba(255,255,255,0.45); font-weight: 700; }

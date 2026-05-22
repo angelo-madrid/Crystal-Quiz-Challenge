@@ -464,8 +464,54 @@
   </div>
 
 
+  <!-- ═══════════════ HOST LANDING ═══════════════ -->
+  <!-- Phase B: ?host=true with NO room param lands here -->
+  <div id="screen-host-landing" class="screen">
+    <div class="host-landing-hero">
+      <div class="host-landing-crown">👑</div>
+      <h2 class="host-landing-title">Host Dashboard</h2>
+      <p class="host-landing-sub">Manage your Crystal Quiz games</p>
+    </div>
+
+    <div id="host-landing-create-zone" class="host-landing-create">
+      <button class="btn-primary" onclick="landingShowCreate()">＋ Create New Game</button>
+    </div>
+
+    <div class="host-landing-section">
+      <div class="host-landing-label">
+        <span>🎮 Active Games</span>
+        <span class="host-landing-count" id="host-active-count">—</span>
+      </div>
+      <div id="host-active-list">
+        <div class="host-landing-empty">Loading…</div>
+      </div>
+    </div>
+
+    <div class="host-landing-section">
+      <button class="host-landing-archive-toggle" id="host-archive-toggle" onclick="landingToggleArchived()">
+        <span id="host-archive-chevron">▶</span>
+        <span>Show archived games</span>
+        <span class="host-landing-count" id="host-archived-count">—</span>
+      </button>
+      <div id="host-archived-list" style="display:none">
+        <div class="host-landing-empty">No archived games.</div>
+      </div>
+    </div>
+
+    <div id="host-landing-toast" class="host-toast" style="display:none"></div>
+  </div>
+
   <!-- ═══════════════ HOST DASHBOARD ═══════════════ -->
   <div id="screen-host" class="screen">
+
+    <!-- Phase B: persistent room-code banner — non-dismissible so the host
+         can read the code aloud while kids trickle back in. -->
+    <div id="host-persistent-banner" class="host-persistent-banner">
+      <div class="hpb-label">📢 Room</div>
+      <div class="hpb-code" id="hpb-code">----</div>
+      <button class="hpb-copy" onclick="copyRoomCodeFromBanner()">📋 Copy</button>
+      <div class="hpb-hint">Players rejoin with this code</div>
+    </div>
 
     <!-- Header -->
     <div class="host-header">
