@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.5.0
+Version: 0.4.0
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -21,6 +21,12 @@ Last updated: 2026-05-22
 > a Room"; `continueJourney` and `createPlayer` stubbed to redirect to
 > the join screen so no save can be created or restored outside a
 > Supabase room).
+>
+> **Session 2026-05-22 (evening) shipped:** player identity system
+> (screen-register, screen-login, screen-player-dashboard,
+> screen-account-gate), crystal banking layer (crystal_ledger, wallet
+> screen, redeem flow), host Add Crystals panel, ledger wiring for
+> game earnings. Supabase migrations run. All committed and pushed.
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -226,43 +232,46 @@ game manager that lists every room (active and archived). Opening with
 - Phase 4: live dress rehearsal
 
 ## Phase 3 Backlog
-Items deferred out of Phase 1 — pick up in Phase 3 (or earlier if they
-block UAT).
 
-- **Pause must freeze each player's local timer.** PRE-EXISTING issue,
-  medium severity. No host-broadcast shared timer exists; each player
-  runs a local `STATE.timerInt`. When the host pauses, the overlay shows
-  but the local timer keeps ticking underneath and can hit 0, firing
-  `timeUp()` and costing the kid the question. Fix: on pause, suspend
-  each player's local timer; on resume, continue with remaining time —
-  ideally driven by the host's pause state via room sync.
+### NEXT SESSION — HIGH PRIORITY (run as one combined prompt)
 
-- **TIME ability inflates speed bonus.** Introduced in 1.5, low severity.
-  Using a TIME Pokemon adds seconds, which makes the speed-bonus math
-  pay ~20-50% more crystals than intended. Decide in Phase 3: cap the
-  bonus or keep as an intentional reward for spending a Pokemon.
+- **Host Crystal Requests panel** — show all pending `redeem_request`
+  entries across all players; Approve / Modify / Decline actions;
+  auto-refresh every 15 s.
 
-- **Prize screen — PRIORITY.** Build the end-game prize screen: podium,
-  crystal-to-peso conversion (100 crystals = 1 peso), and unused-Pokemon
-  level bonus (`baseValue × level_multiplier`). Needed to pay out real
-  prizes.
+- **Ledger sync fix** — audit all crystal mutation paths (gym clear,
+  gym fail, STEAL, MULTIPLY, DOUBLE_OR_NOTHING, Pokeball purchase) and
+  ensure every one writes a `crystal_ledger` entry. Add a
+  `balanceFromLedger()` invariant helper.
 
-- **Animations, sound, leaderboard polish.**
+- **Per-player ledger on Host Dashboard** — tap player card → modal
+  showing full ledger history with amounts, types, rooms, notes, dates.
 
-- **Known minor inconsistencies (cosmetic / a11y).** Discovered during
-  the 2026-05-22 verification pass; none block gameplay:
-  - In-file `"version"` strings drift behind the manifest:
-    `questions-junior.json` and `questions-senior.json` say "3.0"
-    internally but the manifest tracks them at 3.3 (4 edits past
-    initial). `pokemon.json` says "1.0" internally but the manifest
-    has it at 1.1 (Groudon → legendary + 5 ability renames). FILES.md
-    is authoritative; the JSON header strings just need a sync.
-  - The two `<img src="gengar.png">` tags still carry `alt="Gengar"`
-    even though the new mascot is a Pikachu vs Gengar battle scene.
-    Small a11y fix.
-  - New mascot PNG is 1.42 MB (1024×1024). A 512×512 export would
-    cut the home-screen payload roughly in half with no visible
-    difference at the 130 px display size.
+- **Player sort order on Host Dashboard** — Connected → Reconnecting →
+  Offline, sorted by crystals descending within each group.
+
+- **Pause must freeze player's local timer (pre-existing bug)** — on
+  pause broadcast, record `STATE.pausedTimeRemaining`, clear interval,
+  freeze display. On resume, restart from frozen value. Guard
+  `timeUp()` against firing while paused.
+
+- **TIME ability speed bonus cap** — use `STATE.originalTimeLimit`
+  (set at question load, never updated by TIME ability) as the
+  speed-bonus denominator.
+
+- **Phase 2 — Unlock Regions 3-10** — remove lock + graceful-end-at-2
+  logic; verify question banks for all 10 regions; `GAME_OVER` after
+  Region 10.
+
+- **Cosmetic fixes** — `alt` text on `gengar.png` → "Pikachu vs Gengar
+  battle scene"; sync JSON version strings (questions files → 3.3,
+  pokemon.json → 1.1); optimize `gengar.png` to 512×512.
+
+### PHASE 4 CHECKLIST (before live event)
+- Morning of convention: delete all test rows from `player_saves`,
+  `rooms`, `crystal_ledger` in Supabase.
+- Full dress rehearsal with real kids.
+- Tag `v1.0.0`.
 
 ## Versioning Rule
 Increment a file's version + date in FILES.md on every change. Bump

@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge — File Manifest
-Manifest version: 1.17
+Manifest version: 1.18
 Last updated: 2026-05-22
 
 | File | Version | Last Updated | Purpose | Status |
@@ -13,8 +13,8 @@ Last updated: 2026-05-22
 | pokemon.json | 1.1 | 2026-05-22 | Pokemon library: 10 starters + 100 regional. Every Pokemon has a unique ability NAME and unique effect across 10 mechanics; rarity scales power; baseValue inflates per region. v1.1: Groudon corrected to legendary; 5 ability names renamed for uniqueness | Active |
 | gengar.png | 1.1 | 2026-05-22 | Home mascot — new mascot image (Pikachu vs Gengar battle scene), 1024×1024 PNG | Active |
 | MIGRATIONS.md | 1.1 | 2026-05-22 | Supabase SQL migrations. v1.1 adds the persistent-identity block (clean-slate DELETEs + new columns + CHECK constraint on `player_id`). v1.0: `crystal_ledger` create-table + indexes. Run blocks in order in Supabase Studio. | Active |
-| CLAUDE.md | 0.5.0 | 2026-05-22 | Master project doc — adds Persistent Player Identity section (account gate / register wizard / login / player dashboard) on top of Crystal Banking + multiplayer-only + post-Phase-1 UAT additions + Phase 3 Backlog | Active |
-| FILES.md | 1.17 | 2026-05-22 | This manifest | Active |
+| CLAUDE.md | 0.4.0 | 2026-05-22 | Master project doc — evening 2026-05-22 session summary added; Phase 3 Backlog replaced with Next-Session-High-Priority list + Phase 4 Checklist. Covers Persistent Player Identity + Crystal Banking + multiplayer-only + post-Phase-1 UAT additions. | Active |
+| FILES.md | 1.18 | 2026-05-22 | This manifest | Active |
 
 Maintain this manifest on every future file change — it's the single
 source of truth for what's deployed.
