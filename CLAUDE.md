@@ -1,6 +1,6 @@
 # Crystal Quiz Challenge
-Version: 0.4.3
-Last updated: 2026-05-22
+Version: 0.5.0
+Last updated: 2026-05-23
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
 > per-kid draw, pokemon.json with all 10 ability mechanics, Regions 1-2
@@ -248,6 +248,69 @@ top; below it the viewport splits into three equal columns:
 every tick it reads `rooms` (col 1), `player_saves` + `crystal_ledger`
 (col 2), and refreshes col 3 against `HOST_UI.activeRoomCode`. If a
 Room Detail Overlay is open, its body refreshes live too.
+
+## Player Dashboard — three-column landscape layout
+The player surface (`screen-player-dashboard`) is now a **three-column
+laptop landscape view**. `screen-home` is a login-only landing with
+two buttons (🆕 Create Account / 🔑 Log In) — Join, Rules, Board, and
+Settings have moved into the dashboard or are gone. On page load, if
+`localStorage.cqc_player_id` is set, the dashboard opens directly and
+`screen-home` is skipped.
+
+The dashboard's persistent header (above all three columns) shows
+`👤 [id] · [name] · [Junior 🌱 / Senior ⚡]` on the left and
+`💎 [balance] crystals · 🚪 Log Out` on the right. Log Out clears
+`cqc_player_id` + `cqc_player` + `cqc_player_name` + `cqc_room_code`
+from localStorage and returns to `screen-home`.
+
+The three columns refresh together every 15 s (`pdcStartPoll`):
+
+- **🎮 GAME ROOMS** — `+ Join a Room` inline form at the top routes
+  through the existing `playerJoin`. Three sections with count badges:
+  **🟢 ACTIVE** (rooms this player is on with phase=playing/paused,
+  not archived, not in `save.abandoned_rooms`), **⏳ PENDING** (same
+  but phase=lobby), **📦 ARCHIVED** (collapsed; archived rooms +
+  GAME_OVER + abandoned rooms, tagged 🏁 Finished or 🗄️ Abandoned).
+  Active/Pending cards show badges progress bar, Pokemon caught (up
+  to 3 names), crystals earned, and a `▶️ Resume` / `▶️ Open Lobby`
+  button plus a `··· More` menu (📋 View Room Details / 🚪 Abandon
+  Room). The Abandon flow writes a `crystal_ledger` row
+  (`type:'adjustment'`, `amount:0`, `status:'pending'`,
+  `note:'Abandon request — awaiting host approval'`). While pending,
+  Resume is disabled and the card shows "⏳ Abandon request sent to
+  Papa." Host approves via the existing Crystal Requests panel; on
+  approve, the room code is appended to `save.abandoned_rooms` and
+  the player's card moves to Archived with the 🗄️ Abandoned pill.
+  On decline, the ledger row flips to declined and the card returns
+  to normal Active state.
+
+- **💎 CRYSTAL WALLET** — large balance card (💎 N crystals · ≈ ₱N.NN
+  at 100💎 = ₱1); 🎁 Redeem Crystals inline form (writes a
+  `redeem_request` ledger row; button is replaced by a pending banner
+  while a request is open); 📋 LEDGER with filter tabs (All / Earned
+  / Redeemed) and Show-more pagination (10 rows at a time).
+
+- **🏆 MY JOURNEY** — 🏅 My Personal Bests (every gymResults entry
+  across every region in the save, sorted by crystals desc, top 3 with
+  🥇🥈🥉 medals; "Show all N scores" expander); 🐾 My Pokemon (the
+  save's `pokemon_team` grouped Legendary → Super → Rare → Common,
+  showing each Pokemon's emoji, name, rarity pill, and the room code
+  it was caught in); 📢 Broadcast Message (textarea, max 100 chars,
+  10 💎 cost, balance-after preview; button enabled only when text
+  non-empty AND balance ≥ 10 AND player has at least one active room;
+  on send, `dbBumpCrystals(-10)`, audit `adjustment` ledger row, then
+  `room.announcement = { text: '[name]: [msg]', ts, source }` which
+  the existing `renderPlayerBroadcast` pipeline shows on every
+  player's screen).
+
+**Audit additions in the engine** (so the dashboard can attribute
+scores and Pokemon to specific rooms):
+- `endGym` now writes an `earn` ledger row for every attempt — `amount`
+  may be 0 for a complete fail — and stamps `roomCode` on the
+  `gymResults` entry.
+- `attemptCatch` / `showRegionalCatchResult` tag each Pokemon with
+  `roomCode: STATE.roomCode || null` so the team list can show the
+  room they were caught in.
 
 ## Host Entry Flow (`?host=true`)
 Opening `?host=true` (with or without `?room=`) lands Papa **directly

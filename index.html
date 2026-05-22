@@ -16,11 +16,12 @@
 <!-- ═══════════════════════════ APP ═══════════════════════════ -->
 <div id="app">
 
-  <!-- HOME SCREEN -->
+  <!-- HOME SCREEN — login-only entry. The dashboard houses everything
+       else (Join a Room, wallet, journey, broadcasts). -->
   <div id="screen-home" class="screen active">
     <div class="home-hero">
       <div class="gengar-wrap">
-        <img src="gengar.png" class="gengar-img" alt="Gengar">
+        <img src="gengar.png" class="gengar-img" alt="Pikachu vs Gengar battle scene">
       </div>
       <div class="home-badge">🔮 Pokemon Convention Edition</div>
       <h1 class="home-title">Crystal Quiz<br>Challenge!</h1>
@@ -28,13 +29,8 @@
     </div>
 
     <div class="home-buttons">
-      <button class="btn-multiplayer big" onclick="homeJoinARoom()">🎮 Join a Room</button>
-    </div>
-
-    <div class="home-nav">
-      <button class="nav-btn" onclick="showScreen('screen-rules')">📜 Rules</button>
-      <button class="nav-btn" onclick="showScreen('screen-leaderboard')">🏆 Board</button>
-      <button class="nav-btn" onclick="showScreen('screen-settings')">⚙️ Settings</button>
+      <button class="btn-primary big" onclick="showScreen('screen-register')">🆕 Create Account</button>
+      <button class="btn-secondary big" onclick="showScreen('screen-login')">🔑 Log In</button>
     </div>
 
     <div class="home-footer">🃏 Win Pokemon Cards at the Convention!</div>
@@ -149,39 +145,154 @@
   </div>
 
   <!-- PLAYER DASHBOARD — landing screen for logged-in players -->
-  <div id="screen-player-dashboard" class="screen">
-    <div class="player-dashboard-hero">
-      <div class="pdh-emoji" id="pdh-emoji">👤</div>
-      <div class="pdh-name" id="pdh-name">Trainer</div>
-      <div class="pdh-id" id="pdh-id">------</div>
-      <div class="pdh-pills">
-        <span class="pdh-pill" id="pdh-age-pill">—</span>
-        <span class="pdh-pill pdh-pill-balance">💎 <span id="pdh-balance">0</span></span>
+  <!-- PLAYER DASHBOARD — three-column landscape layout (laptop). -->
+  <div id="screen-player-dashboard" class="screen pdc-3col-screen">
+
+    <!-- Persistent header above all three columns -->
+    <header id="pdc-header" class="pdc-header">
+      <div class="pdc-h-left">
+        <span class="pdc-h-emoji" id="pdc-h-emoji">👤</span>
+        <span class="pdc-h-id" id="pdc-h-id">------</span>
+        <span class="pdc-h-sep">·</span>
+        <span class="pdc-h-name" id="pdc-h-name">Trainer</span>
+        <span class="pdc-h-band" id="pdc-h-band">—</span>
       </div>
+      <div class="pdc-h-right">
+        <span class="pdc-h-balance">💎 <span id="pdc-h-balance">0</span> crystals</span>
+        <button class="pdc-h-logout" onclick="pdcLogout()">🚪 Log Out</button>
+      </div>
+    </header>
+
+    <!-- Three columns -->
+    <div class="pdc-3col">
+
+      <!-- ════════ COLUMN 1 — GAME ROOMS ════════ -->
+      <section class="pdc-col" id="pdc-col-rooms">
+        <header class="pdc-col-header"><span>🎮 GAME ROOMS</span></header>
+        <div class="pdc-col-body">
+
+          <div id="pdc-join-zone" class="pdc-join-zone">
+            <button class="btn-primary" onclick="pdcShowJoinForm()">＋ Join a Room</button>
+          </div>
+
+          <div class="pdc-section">
+            <div class="pdc-section-label">
+              <span>🟢 ACTIVE</span>
+              <span class="pdc-count" id="pdc-active-count">0</span>
+            </div>
+            <div id="pdc-active-list" class="pdc-room-list"></div>
+          </div>
+
+          <div class="pdc-section">
+            <div class="pdc-section-label">
+              <span>⏳ PENDING</span>
+              <span class="pdc-count" id="pdc-pending-count">0</span>
+            </div>
+            <div id="pdc-pending-list" class="pdc-room-list"></div>
+          </div>
+
+          <div class="pdc-section">
+            <button class="pdc-archived-toggle" onclick="pdcToggleArchived()">
+              <span id="pdc-archived-chevron">▶</span>
+              <span>📦 ARCHIVED</span>
+              <span class="pdc-count" id="pdc-archived-count">0</span>
+            </button>
+            <div id="pdc-archived-list" class="pdc-room-list" style="display:none"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ════════ COLUMN 2 — CRYSTAL WALLET ════════ -->
+      <section class="pdc-col" id="pdc-col-wallet">
+        <header class="pdc-col-header"><span>💎 CRYSTAL WALLET</span></header>
+        <div class="pdc-col-body">
+
+          <div class="pdc-balance-card">
+            <div class="pdc-balance-label">Balance</div>
+            <div class="pdc-balance-big">💎 <span id="pdc-balance-big">0</span></div>
+            <div class="pdc-peso">≈ ₱<span id="pdc-peso">0.00</span></div>
+          </div>
+
+          <div class="pdc-section" id="pdc-redeem-section">
+            <div class="pdc-section-label"><span>🎁 REDEEM</span></div>
+            <div id="pdc-redeem-zone">
+              <button class="btn-primary" id="pdc-redeem-toggle" onclick="pdcShowRedeemForm()">🎁 Redeem Crystals</button>
+            </div>
+          </div>
+
+          <div class="pdc-section">
+            <div class="pdc-section-label"><span>📋 LEDGER</span></div>
+            <div class="pdc-ledger-tabs">
+              <button class="pdc-tab active" id="pdc-tab-all"      onclick="pdcSetLedgerFilter('all')">All</button>
+              <button class="pdc-tab"        id="pdc-tab-earned"   onclick="pdcSetLedgerFilter('earned')">Earned</button>
+              <button class="pdc-tab"        id="pdc-tab-redeemed" onclick="pdcSetLedgerFilter('redeemed')">Redeemed</button>
+            </div>
+            <div id="pdc-ledger-list" class="pdc-ledger-list"></div>
+            <button class="pdc-show-more" id="pdc-ledger-more" onclick="pdcShowMoreLedger()" style="display:none">Show more ▼</button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ════════ COLUMN 3 — MY JOURNEY ════════ -->
+      <section class="pdc-col" id="pdc-col-journey">
+        <header class="pdc-col-header"><span>🏆 MY JOURNEY</span></header>
+        <div class="pdc-col-body">
+
+          <div class="pdc-section">
+            <div class="pdc-section-label"><span>🏅 MY PERSONAL BESTS</span></div>
+            <div class="pdc-section-sub">Your top scores across all games</div>
+            <div id="pdc-top-scores" class="pdc-top-scores"></div>
+            <button class="pdc-show-more" id="pdc-show-all-scores" onclick="pdcToggleAllScores()" style="display:none">Show all scores ▼</button>
+          </div>
+
+          <div class="pdc-section">
+            <div class="pdc-section-label"><span>🐾 MY POKEMON</span></div>
+            <div class="pdc-section-sub">All caught across all games</div>
+            <div id="pdc-pokemon-team" class="pdc-pokemon-team"></div>
+          </div>
+
+          <div class="pdc-section">
+            <div class="pdc-section-label"><span>📢 BROADCAST MESSAGE</span></div>
+            <div class="pdc-section-sub">Send a message to everyone in your current active room</div>
+            <textarea id="pdc-broadcast-text" class="pdc-broadcast-text" maxlength="100"
+              placeholder="Type your message…"
+              oninput="pdcBroadcastValidate()"></textarea>
+            <div class="pdc-broadcast-meta">
+              <span><span id="pdc-broadcast-char">0</span>/100 chars</span>
+              <span>Cost: 💎 10 / message</span>
+            </div>
+            <div class="pdc-broadcast-after">Your balance after: 💎 <span id="pdc-broadcast-after-val">0</span></div>
+            <button class="btn-primary" id="pdc-broadcast-send" onclick="pdcSendBroadcast()" disabled style="opacity:0.4">📢 Send — 10 💎</button>
+            <div class="pdc-broadcast-warn" id="pdc-broadcast-warn"></div>
+          </div>
+
+        </div>
+      </section>
     </div>
 
-    <div class="pd-actions">
-      <button class="btn-primary big" onclick="showScreen('screen-join')">🎮 Join a Room</button>
-      <button class="btn-secondary big" onclick="openWallet()">💎 Crystal Wallet</button>
-    </div>
+  </div>
 
-    <div class="pd-section">
-      <div class="pd-section-label">▶ ACTIVE GAMES <span class="pdh-count" id="pd-active-count">0</span></div>
-      <div id="pd-active-list"><div class="pd-empty">No active games.</div></div>
-    </div>
-
-    <div class="pd-section">
-      <div class="pd-section-label">⏳ PENDING (LOBBY) <span class="pdh-count" id="pd-pending-count">0</span></div>
-      <div id="pd-pending-list"><div class="pd-empty">No pending games.</div></div>
-    </div>
-
-    <div class="pd-section">
-      <div class="pd-section-label">📦 ARCHIVED / FINISHED <span class="pdh-count" id="pd-archived-count">0</span></div>
-      <div id="pd-archived-list"><div class="pd-empty">No archived games.</div></div>
-    </div>
-
-    <div class="pd-logout">
-      <a class="pd-logout-link" onclick="dashboardLogout()">Log out</a>
+  <!-- PLAYER ROOM-DETAIL OVERLAY (read-only) -->
+  <div id="pdc-room-detail-overlay" class="modal-overlay" style="display:none" onclick="pdcRoomDetailMaybeClose(event)">
+    <div class="modal-card room-detail-card" onclick="event.stopPropagation()">
+      <header class="modal-header">
+        <button class="back-btn" onclick="pdcCloseRoomDetail()">← Close</button>
+        <div class="modal-title-row">
+          <span class="modal-room-label">Room:</span>
+          <span class="modal-room-code" id="pdc-rd-code">----</span>
+          <span class="status-pill" id="pdc-rd-status">—</span>
+        </div>
+      </header>
+      <section class="modal-section">
+        <div class="modal-section-label">🗺️ REGION PROGRESS</div>
+        <div class="rd-progress-row" id="pdc-rd-progress"></div>
+      </section>
+      <section class="modal-section">
+        <div class="modal-section-label">📊 MY STATS IN THIS ROOM</div>
+        <div id="pdc-rd-stats"></div>
+      </section>
     </div>
   </div>
 

@@ -740,103 +740,707 @@ async function loginSubmit() {
   openPlayerDashboard();
 }
 
-// ── PLAYER DASHBOARD ─────────────────────────────────────────
-// Sits between login and joining a room. Auto-rejoin from ?room=CODE
-// also lands here, with the URL's room highlighted in Active.
+// ═══════════════════════════════════════════════════════════
+// PLAYER DASHBOARD — three-column landscape layout
+// ═══════════════════════════════════════════════════════════
+// Replaces the legacy single-column dashboard. The three columns:
+//   Col 1 — Game Rooms (Active / Pending / Archived) + Join form
+//   Col 2 — Crystal Wallet (balance, redeem form, filtered ledger)
+//   Col 3 — My Journey (top gym scores, all Pokemon, broadcast)
+// Auto-rejoin from ?room=CODE lands here with the URL's room
+// highlighted in Active.
 let _dashboardHighlightRoom = null;
 
+const PLAYER_UI = {
+  archivedExpanded: false,
+  ledgerFilter: 'all',           // 'all' | 'earned' | 'redeemed'
+  ledgerLimit: 10,
+  pollInt: null,
+  ledgerCache: [],
+  showAllScores: false,
+  abandonOpenFor: null,          // room code with abandon confirmation visible
+};
+
 async function openPlayerDashboard() {
-  if (!STATE.player) { showScreen('screen-account-gate'); return; }
+  if (!STATE.player) { showScreen('screen-home'); return; }
+  // Reset transient UI state on every entry (so a fresh login doesn't
+  // inherit a stale "show all scores" toggle, etc.).
+  PLAYER_UI.archivedExpanded = false;
+  PLAYER_UI.ledgerFilter     = 'all';
+  PLAYER_UI.ledgerLimit      = 10;
+  PLAYER_UI.showAllScores    = false;
+  PLAYER_UI.abandonOpenFor   = null;
   showScreen('screen-player-dashboard');
   await renderPlayerDashboard();
+  pdcStartPoll();
+}
+
+function pdcStartPoll() {
+  if (PLAYER_UI.pollInt) clearInterval(PLAYER_UI.pollInt);
+  PLAYER_UI.pollInt = setInterval(() => {
+    if (document.querySelector('.screen.active')?.id === 'screen-player-dashboard') {
+      renderPlayerDashboard();
+    }
+  }, 15000);
+}
+function pdcStopPoll() {
+  if (PLAYER_UI.pollInt) { clearInterval(PLAYER_UI.pollInt); PLAYER_UI.pollInt = null; }
 }
 
 async function renderPlayerDashboard() {
   const player = STATE.player;
   if (!player) return;
-  // Refresh authoritative save (host bonuses may have arrived).
+  // Refresh authoritative save (host bonuses, abandon approvals, etc.).
   const fresh = await dbLoad(player.id);
   if (fresh) STATE.save = fresh;
+
+  pdcRenderHeader();
+  await Promise.all([
+    pdcRenderCol1Rooms(),
+    pdcRenderCol2Wallet(),
+    pdcRenderCol3Journey(),
+  ]);
+}
+
+// ── HEADER ───────────────────────────────────────────────────
+function pdcRenderHeader() {
+  const p = STATE.player;
+  if (!p) return;
   const balance = (STATE.save && STATE.save.total_crystals) || 0;
-  const ageBand = ageGroupFromAge(player.age);
+  const band = ageGroupFromAge(p.age);
+  document.getElementById('pdc-h-emoji').textContent = p.emoji || '👤';
+  document.getElementById('pdc-h-id').textContent    = p.id;
+  document.getElementById('pdc-h-name').textContent  = p.name;
+  document.getElementById('pdc-h-band').textContent  = band === 'junior' ? '🌱 Junior' : '⚡ Senior';
+  document.getElementById('pdc-h-balance').textContent = balance.toLocaleString();
+}
 
-  document.getElementById('pdh-emoji').textContent = player.emoji || '👤';
-  document.getElementById('pdh-name').textContent  = player.name;
-  document.getElementById('pdh-id').textContent    = player.id;
-  document.getElementById('pdh-age-pill').textContent = ageBand === 'junior'
-    ? '🌟 Junior (9–11)' : '🎓 Senior (12–13)';
-  document.getElementById('pdh-balance').textContent = balance.toLocaleString();
-
-  // Find all rooms this player belongs to.
+// ── COLUMN 1 — GAME ROOMS ────────────────────────────────────
+async function pdcRenderCol1Rooms() {
+  const player = STATE.player;
+  if (!player) return;
   const allRooms = await dbListRooms();
+  // Saves carry an `abandoned_rooms` array of room codes the player
+  // has abandoned (host-approved). Treat those as Archived/Abandoned.
+  const abandoned = new Set((STATE.save && STATE.save.abandoned_rooms) || []);
+  // Pending abandon-request room codes (from crystal_ledger).
+  const myPending = await dbLedgerForPlayer(player.id, 100);
+  const pendingAbandons = new Set(
+    myPending.filter(r => r.status === 'pending'
+        && r.type === 'adjustment'
+        && (r.note || '').startsWith('Abandon request'))
+      .map(r => r.room_code)
+  );
+
   const mine = allRooms.filter(r =>
     (r.data?.players || []).some(p => p.id === player.id)
   );
-  const active   = mine.filter(r => !r.data?.archived && r.data?.phase !== 'GAME_OVER' && r.data?.phase !== 'lobby');
-  const pending  = mine.filter(r => !r.data?.archived && r.data?.phase === 'lobby');
-  const archived = mine.filter(r =>  r.data?.archived || r.data?.phase === 'GAME_OVER');
+  const active = mine.filter(r =>
+    !r.data?.archived && r.data?.phase !== 'GAME_OVER' && r.data?.phase !== 'lobby'
+    && !abandoned.has(r.id));
+  const pending = mine.filter(r =>
+    !r.data?.archived && r.data?.phase === 'lobby'
+    && !abandoned.has(r.id));
+  const archived = mine.filter(r =>
+    r.data?.archived || r.data?.phase === 'GAME_OVER' || abandoned.has(r.id));
 
-  document.getElementById('pd-active-count').textContent   = active.length;
-  document.getElementById('pd-pending-count').textContent  = pending.length;
-  document.getElementById('pd-archived-count').textContent = archived.length;
+  document.getElementById('pdc-active-count').textContent   = active.length;
+  document.getElementById('pdc-pending-count').textContent  = pending.length;
+  document.getElementById('pdc-archived-count').textContent = archived.length;
 
-  const renderList = (list, type) => list.length
-    ? list.map(r => playerDashboardGameCard(r, type)).join('')
-    : `<div class="pd-empty">No ${type} games.</div>`;
-  document.getElementById('pd-active-list').innerHTML   = renderList(active,   'active');
-  document.getElementById('pd-pending-list').innerHTML  = renderList(pending,  'pending');
-  document.getElementById('pd-archived-list').innerHTML = renderList(archived, 'archived');
+  const activeEl   = document.getElementById('pdc-active-list');
+  const pendingEl  = document.getElementById('pdc-pending-list');
+  const archivedEl = document.getElementById('pdc-archived-list');
+
+  activeEl.innerHTML = active.length
+    ? active.map(r => pdcRoomCard(r, 'active', pendingAbandons.has(r.id))).join('')
+    : '<div class="pdc-empty">No active games — wait for Papa to create one! 🎮</div>';
+  pendingEl.innerHTML = pending.length
+    ? pending.map(r => pdcRoomCard(r, 'pending', pendingAbandons.has(r.id))).join('')
+    : '<div class="pdc-empty">No pending games.</div>';
+  archivedEl.innerHTML = archived.length
+    ? archived.map(r => pdcRoomCard(r, 'archived', false, abandoned.has(r.id))).join('')
+    : '<div class="pdc-empty">No past games yet.</div>';
+
+  archivedEl.style.display = PLAYER_UI.archivedExpanded ? 'flex' : 'none';
+  document.getElementById('pdc-archived-chevron').textContent = PLAYER_UI.archivedExpanded ? '▼' : '▶';
 }
 
-function playerDashboardGameCard(r, type) {
-  const status = deriveRoomStatus(r.data);
-  const players = (r.data.players || []).length;
-  const updated = relTime(r.updated_at);
-  const isHighlight = (_dashboardHighlightRoom && _dashboardHighlightRoom === r.id);
-  const cls = `game-card${isHighlight ? ' highlight' : ''}${type==='archived' ? ' archived' : ''}`;
-  const resumeBtn = (type === 'archived' && r.data?.phase === 'GAME_OVER')
-    ? `<button class="btn-secondary" onclick="playerDashboardOpenRoom('${escapeAttr(r.id)}')">📊 View</button>`
-    : `<button class="btn-primary" onclick="playerDashboardOpenRoom('${escapeAttr(r.id)}')">▶ ${type==='pending' ? 'Lobby' : 'Resume'}</button>`;
+function pdcRoomCard(r, type, hasPendingAbandon, isAbandonedArchive) {
+  const code = r.id;
+  const data = r.data || {};
+  const status = deriveRoomStatus(data);
+  const region = REGIONS.find(x => x.id === data.currentRegion) || REGIONS[0];
+  const isHighlight = (_dashboardHighlightRoom && _dashboardHighlightRoom === code);
+
+  // Per-player stats in this room — pull from STATE.save which is the
+  // player's global save (gym progress is per-region/gym, not per-room).
+  const myBadges = countBadgesForRoom(code);
+  const myCaught = pokemonCaughtInRoom(code);
+  const myCrystals = crystalsEarnedInRoom(code);
+
+  if (type === 'archived') {
+    const subtype = isAbandonedArchive ? 'abandoned' : 'finished';
+    const pill = isAbandonedArchive ? '🗄️ Abandoned' : '🏁 Finished';
+    const regionLabel = data.currentRegion
+      ? `${region.emoji} ${region.name} reached`
+      : 'No regions completed';
+    return `
+      <div class="pdc-room-card archived">
+        <div class="pdc-rc-top">
+          <div class="pdc-rc-code">${escapeHTML(code)}</div>
+          <span class="pdc-archived-pill ${subtype}">${pill}</span>
+        </div>
+        <div class="pdc-rc-region">${regionLabel}</div>
+        <div class="pdc-rc-stats">
+          <div class="pdc-rc-stat-row">💎 ${myCrystals.toLocaleString()} crystals earned</div>
+          <div class="pdc-rc-stat-row">🏅 ${myBadges} badges earned</div>
+        </div>
+      </div>`;
+  }
+
+  const phaseLabel = (type === 'pending')
+    ? '⏳ Waiting'
+    : (data.isPaused ? '⏸️ Paused' : '🟢 Playing');
+  const regionInfo = (type === 'pending')
+    ? '<div class="pdc-rc-region">Lobby — waiting for Papa to start</div>'
+    : `<div class="pdc-rc-region">${region.emoji} ${region.name} · Gym ${data.currentGym || 1}/5</div>`;
+
+  const pokeNames = myCaught.length
+    ? myCaught.slice(0, 3).map(pk => `${pk.emoji} ${escapeHTML(pk.name)}`).join(', ')
+        + (myCaught.length > 3 ? ` +${myCaught.length - 3} more` : '')
+    : 'None yet';
+
+  const resumeLabel = (type === 'pending') ? '▶️ Open Lobby' : '▶️ Resume';
+
+  // Abandon UI state per card
+  let abandonBlock = '';
+  if (hasPendingAbandon) {
+    abandonBlock = `
+      <div class="pdc-abandon-pending">
+        ⏳ Abandon request sent to Papa. Waiting for approval…
+      </div>`;
+  } else if (PLAYER_UI.abandonOpenFor === code) {
+    abandonBlock = `
+      <div class="pdc-abandon-inline">
+        Send abandon request to Papa?<br>
+        <span style="opacity:0.75;font-size:0.78rem">You won't be able to rejoin this room.</span>
+        <div class="pdc-abandon-actions">
+          <button class="btn-danger" style="flex:1;padding:7px;font-size:0.82rem" onclick="pdcConfirmAbandon('${escapeAttr(code)}')">Yes, Send Request</button>
+          <button class="btn-secondary" style="flex:1;padding:7px;font-size:0.82rem" onclick="pdcCancelAbandon()">Cancel</button>
+        </div>
+      </div>`;
+  }
+
+  const resumeBtn = hasPendingAbandon
+    ? `<button class="btn-primary" disabled style="flex:1;opacity:0.45">${resumeLabel}</button>`
+    : `<button class="btn-primary" onclick="pdcResumeRoom('${escapeAttr(code)}')">${resumeLabel}</button>`;
+
+  const moreBtn = hasPendingAbandon
+    ? `<button class="btn-secondary" onclick="pdcOpenRoomDetail('${escapeAttr(code)}')">📋 Details</button>`
+    : `<button class="btn-secondary" onclick="pdcToggleMore('${escapeAttr(code)}')">··· More</button>`;
+
+  let moreMenu = '';
+  if (PLAYER_UI.moreOpenFor === code && !hasPendingAbandon) {
+    moreMenu = `
+      <div class="pdc-more-dropdown" id="pdc-more-${escapeAttr(code)}">
+        <button onclick="pdcOpenRoomDetail('${escapeAttr(code)}')">📋 View Room Details</button>
+        <button onclick="pdcRequestAbandon('${escapeAttr(code)}')">🚪 Abandon Room</button>
+      </div>`;
+  }
+
   return `
-    <div class="${cls}">
-      <div class="game-card-top">
-        <div class="room-code-box${isHighlight ? '' : ' small'}">${escapeHTML(r.id)}</div>
-        <button class="copy-btn" onclick="landingCopyCode('${escapeAttr(r.id)}')">📋 Copy</button>
+    <div class="pdc-room-card ${isHighlight ? 'highlight' : ''}">
+      <div class="pdc-rc-top">
+        <div class="pdc-rc-code">${escapeHTML(code)}</div>
+        <span class="status-pill status-${status.cls}">${phaseLabel}</span>
       </div>
-      <div class="game-card-meta">
-        <span class="status-pill status-${status.cls}">${status.label}</span>
-        <span class="meta-sep">·</span>
-        <span>👥 ${players}</span>
-        <span class="meta-sep">·</span>
-        <span>🕒 ${updated}</span>
-        ${isHighlight ? '<span class="meta-sep">·</span><span class="pd-highlight-tag">⭐ from URL</span>' : ''}
+      ${regionInfo}
+      ${type === 'active' ? `
+        <div class="pdc-rc-stats">
+          <div class="pdc-rc-stat-row">
+            🏅 Badges:
+            <div class="pdc-rc-bar-wrap"><div class="pdc-rc-bar" style="width:${Math.min(100, myBadges * 10)}%"></div></div>
+            <span style="font-family:var(--font-mono);font-weight:900">${myBadges}/10</span>
+          </div>
+          <div class="pdc-rc-stat-row">🐾 Caught: <span style="font-size:0.78rem;opacity:0.85">${pokeNames}</span></div>
+          <div class="pdc-rc-stat-row">💎 Earned: <span style="font-family:var(--font-mono);font-weight:900;color:var(--crystal)">${myCrystals.toLocaleString()}</span></div>
+        </div>` : ''}
+      ${abandonBlock}
+      <div class="pdc-rc-actions">${resumeBtn}${moreBtn}</div>
+      ${moreMenu}
+    </div>`;
+}
+
+// Helpers — aggregate per-room stats from the player's global save
+function countBadgesForRoom(_code) {
+  // Saves don't yet track which room earned which badge, so report the
+  // global badge count. Same data is fine because saves are per-player,
+  // not per-room — playing in multiple rooms still uses one save.
+  return (STATE.save && STATE.save.badges_earned) || 0;
+}
+function pokemonCaughtInRoom(code) {
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  if (!code) return team;
+  // If pokemon entries carry a roomCode, filter by it; else fall back
+  // to the whole team.
+  const tagged = team.filter(p => p.roomCode === code);
+  return tagged.length ? tagged : team;
+}
+function crystalsEarnedInRoom(code) {
+  // Sum all approved/modified earn+adjustment rows scoped to this room.
+  const rows = (PLAYER_UI.ledgerCache || []);
+  return rows
+    .filter(r => r.room_code === code
+              && (r.status === 'approved' || r.status === 'modified')
+              && (r.type === 'earn' || r.type === 'bonus'))
+    .reduce((sum, r) => sum + (r.amount || 0), 0);
+}
+
+// ── COLUMN 1 actions ─────────────────────────────────────────
+function pdcShowJoinForm() {
+  const zone = document.getElementById('pdc-join-zone');
+  zone.innerHTML = `
+    <div class="pdc-join-inline">
+      <input type="text" id="pdc-join-code" placeholder="ROOM CODE" maxlength="8"
+        oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
+      <div class="pdc-join-inline-actions">
+        <button class="btn-primary" onclick="pdcDoJoin()">Join</button>
+        <button class="btn-secondary" onclick="pdcResetJoinZone()">Cancel</button>
       </div>
-      <div class="game-card-actions">
-        ${resumeBtn}
+      <div class="pdc-join-err" id="pdc-join-err"></div>
+    </div>`;
+  setTimeout(() => document.getElementById('pdc-join-code')?.focus(), 50);
+}
+function pdcResetJoinZone() {
+  document.getElementById('pdc-join-zone').innerHTML =
+    `<button class="btn-primary" onclick="pdcShowJoinForm()">＋ Join a Room</button>`;
+}
+async function pdcDoJoin() {
+  const code = (document.getElementById('pdc-join-code')?.value || '').trim().toUpperCase();
+  if (!code) {
+    const e = document.getElementById('pdc-join-err');
+    if (e) e.textContent = '⚠️ Enter a room code';
+    return;
+  }
+  // Mirror screen-join's hidden input so the existing playerJoin path
+  // works without changes.
+  const hidden = document.getElementById('join-code');
+  if (hidden) hidden.value = code;
+  // Ensure the join-err target is present (playerJoin writes to it).
+  // playerJoin will navigate to the right next screen on success.
+  await playerJoin();
+}
+
+async function pdcResumeRoom(code) {
+  // Pre-fill the join screen's hidden code field, then route through the
+  // existing playerJoin flow (which handles roster-match → reconnect or
+  // fresh join, plus the locked-room guard).
+  const hidden = document.getElementById('join-code');
+  if (hidden) hidden.value = code;
+  await playerJoin();
+}
+
+function pdcToggleMore(code) {
+  PLAYER_UI.moreOpenFor = (PLAYER_UI.moreOpenFor === code) ? null : code;
+  pdcRenderCol1Rooms();
+}
+function pdcRequestAbandon(code) {
+  PLAYER_UI.abandonOpenFor = code;
+  PLAYER_UI.moreOpenFor    = null;
+  pdcRenderCol1Rooms();
+}
+function pdcCancelAbandon() {
+  PLAYER_UI.abandonOpenFor = null;
+  pdcRenderCol1Rooms();
+}
+async function pdcConfirmAbandon(code) {
+  if (!STATE.player) return;
+  await dbLedgerInsert({
+    player_id:  STATE.player.id,
+    room_code:  code,
+    type:       'adjustment',
+    amount:     0,
+    status:     'pending',
+    note:       'Abandon request — awaiting host approval',
+    resolved_at: null,
+  });
+  PLAYER_UI.abandonOpenFor = null;
+  showToast(`🚪 Abandon request sent for ${code}`);
+  await renderPlayerDashboard();
+}
+
+// ── COLUMN 1 — Room Detail Overlay (player, read-only) ──────
+async function pdcOpenRoomDetail(code) {
+  PLAYER_UI.moreOpenFor = null;
+  const room = await dbReadRoom(code);
+  if (!room) { showToast('⚠️ Room not found'); return; }
+  document.getElementById('pdc-rd-code').textContent = code;
+  const status = deriveRoomStatus(room);
+  const statusEl = document.getElementById('pdc-rd-status');
+  statusEl.className = `status-pill status-${status.cls}`;
+  statusEl.textContent = status.label;
+
+  // Region progress R1..R10
+  const progress = REGIONS.map(r => {
+    let cls = 'rd-progress-pill';
+    let icon = '○';
+    if (r.id < room.currentRegion) { cls += ' done'; icon = '✅'; }
+    else if (r.id === room.currentRegion) { cls += ' active'; icon = '🔄'; }
+    return `<span class="${cls}">${icon} R${r.id}</span>`;
+  }).join('');
+  document.getElementById('pdc-rd-progress').innerHTML = progress;
+
+  const myBadges = countBadgesForRoom(code);
+  const myCaught = pokemonCaughtInRoom(code);
+  const myCrystals = crystalsEarnedInRoom(code);
+  document.getElementById('pdc-rd-stats').innerHTML = `
+    <div class="pdc-rc-stats">
+      <div class="pdc-rc-stat-row">🏅 Badges earned: <b>${myBadges}/10</b></div>
+      <div class="pdc-rc-stat-row">🐾 Pokemon caught: <b>${myCaught.length}</b></div>
+      <div class="pdc-rc-stat-row">💎 Crystals earned: <b style="color:var(--crystal);font-family:var(--font-mono)">${myCrystals.toLocaleString()}</b></div>
+    </div>`;
+  document.getElementById('pdc-room-detail-overlay').style.display = 'flex';
+}
+function pdcCloseRoomDetail() {
+  document.getElementById('pdc-room-detail-overlay').style.display = 'none';
+}
+function pdcRoomDetailMaybeClose(e) {
+  if (e.target.classList.contains('modal-overlay')) pdcCloseRoomDetail();
+}
+
+function pdcToggleArchived() {
+  PLAYER_UI.archivedExpanded = !PLAYER_UI.archivedExpanded;
+  pdcRenderCol1Rooms();
+}
+
+// ── COLUMN 2 — CRYSTAL WALLET ────────────────────────────────
+async function pdcRenderCol2Wallet() {
+  const player = STATE.player;
+  if (!player) return;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  document.getElementById('pdc-balance-big').textContent = balance.toLocaleString();
+  document.getElementById('pdc-peso').textContent = (balance / 100).toFixed(2);
+
+  // Redeem button — disabled while a redemption is already pending
+  const hasPending = await dbHasPendingRedemption(player.id);
+  const zone = document.getElementById('pdc-redeem-zone');
+  if (hasPending) {
+    // Find the pending amount for display
+    const pendings = await dbLedgerForPlayer(player.id, 50);
+    const p = pendings.find(r => r.type === 'redeem_request' && r.status === 'pending');
+    const amt = p ? Math.abs(p.amount) : 0;
+    zone.innerHTML = `
+      <div class="pdc-redeem-pending">
+        ⏳ Redemption pending — ${amt.toLocaleString()} 💎
+      </div>`;
+  } else {
+    zone.innerHTML = `<button class="btn-primary" id="pdc-redeem-toggle" onclick="pdcShowRedeemForm()">🎁 Redeem Crystals</button>`;
+  }
+
+  // Ledger
+  PLAYER_UI.ledgerCache = await dbLedgerForPlayer(player.id, 200);
+  pdcRenderLedger();
+}
+
+function pdcRenderLedger() {
+  const all = PLAYER_UI.ledgerCache || [];
+  const f = PLAYER_UI.ledgerFilter;
+  const filtered = all.filter(r => {
+    if (f === 'all') return true;
+    if (f === 'earned')   return r.type === 'earn' || r.type === 'bonus';
+    if (f === 'redeemed') return r.type === 'redeem_request';
+    return true;
+  });
+  const limit = PLAYER_UI.ledgerLimit;
+  const visible = filtered.slice(0, limit);
+  const list = document.getElementById('pdc-ledger-list');
+  if (!visible.length) {
+    list.innerHTML = '<div class="pdc-empty">No entries yet.</div>';
+  } else {
+    list.innerHTML = visible.map(pdcLedgerRow).join('');
+  }
+  const more = document.getElementById('pdc-ledger-more');
+  more.style.display = (filtered.length > limit) ? 'block' : 'none';
+}
+
+function pdcLedgerRow(row) {
+  const icon = { approved: '✅', pending: '⏳', declined: '❌', modified: '✏️' }[row.status] || '·';
+  const sign = row.amount > 0 ? '+' : (row.amount < 0 ? '−' : '');
+  const abs = Math.abs(row.amount).toLocaleString();
+  const amtCls = row.amount > 0 ? 'amt-credit' : (row.amount < 0 ? 'amt-debit' : '');
+  let label;
+  if (row.type === 'earn') {
+    label = (row.note && row.note.includes('Gym')) ? escapeHTML(row.note) : `Gym clear — ${row.note ? escapeHTML(row.note) : ''}`;
+  } else if (row.type === 'bonus')          label = 'Papa bonus';
+    else if (row.type === 'redeem_request') label = 'Redemption request';
+    else if (row.type === 'adjustment')     label = (row.note && row.note.startsWith('Abandon')) ? 'Abandon request' : (row.note && row.note.startsWith('Broadcast')) ? 'Broadcast' : 'Adjustment';
+    else label = row.type;
+  const room = row.room_code ? escapeHTML(row.room_code) : '—';
+  const when = walletRelTime(row.created_at);
+  const note = (row.note && row.type !== 'adjustment') ? `<span class="pdc-ledger-note">${escapeHTML(row.note)}</span>` : '';
+  return `
+    <div class="pdc-ledger-row status-${row.status}">
+      <div>${icon}</div>
+      <div class="pdc-ledger-label">${label}</div>
+      <div class="pdc-ledger-amt ${amtCls}">${sign}${abs} 💎</div>
+      <div class="pdc-ledger-sub">
+        <span>${room}</span>
+        <span>·</span>
+        <span>${when}</span>
+        ${note}
       </div>
     </div>`;
 }
 
-// Tap a game card → resume into that room
-async function playerDashboardOpenRoom(code) {
-  // Drop the code into screen-join as a pre-filled value and submit,
-  // routing through playerJoin (which handles rejoin-vs-new).
-  STATE.roomCode = code;
-  const codeInp = document.getElementById('join-code');
-  if (codeInp) codeInp.value = code;
-  await playerJoin();
+function pdcSetLedgerFilter(f) {
+  PLAYER_UI.ledgerFilter = f;
+  PLAYER_UI.ledgerLimit  = 10;
+  ['all', 'earned', 'redeemed'].forEach(k => {
+    const el = document.getElementById('pdc-tab-' + k);
+    if (el) el.classList.toggle('active', k === f);
+  });
+  pdcRenderLedger();
+}
+function pdcShowMoreLedger() {
+  PLAYER_UI.ledgerLimit += 10;
+  pdcRenderLedger();
 }
 
-function dashboardLogout() {
+function pdcShowRedeemForm() {
+  const player = STATE.player;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const zone = document.getElementById('pdc-redeem-zone');
+  zone.innerHTML = `
+    <div class="pdc-redeem-form">
+      <label>Amount (max ${balance.toLocaleString()})</label>
+      <input type="number" id="pdc-redeem-amount" min="1" max="${balance}" placeholder="e.g. 500">
+      <label>Note (optional)</label>
+      <input type="text" id="pdc-redeem-note" maxlength="80" placeholder="e.g. end of day payout">
+      <div class="pdc-join-err" id="pdc-redeem-err"></div>
+      <div class="pdc-redeem-actions">
+        <button class="btn-primary" onclick="pdcSubmitRedeem()">Submit Request</button>
+        <button class="btn-secondary" onclick="pdcRenderCol2Wallet()">Cancel</button>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('pdc-redeem-amount')?.focus(), 50);
+}
+async function pdcSubmitRedeem() {
+  const player = STATE.player;
+  if (!player) return;
+  const err = document.getElementById('pdc-redeem-err');
+  const amount = parseInt(document.getElementById('pdc-redeem-amount').value, 10);
+  const note   = document.getElementById('pdc-redeem-note').value.trim();
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  if (!amount || amount <= 0) { if(err) err.textContent = '⚠️ Enter an amount > 0'; return; }
+  if (amount > balance)       { if(err) err.textContent = `⚠️ You only have ${balance.toLocaleString()} 💎`; return; }
+  const already = await dbHasPendingRedemption(player.id);
+  if (already) { await pdcRenderCol2Wallet(); return; }
+  await dbLedgerInsert({
+    player_id:  player.id,
+    room_code:  STATE.roomCode || null,
+    type:       'redeem_request',
+    amount:     -Math.abs(amount),
+    status:     'pending',
+    note:       note || null,
+    resolved_at: null,
+  });
+  // Inline confirmation block; refresh after a beat.
+  const zone = document.getElementById('pdc-redeem-zone');
+  zone.innerHTML = `<div class="pdc-redeem-confirm">✅ Request sent! Papa will approve your redemption.</div>`;
+  setTimeout(() => pdcRenderCol2Wallet(), 1800);
+}
+
+// ── COLUMN 3 — MY JOURNEY ────────────────────────────────────
+async function pdcRenderCol3Journey() {
+  pdcRenderTopScores();
+  await pdcRenderPokemonTeam();
+  await pdcRenderBroadcastSection();
+}
+
+function pdcRenderTopScores() {
+  const save = STATE.save || {};
+  const regions = save.regions || {};
+  // Flatten every gymResults entry across every region this player
+  // has touched, regardless of room.
+  const flat = [];
+  for (const rid of Object.keys(regions)) {
+    const region = REGIONS.find(r => r.id === parseInt(rid, 10));
+    const results = (regions[rid] && regions[rid].gymResults) || {};
+    for (const gid of Object.keys(results)) {
+      const res = results[gid] || {};
+      flat.push({
+        region: region || { id: parseInt(rid,10), name: `R${rid}` },
+        gym:    parseInt(gid, 10),
+        crystals:    res.gymCrystals || 0,
+        correct:     res.gymCorrect  || 0,
+        speedBonus:  res.speedBonus  || 0,
+        roomCode:    res.roomCode    || null,
+        completedAt: res.completedAt || null,
+      });
+    }
+  }
+  flat.sort((a,b) => (b.crystals - a.crystals) || ((b.correct||0) - (a.correct||0)));
+
+  const container = document.getElementById('pdc-top-scores');
+  if (!flat.length) {
+    container.innerHTML = `<div class="pdc-empty">No gym scores yet — start playing to see your bests! 🎮</div>`;
+    document.getElementById('pdc-show-all-scores').style.display = 'none';
+    return;
+  }
+  const top = PLAYER_UI.showAllScores ? flat : flat.slice(0, 3);
+  container.innerHTML = top.map((s, i) => {
+    const medal = (PLAYER_UI.showAllScores)
+      ? (i < 3 ? ['🥇','🥈','🥉'][i] : (i + 1))
+      : ['🥇','🥈','🥉'][i] || '·';
+    const sb = s.speedBonus ? `<span> · ⚡ Speed bonus: +${s.speedBonus}</span>` : '';
+    const room = s.roomCode ? `Room ${escapeHTML(s.roomCode)}` : 'Unknown room';
+    const when = s.completedAt ? walletRelTime(s.completedAt) : '';
+    return `
+      <div class="pdc-score-card">
+        <div class="pdc-score-medal">${medal}</div>
+        <div class="pdc-score-title">${escapeHTML(s.region.name)} · Gym ${s.gym}</div>
+        <div class="pdc-score-stats">${s.correct}/10 · 💎 ${s.crystals.toLocaleString()}</div>
+        <div class="pdc-score-sub">${room} · ${when}${sb}</div>
+      </div>`;
+  }).join('');
+  const btn = document.getElementById('pdc-show-all-scores');
+  if (flat.length > 3) {
+    btn.style.display = 'block';
+    btn.textContent = PLAYER_UI.showAllScores ? 'Show top 3 ▲' : `Show all ${flat.length} scores ▼`;
+  } else {
+    btn.style.display = 'none';
+  }
+}
+function pdcToggleAllScores() {
+  PLAYER_UI.showAllScores = !PLAYER_UI.showAllScores;
+  pdcRenderTopScores();
+}
+
+async function pdcRenderPokemonTeam() {
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const container = document.getElementById('pdc-pokemon-team');
+  if (!team.length) {
+    container.innerHTML = `<div class="pdc-empty">No Pokemon caught yet — catch your first in the pre-game! 🎮</div>`;
+    return;
+  }
+  const ORDER = ['legendary', 'super', 'rare', 'common'];
+  const LABEL = { legendary:'👑 Legendary', super:'🌟 Super Rare', rare:'💎 Rare', common:'⬜ Common' };
+  const groups = {};
+  for (const p of team) {
+    const rarity = (p.rarity || 'common').toLowerCase();
+    if (!groups[rarity]) groups[rarity] = [];
+    groups[rarity].push(p);
+  }
+  container.innerHTML = ORDER.filter(r => groups[r]).map(r => {
+    const rows = groups[r].map(p => `
+      <div class="pdc-pokemon-row">
+        <span class="pdc-poke-emoji">${p.emoji || '🐾'}</span>
+        <span class="pdc-poke-name">${escapeHTML(p.name || '?')}</span>
+        <span class="pdc-poke-rarity ${r}">${(p.rarity || 'common').toUpperCase()}</span>
+        ${p.roomCode ? `<span class="pdc-poke-room">${escapeHTML(p.roomCode)}</span>` : ''}
+      </div>`).join('');
+    return `
+      <div class="pdc-pokemon-group">
+        <div class="pdc-pokemon-group-label">${LABEL[r] || r}</div>
+        ${rows}
+      </div>`;
+  }).join('');
+}
+
+async function pdcRenderBroadcastSection() {
+  const player = STATE.player;
+  if (!player) return;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const after = Math.max(0, balance - 10);
+  document.getElementById('pdc-broadcast-after-val').textContent = after.toLocaleString();
+  // Has any active room?
+  const allRooms = await dbListRooms();
+  const activeMine = allRooms.find(r =>
+    (r.data?.players || []).some(p => p.id === player.id)
+    && !r.data?.archived && r.data?.phase !== 'GAME_OVER' && r.data?.phase !== 'lobby');
+  PLAYER_UI.broadcastRoomCode = activeMine ? activeMine.id : null;
+  pdcBroadcastValidate();
+}
+
+function pdcBroadcastValidate() {
+  const txt = (document.getElementById('pdc-broadcast-text')?.value || '').trim();
+  const charEl = document.getElementById('pdc-broadcast-char');
+  if (charEl) charEl.textContent = txt.length;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const warn = document.getElementById('pdc-broadcast-warn');
+  const btn  = document.getElementById('pdc-broadcast-send');
+  let ok = true, msg = '';
+  if (!PLAYER_UI.broadcastRoomCode) { ok = false; msg = '⚠️ Join an active room to broadcast'; }
+  else if (balance < 10)            { ok = false; msg = '⚠️ You need at least 10 crystals to broadcast'; }
+  else if (!txt)                    { ok = false; msg = ''; }
+  if (warn) warn.textContent = msg;
+  if (btn)  { btn.disabled = !ok; btn.style.opacity = ok ? '' : '0.4'; }
+}
+
+async function pdcSendBroadcast() {
+  const player = STATE.player;
+  if (!player) return;
+  const txtEl = document.getElementById('pdc-broadcast-text');
+  const text = (txtEl?.value || '').trim();
+  const code = PLAYER_UI.broadcastRoomCode;
+  if (!text || !code) return;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  if (balance < 10) { showToast('⚠️ Not enough crystals'); return; }
+
+  // Deduct 10 from total_crystals (canonical balance).
+  await dbBumpCrystals(player.id, -10);
+  // Refresh local save so the header updates immediately.
+  const fresh = await dbLoad(player.id);
+  if (fresh) STATE.save = fresh;
+
+  // Audit row.
+  await dbLedgerInsert({
+    player_id:  player.id,
+    room_code:  code,
+    type:       'adjustment',
+    amount:     -10,
+    status:     'approved',
+    note:       `Broadcast: ${text}`,
+    resolved_at: new Date().toISOString(),
+  });
+
+  // Push to recipients via room.announcement (existing pipeline).
+  const room = await dbReadRoom(code);
+  if (room) {
+    room.announcement = {
+      text: `${player.name}: ${text}`,
+      ts:   new Date().toISOString(),
+      source: player.id,
+    };
+    room.updated_at = new Date().toISOString();
+    await dbWriteRoom(code, room);
+  }
+
+  if (txtEl) txtEl.value = '';
+  showToast('📢 Message sent!');
+  await renderPlayerDashboard();
+}
+
+// ── LOG OUT ──────────────────────────────────────────────────
+function pdcLogout() {
   localStorage.removeItem('cqc_player_id');
   localStorage.removeItem('cqc_player');
+  localStorage.removeItem('cqc_player_name');
   localStorage.removeItem('cqc_room_code');
   STATE.player = null;
   STATE.save   = null;
   STATE.roomCode = null;
   _dashboardHighlightRoom = null;
+  pdcStopPoll();
   showScreen('screen-home');
 }
+
+// Legacy aliases retained so any pre-existing onclick references still
+// land somewhere sane.
+async function renderPlayerDashboard_legacy() { return renderPlayerDashboard(); }
+function dashboardLogout() { return pdcLogout(); }
+async function playerDashboardOpenRoom(code)  { return pdcResumeRoom(code); }
 
 // ── LOAD POKEMON ──────────────────────────────────────────────
 // Phase 1 step 1.4: 10 starters + 100 regional Pokemon (10 per region).
@@ -1161,7 +1765,7 @@ function showCatchResult(caught) {
     // Add to team — MAX 1 POKEMON, waive remaining pokeballs.
     // We spread the full pokemon.json record (preserves rarity, baseValue,
     // abilityEffect, type) and add the runtime fields level + caughtAt.
-    const newPokemon = { ...poke, level: 1, caughtAt: 'pregame' };
+    const newPokemon = { ...poke, level: 1, caughtAt: 'pregame', roomCode: STATE.roomCode || null };
     PREGAME_STATE.caughtPokemon.push(newPokemon);
     STATE.save.pokemon_team = PREGAME_STATE.caughtPokemon;
     // Waive all remaining pokeballs
@@ -1587,7 +2191,12 @@ function showRegionalCatchResult(caught) {
     // Phase 1 step 1.4: award the REAL Pokemon from pokemon.json (spread
     // preserves name/type/rarity/ability/abilityEffect/baseValue). Add
     // level + caughtAt for runtime tracking.
-    const newPokemon = { ...target, level: 1, caughtAt: `region${s.region.id}` };
+    const newPokemon = {
+      ...target,
+      level: 1,
+      caughtAt: `region${s.region.id}`,
+      roomCode: STATE.roomCode || null,  // for the player-dashboard "caught in" tag
+    };
     s.caughtPokemon.push(newPokemon);
     if (!STATE.save.pokemon_team) STATE.save.pokemon_team = [];
     STATE.save.pokemon_team.push(newPokemon);
@@ -2280,6 +2889,7 @@ async function endGym() {
     gymCrystals: STATE.gymCrystals,
     gymCorrect:  STATE.gymCorrect,
     completedAt: new Date().toISOString(),
+    roomCode:    STATE.roomCode || null,  // for the player-dashboard "Room CODE" tag
     questions:   STATE.currentQData.map((q, i) => {
       const chosen = (STATE.gymAnswerLog[i] !== undefined) ? STATE.gymAnswerLog[i] : null;
       return {
@@ -2301,19 +2911,21 @@ async function endGym() {
   // Auto-save to Supabase
   await dbSave(STATE.player.id, STATE.save);
 
-  // Crystal-banking: every gym attempt that earned > 0 crystals writes a
-  // single 'earn' ledger row, status=approved. The per-question balance
-  // updates in checkAnswer already mutated STATE.save.total_crystals, so
-  // we record the ledger entry WITHOUT re-bumping the balance to avoid
-  // double-counting. The ledger is the audit trail of record.
-  if (STATE.gymCrystals > 0 && STATE.player && STATE.player.id) {
+  // Crystal-banking: every gym attempt writes an 'earn' ledger row,
+  // status=approved. Earned > 0 → labeled with crystal amount + region.
+  // Earned 0 (gym fail with no correct answers) → amount=0 row, kept
+  // so the audit shows every attempt. The per-question balance updates
+  // in checkAnswer already mutated STATE.save.total_crystals, so we
+  // record the ledger entry WITHOUT re-bumping the balance.
+  if (STATE.player && STATE.player.id) {
+    const verdict = passed ? 'passed' : (STATE.gymCrystals > 0 ? 'partial' : 'failed');
     await dbLedgerInsert({
       player_id:  STATE.player.id,
       room_code:  STATE.roomCode || null,
       type:       'earn',
       amount:     STATE.gymCrystals,
       status:     'approved',
-      note:       `${region.name} Gym ${STATE.currentGym}${passed ? ' — passed' : ''}`,
+      note:       `Gym ${STATE.currentGym} ${verdict} · ${region.name}`,
       resolved_at: new Date().toISOString(),
     });
   }
@@ -3723,8 +4335,27 @@ function col2AccountCard(s, pendingEntry) {
 }
 
 function col2PendingBlock(entry, save) {
+  // Two pending types live here:
+  //   redeem_request  → player asks to convert crystals to peso credit
+  //   adjustment (amount=0, note starts "Abandon request") → player asks
+  //   to abandon a room
+  const isAbandon = entry.type === 'adjustment'
+                  && (entry.note || '').startsWith('Abandon request');
   const abs = Math.abs(entry.amount);
   const peso = (abs / 100).toFixed(2);
+  if (isAbandon) {
+    return `
+      <div class="ac-pending">
+        <div class="ac-pending-label">🚪 Abandon Request</div>
+        <div class="ac-pending-note">Room: <b>${escapeHTML(entry.room_code || '—')}</b></div>
+        ${entry.note ? `<div class="ac-pending-note">${escapeHTML(entry.note)}</div>` : ''}
+        <div class="ac-pending-time">Submitted ${relTime(entry.created_at)}</div>
+        <div class="ac-pending-actions">
+          <button class="btn-primary" onclick="col2ApproveAbandon('${escapeAttr(entry.id)}')">✅ Approve</button>
+          <button class="btn-danger" onclick="col2DeclineRequest('${escapeAttr(entry.id)}')">❌ Decline</button>
+        </div>
+      </div>`;
+  }
   return `
     <div class="ac-pending">
       <div class="ac-pending-label">⏳ Redemption Request</div>
@@ -3738,6 +4369,27 @@ function col2PendingBlock(entry, save) {
       </div>
       <div id="ac-mod-${escapeAttr(entry.id)}" style="display:none" class="ac-modify-form"></div>
     </div>`;
+}
+
+// Approve an abandon request — marks the ledger row approved AND writes
+// the room code into the player's save.abandoned_rooms list. That list
+// is what the player's three-column dashboard reads to bucket the room
+// as Archived/Abandoned. The room itself stays intact for other players.
+async function col2ApproveAbandon(entryId) {
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'approved', resolved_at: new Date().toISOString(),
+  });
+  if (!row) { showToast('❌ Could not approve abandon'); return; }
+  const save = await dbLoad(row.player_id);
+  if (save) {
+    const list = Array.isArray(save.abandoned_rooms) ? save.abandoned_rooms : [];
+    if (row.room_code && !list.includes(row.room_code)) list.push(row.room_code);
+    save.abandoned_rooms = list;
+    save.updated_at = new Date().toISOString();
+    await dbSave(row.player_id, save);
+  }
+  showToast(`🚪 Abandon approved for ${row.room_code || row.player_id}`);
+  renderCol2Accounts();
 }
 
 function col2ArchivedAccountCard(s) {
@@ -4826,14 +5478,38 @@ window.addEventListener('load', () => {
   const roomParam = params.get('room');
   if (roomParam) {
     STATE.roomCode = roomParam;
-    document.getElementById('join-code').value = roomParam;
-    document.getElementById('join-banner-code').textContent = roomParam;
-    document.getElementById('join-banner').style.display = 'block';
+    const codeInp   = document.getElementById('join-code');
+    const bannerEl  = document.getElementById('join-banner');
+    const bannerCd  = document.getElementById('join-banner-code');
+    if (codeInp)  codeInp.value = roomParam;
+    if (bannerCd) bannerCd.textContent = roomParam;
+    if (bannerEl) bannerEl.style.display = 'block';
     showScreen('screen-join');
     // Phase A: try a silent auto-rejoin if localStorage knows who we are
     // AND we're already on this room's roster. Falls through to the join
-    // form if no match.
+    // form if no match. tryAutoRejoinFromURL lands the player on the
+    // dashboard with _dashboardHighlightRoom set.
     tryAutoRejoinFromURL(roomParam);
+  } else {
+    // No ?room=. If we have a saved identity in localStorage, skip the
+    // login screen and go straight to the three-column dashboard. This
+    // matches the spec: "If cqc_player_id exists in localStorage: skip
+    // screen-home entirely".
+    const storedId = localStorage.getItem('cqc_player_id');
+    if (storedId && isValidPlayerId(storedId)) {
+      (async () => {
+        const result = await dbLoginPlayer(storedId);
+        if (result) {
+          STATE.player = result.player;
+          STATE.save   = result.save;
+          openPlayerDashboard();
+        }
+        // If the lookup fails (e.g. row deleted in Supabase), fall back
+        // silently to screen-home which is the default `.active` screen.
+      })();
+    }
+    // If no localStorage, screen-home is already `.active` in the HTML
+    // and we leave the user there to pick Create Account / Log In.
   }
 
   // Wire leaderboard

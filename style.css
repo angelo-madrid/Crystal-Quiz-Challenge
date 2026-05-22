@@ -2493,3 +2493,412 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .lm-row .lm-room { font-family: var(--font-mono); font-size: 0.72rem; opacity: 0.78; }
 .lm-row .lm-note { font-size: 0.78rem; opacity: 0.75; font-style: italic; }
 .lm-row .lm-when { font-size: 0.72rem; opacity: 0.6; text-align: right; }
+
+/* ═══════════════════════════════════════════════
+   PLAYER DASHBOARD — three-column landscape layout
+   ═══════════════════════════════════════════════ */
+
+/* Full-viewport screen (override centered #app cap, same trick as host) */
+.screen#screen-player-dashboard {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  width: 100vw; max-width: 100vw;
+  padding: 0;
+}
+.pdc-3col-screen.screen.active { display: flex; flex-direction: column; }
+
+/* Persistent header */
+.pdc-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 22px;
+  background: linear-gradient(180deg, rgba(255,203,5,0.10), rgba(255,203,5,0.04));
+  border-bottom: 1px solid var(--card-border);
+  flex-shrink: 0;
+}
+.pdc-h-left, .pdc-h-right {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.92rem;
+}
+.pdc-h-emoji { font-size: 1.3rem; }
+.pdc-h-id {
+  font-family: var(--font-mono); font-weight: 900;
+  color: var(--gold); letter-spacing: 2px; font-size: 0.95rem;
+}
+.pdc-h-sep { opacity: 0.4; }
+.pdc-h-name { font-weight: 800; }
+.pdc-h-band {
+  font-size: 0.74rem; padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(255,203,5,0.15);
+  color: var(--gold); font-weight: 800;
+  border: 1px solid rgba(255,203,5,0.3);
+}
+.pdc-h-balance {
+  font-family: var(--font-mono); font-weight: 900;
+  color: var(--crystal);
+  font-size: 1rem;
+}
+.pdc-h-logout {
+  padding: 7px 14px; border-radius: 10px;
+  background: rgba(239,68,68,0.12);
+  color: #fca5a5; border: 1px solid rgba(239,68,68,0.35);
+  font-weight: 800; font-size: 0.82rem; cursor: pointer;
+}
+.pdc-h-logout:hover { background: rgba(239,68,68,0.22); }
+
+/* Three columns */
+.pdc-3col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: var(--card-border);
+  flex: 1; min-height: 0;
+  height: calc(100vh - 56px);
+}
+.pdc-col {
+  display: flex; flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+}
+.pdc-col-header {
+  position: sticky; top: 0; z-index: 5;
+  padding: 14px 18px;
+  background: linear-gradient(180deg, rgba(255,203,5,0.10) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.9rem; font-weight: 900; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gold);
+}
+.pdc-col-body {
+  flex: 1; overflow-y: auto; padding: 14px 16px 22px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+
+/* Section blocks (shared across all three columns) */
+.pdc-section { display: flex; flex-direction: column; gap: 8px; }
+.pdc-section-label {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.74rem; letter-spacing: 1.6px;
+  color: var(--gold); font-weight: 900; text-transform: uppercase;
+}
+.pdc-section-sub {
+  font-size: 0.78rem; opacity: 0.65;
+  margin-bottom: 4px;
+}
+.pdc-count {
+  background: rgba(255,255,255,0.08); padding: 2px 9px;
+  border-radius: 999px; font-size: 0.72rem;
+  font-weight: 800; color: var(--gold);
+}
+.pdc-archived-toggle {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 0.74rem; letter-spacing: 1.6px;
+  color: var(--gold); font-weight: 900; text-transform: uppercase;
+  cursor: pointer; padding: 4px 0;
+  text-align: left;
+}
+.pdc-archived-toggle:hover { color: white; }
+.pdc-archived-toggle .pdc-count { margin-left: auto; }
+
+/* Column 1 — Game rooms */
+.pdc-join-zone { padding-bottom: 4px; }
+.pdc-room-list { display: flex; flex-direction: column; gap: 10px; }
+.pdc-room-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pdc-room-card.highlight {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(255,203,5,0.25);
+  background: rgba(255,203,5,0.05);
+}
+.pdc-rc-top { display: flex; align-items: center; gap: 10px; }
+.pdc-rc-code {
+  font-family: var(--font-mono); font-weight: 900;
+  font-size: 1.2rem; color: var(--gold); letter-spacing: 2px;
+}
+.pdc-rc-region {
+  font-size: 0.82rem; opacity: 0.85;
+}
+.pdc-rc-stats {
+  display: grid; grid-template-columns: 1fr; gap: 4px;
+  font-size: 0.78rem;
+}
+.pdc-rc-stat-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.pdc-rc-bar-wrap {
+  flex: 1; height: 5px; background: rgba(255,255,255,0.08);
+  border-radius: 3px; overflow: hidden;
+}
+.pdc-rc-bar {
+  height: 100%; background: linear-gradient(90deg, #ffcb05, #ff9800);
+}
+.pdc-rc-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.pdc-rc-actions .btn-primary,
+.pdc-rc-actions .btn-secondary,
+.pdc-rc-actions .btn-danger {
+  flex: 1; padding: 8px 10px; font-size: 0.82rem;
+}
+.pdc-more-menu {
+  position: relative;
+}
+.pdc-more-dropdown {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 6px;
+  margin-top: 6px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pdc-more-dropdown button {
+  text-align: left; padding: 8px 10px;
+  background: transparent; color: white;
+  border: none; border-radius: 6px;
+  font-size: 0.84rem; cursor: pointer;
+}
+.pdc-more-dropdown button:hover { background: rgba(255,255,255,0.08); }
+.pdc-abandon-inline {
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.35);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.84rem;
+}
+.pdc-abandon-inline .pdc-abandon-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+}
+.pdc-abandon-pending {
+  background: rgba(255,203,5,0.10);
+  border: 1px solid rgba(255,203,5,0.30);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  color: #fde68a;
+  font-weight: 700;
+}
+.pdc-room-card.archived {
+  opacity: 0.78;
+  background: rgba(255,255,255,0.025);
+}
+.pdc-archived-pill {
+  display: inline-block; padding: 3px 9px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 800;
+}
+.pdc-archived-pill.finished  { background: rgba(34,197,94,0.16);  color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
+.pdc-archived-pill.abandoned { background: rgba(239,68,68,0.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,0.35); }
+.pdc-empty {
+  text-align: center; opacity: 0.55; font-size: 0.85rem;
+  padding: 16px 8px;
+}
+
+/* Column 1 — Inline join form */
+.pdc-join-inline {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pdc-join-inline input {
+  width: 100%; padding: 10px;
+  font-family: var(--font-mono); font-weight: 900;
+  letter-spacing: 3px; text-align: center; text-transform: uppercase;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,203,5,0.4);
+  border-radius: 10px;
+  color: white;
+}
+.pdc-join-inline-actions { display: flex; gap: 8px; }
+.pdc-join-inline-actions button { flex: 1; padding: 9px; font-size: 0.85rem; }
+.pdc-join-err { color: #fca5a5; font-size: 0.78rem; font-weight: 700; }
+
+/* Column 2 — Balance card */
+.pdc-balance-card {
+  background: linear-gradient(135deg, rgba(255,203,5,0.10), rgba(168,85,247,0.10));
+  border: 1px solid rgba(255,203,5,0.3);
+  border-radius: 16px;
+  padding: 18px 16px;
+  text-align: center;
+}
+.pdc-balance-label { font-size: 0.74rem; opacity: 0.65; letter-spacing: 2px; text-transform: uppercase; }
+.pdc-balance-big {
+  font-family: var(--font-mono); font-weight: 900;
+  font-size: 2.4rem; color: var(--crystal);
+  margin: 6px 0 2px;
+}
+.pdc-peso { font-size: 0.92rem; opacity: 0.85; }
+
+/* Column 2 — Redeem form */
+.pdc-redeem-form {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.pdc-redeem-form label {
+  font-size: 0.72rem; letter-spacing: 1px;
+  color: var(--gold); text-transform: uppercase;
+  font-weight: 800;
+}
+.pdc-redeem-form input {
+  width: 100%; padding: 9px 10px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,203,5,0.3);
+  border-radius: 8px; color: white;
+}
+.pdc-redeem-form .pdc-redeem-actions { display: flex; gap: 6px; }
+.pdc-redeem-form .pdc-redeem-actions button { flex: 1; padding: 8px; font-size: 0.85rem; }
+.pdc-redeem-pending {
+  background: rgba(255,203,5,0.10);
+  border: 1px solid rgba(255,203,5,0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem; color: #fde68a; font-weight: 700;
+}
+.pdc-redeem-confirm {
+  background: rgba(34,197,94,0.10);
+  border: 1px solid rgba(34,197,94,0.3);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.85rem; color: #86efac; font-weight: 700;
+  margin-top: 6px;
+}
+
+/* Column 2 — Ledger */
+.pdc-ledger-tabs {
+  display: flex; gap: 4px; padding: 2px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+}
+.pdc-tab {
+  flex: 1; padding: 7px;
+  background: transparent; border: none;
+  color: white; font-weight: 800;
+  font-size: 0.78rem;
+  border-radius: 8px; cursor: pointer;
+  opacity: 0.55;
+}
+.pdc-tab.active {
+  background: rgba(255,203,5,0.18);
+  opacity: 1; color: var(--gold);
+}
+.pdc-ledger-list { display: flex; flex-direction: column; gap: 6px; }
+.pdc-ledger-row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  gap: 6px 10px;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+.pdc-ledger-row.status-pending  { border-color: rgba(249,115,22,0.4); }
+.pdc-ledger-row.status-declined { opacity: 0.55; border-style: dashed; }
+.pdc-ledger-amt { font-family: var(--font-mono); font-weight: 900; }
+.pdc-ledger-amt.amt-credit { color: #86efac; }
+.pdc-ledger-amt.amt-debit  { color: #fca5a5; }
+.pdc-ledger-label { font-weight: 700; }
+.pdc-ledger-sub {
+  grid-column: 2 / -1;
+  font-size: 0.72rem; opacity: 0.65;
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.pdc-ledger-note { font-style: italic; opacity: 0.7; }
+.pdc-show-more {
+  background: transparent;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 8px;
+  padding: 7px;
+  color: var(--gold);
+  font-size: 0.78rem; font-weight: 800;
+  cursor: pointer;
+}
+.pdc-show-more:hover { background: rgba(255,255,255,0.04); }
+
+/* Column 3 — Top scores */
+.pdc-top-scores { display: flex; flex-direction: column; gap: 8px; }
+.pdc-score-card {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 8px 12px; align-items: center;
+}
+.pdc-score-medal { font-size: 1.8rem; text-align: center; }
+.pdc-score-title { font-weight: 800; font-size: 0.92rem; }
+.pdc-score-stats {
+  font-family: var(--font-mono); font-weight: 900;
+  color: var(--crystal); font-size: 0.95rem;
+}
+.pdc-score-sub {
+  grid-column: 2 / -1;
+  font-size: 0.74rem; opacity: 0.65;
+}
+
+/* Column 3 — Pokemon team */
+.pdc-pokemon-team { display: flex; flex-direction: column; gap: 8px; }
+.pdc-pokemon-group {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 10px; padding: 8px 10px;
+}
+.pdc-pokemon-group-label {
+  font-size: 0.72rem; letter-spacing: 1.4px;
+  color: var(--gold); font-weight: 900; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.pdc-pokemon-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 0;
+  font-size: 0.86rem;
+  border-top: 1px solid var(--card-border);
+}
+.pdc-pokemon-row:first-of-type { border-top: 0; }
+.pdc-pokemon-row .pdc-poke-emoji { font-size: 1.3rem; }
+.pdc-pokemon-row .pdc-poke-name { font-weight: 800; flex: 1; }
+.pdc-pokemon-row .pdc-poke-rarity {
+  font-size: 0.7rem; padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  font-weight: 800;
+}
+.pdc-pokemon-row .pdc-poke-rarity.legendary { background: rgba(168,85,247,0.20); color: #d8b4fe; }
+.pdc-pokemon-row .pdc-poke-rarity.super     { background: rgba(245,158,11,0.20); color: #fcd34d; }
+.pdc-pokemon-row .pdc-poke-rarity.rare      { background: rgba(59,130,246,0.20); color: #93c5fd; }
+.pdc-pokemon-row .pdc-poke-rarity.common    { background: rgba(255,255,255,0.10); color: #cbd5e1; }
+.pdc-pokemon-row .pdc-poke-room {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  color: var(--gold); letter-spacing: 1px;
+}
+
+/* Column 3 — Broadcast */
+.pdc-broadcast-text {
+  width: 100%; min-height: 64px; resize: vertical;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,203,5,0.30);
+  border-radius: 10px;
+  color: white;
+  padding: 10px;
+  font-family: inherit; font-size: 0.92rem;
+  outline: none;
+}
+.pdc-broadcast-text:focus { border-color: var(--gold); }
+.pdc-broadcast-meta {
+  display: flex; justify-content: space-between;
+  font-size: 0.74rem; opacity: 0.7;
+}
+.pdc-broadcast-after {
+  font-size: 0.8rem;
+  color: var(--crystal); font-family: var(--font-mono);
+  font-weight: 700;
+}
+.pdc-broadcast-warn {
+  font-size: 0.78rem;
+  color: #fca5a5; font-weight: 700;
+  min-height: 1em;
+}
