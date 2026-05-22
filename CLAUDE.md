@@ -1,10 +1,15 @@
 # Crystal Quiz Challenge
-Version: 0.3.2
+Version: 0.3.3
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
 > per-kid draw, pokemon.json with all 10 ability mechanics, Regions 1-2
 > playable slice, graceful end after Region 2.
+>
+> **Multiplayer-only game** — there is no solo / offline play. The only
+> player entry point is "Join a Room" with a host-created room code.
+> `?host=true` lands the host on the dashboard. `?room=CODE` auto-rejoin
+> for returning players still works exactly as before.
 >
 > **Post-Phase-1 UAT additions (still v0.3.x, before Phase 2 begins):**
 > completed-gym Review Mode (read-only, blocks crystal re-farming);
@@ -12,12 +17,10 @@ Last updated: 2026-05-22
 > localStorage match, mid-game strangers rejected); Host Dashboard game
 > manager (active games list, archive system, persistent room-code
 > banner, presence column); new mascot image (Pikachu vs Gengar battle
-> scene).
->
-> **Session 2026-05-22 shipped:** UAT bug-fixes (no-repeat question
-> draws + runtime unscramble shuffle), completed-gym Review Mode,
-> room-code rejoin + presence heartbeat, Host Dashboard game manager
-> with archive, mascot image refresh. All committed and pushed.
+> scene); solo / offline play paths removed (home screen → only "Join
+> a Room"; `continueJourney` and `createPlayer` stubbed to redirect to
+> the join screen so no save can be created or restored outside a
+> Supabase room).
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card

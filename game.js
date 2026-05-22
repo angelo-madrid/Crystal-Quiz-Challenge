@@ -343,51 +343,27 @@ function selectJoinAge(age) {
   document.getElementById('join-age-junior').classList.toggle('selected', age === 'junior');
 }
 
+// Solo-create flow disabled. The legitimate new-player creation now lives
+// inside `playerJoin()` which requires a valid Supabase room. If anything
+// still reaches `screen-login` and calls createPlayer (e.g. a stale link),
+// surface a clear message and redirect to the room-join entry. We do NOT
+// write a save or generate a player ID outside a room context.
 async function createPlayer() {
-  const name = document.getElementById('login-name').value.trim();
   const err = document.getElementById('login-err');
-  if (!name) { err.textContent = '⚠️ Please enter your name!'; return; }
-
-  const id = name.substring(0, 2).toUpperCase() + '-' + Math.floor(1000 + Math.random() * 9000);
-  const player = { id, name, emoji: selectedEmoji, ageGroup: selectedAge };
-  STATE.player = player;
-
-  // Save to localStorage for auto-recognition
-  localStorage.setItem('cqc_player_id', id);
-  localStorage.setItem('cqc_player', JSON.stringify(player));
-
-  const save = newSave(player);
-  STATE.save = save;
-
-  // Save to Supabase
-  const ok = await dbSave(id, save);
-  if (!ok) {
-    err.textContent = '❌ Could not connect to server. Check your internet connection.';
-    return;
+  if (err) {
+    err.textContent = '🎮 New players join through a room code — ask Papa for one.';
   }
-
-  // Go to pre-game Pokemon catch before the map
-  startPreGameCatch();
+  showScreen('screen-join');
 }
 
+// Solo "Continue Journey" was removed from the home screen. The function
+// is kept as a stub so any stale onclick / bookmark routes through the
+// multiplayer entry — never silently restores a save and drops the kid
+// onto the map without a room context. The legitimate rejoin path is
+// `tryAutoRejoinFromURL(code)` triggered by `?room=CODE`, which is left
+// untouched.
 async function continueJourney() {
-  const storedId = localStorage.getItem('cqc_player_id');
-  const storedPlayer = localStorage.getItem('cqc_player');
-
-  if (!storedId || !storedPlayer) {
-    showScreen('screen-login');
-    return;
-  }
-
-  STATE.player = JSON.parse(storedPlayer);
-  const save = await dbLoad(storedId);
-  if (!save) {
-    showScreen('screen-login');
-    return;
-  }
-
-  STATE.save = save;
-  showMap();
+  showScreen('screen-join');
 }
 
 // ── LOAD POKEMON ──────────────────────────────────────────────
