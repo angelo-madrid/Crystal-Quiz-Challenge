@@ -35,7 +35,8 @@
       "catch": 60,
       "gym": 500
     },
-    "note": "Archived source. Runtime loads questions-junior.json / questions-senior.json."
+    "note": "Age-tuned content for senior band. Currently mirrors archived source; age-specific tuning happens in a later step.",
+    "age_band": "senior"
   },
   "gym_blueprints": [
     {
@@ -2354,7 +2355,8 @@
             "Cebu",
             "Davao",
             "Quezon City"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q01",
@@ -2368,7 +2370,8 @@
             "Rose",
             "Sunflower",
             "Orchid"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q01",
@@ -2382,7 +2385,8 @@
             "Eagle",
             "Tarsier",
             "Tamaraw"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q01",
@@ -2394,7 +2398,36 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS001",
+          "category": "filipino",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is the Filipino word for 'friend'?",
+          "answer": "Kaibigan",
+          "options": [
+            "Kaibigan",
+            "Kapatid",
+            "Kalye",
+            "Kaldero"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS002",
+          "category": "filipino",
+          "tier": "basic",
+          "type": "tf",
+          "question": "The Philippine flag features a golden sun and three stars.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -2408,7 +2441,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q01",
@@ -2422,7 +2456,66 @@
             "Pahiyas",
             "Ati-Atihan",
             "Kadayawan"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS003",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which Philippine city is famous as the country's Summer Capital?",
+          "answer": "Baguio",
+          "options": [
+            "Baguio",
+            "Tagaytay",
+            "Subic",
+            "Vigan"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS004",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which annual flower festival is held in Baguio every February?",
+          "answer": "Panagbenga",
+          "options": [
+            "Panagbenga",
+            "Sinulog",
+            "Pahiyas",
+            "MassKara"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS005",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "tf",
+          "question": "The Philippine peso is the official currency of the Philippines.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS006",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Manny Pacquiao represents which Filipino value commonly known as fighting spirit?",
+          "answer": "Lakas ng loob",
+          "options": [
+            "Lakas ng loob",
+            "Hiya",
+            "Utang na loob",
+            "Pakikisama"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -2438,7 +2531,8 @@
             "Alibata",
             "Kulitan",
             "Badlit"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q01",
@@ -2452,7 +2546,8 @@
             "Goodbye",
             "Thank you",
             "Good luck"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q01",
@@ -2464,7 +2559,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q01",
@@ -2476,7 +2572,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q01",
@@ -2490,7 +2587,8 @@
             "Batad",
             "Ifugao",
             "Sagada"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q01",
@@ -2504,7 +2602,8 @@
             "Jose Palma",
             "Levi Celerio",
             "Nicanor Abelardo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q01",
@@ -2518,7 +2617,8 @@
             "Ati-Atihan",
             "Dinagyang",
             "Pahiyas"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -2534,7 +2634,8 @@
             "Jose Palma",
             "Emilio Aguinaldo",
             "Juan Luna"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q01",
@@ -2548,7 +2649,8 @@
             "Propaganda Movement",
             "La Liga Filipina",
             "Ilustrado"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q01",
@@ -2560,7 +2662,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q01",
@@ -2572,7 +2675,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q01",
@@ -2586,7 +2690,8 @@
             "Jose Rizal",
             "Andres Bonifacio",
             "Amado Hernandez"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q01",
@@ -2598,7 +2703,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q01",
@@ -2612,7 +2718,8 @@
             "Pasig River",
             "Agusan River",
             "Rio Grande de Mindanao"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q01",
@@ -2626,7 +2733,8 @@
             "July 4, 1946",
             "August 21, 1983",
             "February 25, 1986"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g2q01",
@@ -2640,7 +2748,8 @@
             "Ilocos Norte",
             "Cagayan",
             "Apayao"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q01",
@@ -2654,7 +2763,8 @@
             "Singkil",
             "Pandanggo",
             "Itik-Itik"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -2670,7 +2780,8 @@
             "Jose Rizal",
             "Andres Bonifacio",
             "Apolinario Mabini"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q01",
@@ -2684,7 +2795,8 @@
             "East Davao South Annex",
             "Edsa de los Santos Area",
             "Epifanio Diaz Santiago Avenue"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q01",
@@ -2698,7 +2810,8 @@
             "University of the Philippines",
             "Ateneo de Manila",
             "De La Salle University"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q01",
@@ -2712,7 +2825,8 @@
             "Family loyalty",
             "National pride",
             "Religious devotion"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q01",
@@ -2726,7 +2840,8 @@
             "Mount Pulag",
             "Mount Mayon",
             "Mount Kanlaon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q01",
@@ -2740,7 +2855,8 @@
             "South China Sea",
             "Celebes Sea",
             "Sulu Sea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q01",
@@ -2754,7 +2870,8 @@
             "Mexico",
             "Spain",
             "Italy"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q01",
@@ -2768,7 +2885,8 @@
             "Bibingka",
             "Leche Flan",
             "Turon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q01",
@@ -2782,7 +2900,8 @@
             "Gloria Macapagal Arroyo",
             "Imelda Marcos",
             "Leni Robredo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q01",
@@ -2796,7 +2915,8 @@
             "Bayong",
             "Banig",
             "Buntal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q01",
@@ -2810,7 +2930,8 @@
             "Mount Mayon",
             "Mount Pinatubo",
             "Mount Taal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q01",
@@ -2824,7 +2945,8 @@
             "Kris",
             "Kampilan",
             "Balisong"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q01",
@@ -2838,7 +2960,8 @@
             "Julian Felipe",
             "Jose Rizal",
             "Manuel Quezon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q01",
@@ -2852,7 +2975,8 @@
             "Boodle Fight",
             "Salu-Salo",
             "Handaan"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q01",
@@ -2866,7 +2990,8 @@
             "Bohol",
             "Cebu",
             "Mindoro"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q01",
@@ -2880,7 +3005,8 @@
             "Sulu Sea",
             "Celebes Sea",
             "Philippine Sea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q01",
@@ -2894,7 +3020,8 @@
             "English",
             "Cebuano",
             "Spanish"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q01",
@@ -2908,7 +3035,8 @@
             "Tricycle",
             "Kalesa",
             "Bangka"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q01",
@@ -2922,7 +3050,8 @@
             "A folk dance",
             "A festival",
             "A type of food"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q01",
@@ -2936,7 +3065,8 @@
             "Cebu",
             "Bohol",
             "Samar"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q01",
@@ -2950,7 +3080,8 @@
             "Sinulog",
             "Ati-Atihan",
             "Panagbenga"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q01",
@@ -2964,7 +3095,8 @@
             "Mid-Atlantic Ridge",
             "Great Rift Valley",
             "Andes Belt"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q01",
@@ -2978,7 +3110,8 @@
             "Jose Rizal",
             "Emilio Aguinaldo",
             "Apolinario Mabini"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q01",
@@ -2992,7 +3125,8 @@
             "Intramuros",
             "Fort Santiago",
             "Plaza Miranda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q01",
@@ -3006,7 +3140,8 @@
             "Cebuano",
             "Ilocano",
             "Spanish"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q01",
@@ -3020,7 +3155,8 @@
             "Kamote",
             "Gabi",
             "Singkamas"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q01",
@@ -3034,7 +3170,8 @@
             "Welcome to the Philippines",
             "I love the Philippines",
             "Save the Philippines"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -3052,7 +3189,8 @@
             "Atlantic Ocean",
             "Indian Ocean",
             "Arctic Ocean"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q02",
@@ -3066,7 +3204,8 @@
             "Amazon",
             "Yangtze",
             "Mississippi"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q02",
@@ -3080,7 +3219,8 @@
             "5",
             "6",
             "8"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q02",
@@ -3094,7 +3234,36 @@
             "Farenc",
             "Farnce",
             "Frcane"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS007",
+          "category": "geography",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many oceans are recognized on Earth today?",
+          "answer": "5",
+          "options": [
+            "5",
+            "3",
+            "4",
+            "7"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS008",
+          "category": "geography",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Australia is both a country and a continent.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -3110,7 +3279,8 @@
             "Monaco",
             "San Marino",
             "Liechtenstein"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q02",
@@ -3124,7 +3294,8 @@
             "Lyon",
             "Marseille",
             "Nice"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g2q02",
@@ -3138,7 +3309,8 @@
             "K2",
             "Kilimanjaro",
             "Mont Blanc"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q02",
@@ -3152,7 +3324,36 @@
             "Bazril",
             "Brzail",
             "Baizrl"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS009",
+          "category": "geography",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which is currently the most populous country in the world?",
+          "answer": "India",
+          "options": [
+            "India",
+            "China",
+            "USA",
+            "Indonesia"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS010",
+          "category": "geography",
+          "tier": "holo",
+          "type": "tf",
+          "question": "The Equator passes through the Amazon rainforest.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -3168,7 +3369,8 @@
             "Sydney",
             "Melbourne",
             "Brisbane"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q02",
@@ -3182,7 +3384,8 @@
             "Rio de Janeiro",
             "Sao Paulo",
             "Salvador"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q02",
@@ -3196,7 +3399,8 @@
             "Canada",
             "China",
             "USA"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q02",
@@ -3210,7 +3414,8 @@
             "Toronto",
             "Vancouver",
             "Montreal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q02",
@@ -3224,7 +3429,8 @@
             "Autrsalia",
             "Australai",
             "Austraila"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q02",
@@ -3238,7 +3444,8 @@
             "Europe",
             "Antarctica",
             "South America"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -3254,7 +3461,8 @@
             "Mesoamerican Reef",
             "Coral Triangle",
             "Andros Reef"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q02",
@@ -3268,7 +3476,8 @@
             "Prime Meridian",
             "Tropic of Cancer",
             "International Date Line"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q02",
@@ -3282,7 +3491,8 @@
             "Puerto Rico Trench",
             "Java Trench",
             "Philippine Trench"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q02",
@@ -3296,7 +3506,8 @@
             "China",
             "United States",
             "Indonesia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q02",
@@ -3310,7 +3521,8 @@
             "Gobi",
             "Kalahari",
             "Arabian"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q02",
@@ -3324,7 +3536,8 @@
             "Russia and China",
             "India and China",
             "USA and Mexico"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q02",
@@ -3338,7 +3551,8 @@
             "Rio de Janeiro",
             "Sao Paulo",
             "Salvador"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q02",
@@ -3352,7 +3566,8 @@
             "Rome",
             "London",
             "Madrid"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -3368,7 +3583,8 @@
             "Atlantic Ocean",
             "Pacific Ocean",
             "Southern Ocean"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q02",
@@ -3382,7 +3598,8 @@
             "Canada",
             "China",
             "United States"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q02",
@@ -3396,7 +3613,8 @@
             "44",
             "64",
             "74"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q02",
@@ -3410,7 +3628,8 @@
             "K2",
             "Kangchenjunga",
             "Mount Apo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q02",
@@ -3424,7 +3643,8 @@
             "Lyon",
             "Marseille",
             "Nice"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q02",
@@ -3438,7 +3658,8 @@
             "Lake Tanganyika",
             "Lake Malawi",
             "Lake Chad"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q02",
@@ -3452,7 +3673,8 @@
             "Sydney",
             "Melbourne",
             "Perth"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q02",
@@ -3466,7 +3688,8 @@
             "Lake Tanganyika",
             "Caspian Sea",
             "Lake Superior"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q02",
@@ -3480,7 +3703,8 @@
             "Bali",
             "Surabaya",
             "Bandung"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q02",
@@ -3494,7 +3718,8 @@
             "Mekong",
             "Ganges",
             "Yellow River"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q02",
@@ -3508,7 +3733,8 @@
             "Asia",
             "Australia",
             "South America"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q02",
@@ -3522,7 +3748,8 @@
             "Argentina",
             "Peru",
             "Colombia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q02",
@@ -3536,7 +3763,8 @@
             "Australia",
             "South America",
             "Africa"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q02",
@@ -3550,7 +3778,8 @@
             "Adriatic Sea",
             "Black Sea",
             "Mediterranean Sea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q02",
@@ -3564,7 +3793,8 @@
             "New Guinea",
             "Borneo",
             "Madagascar"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q02",
@@ -3578,7 +3808,8 @@
             "Sudan",
             "Iraq",
             "Libya"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q02",
@@ -3592,7 +3823,8 @@
             "Southern Ocean",
             "Indian Ocean",
             "Atlantic Ocean"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q02",
@@ -3606,7 +3838,8 @@
             "Bangkok",
             "Manila",
             "Seoul"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q02",
@@ -3620,7 +3853,8 @@
             "Barcelona",
             "Seville",
             "Valencia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q02",
@@ -3634,7 +3868,8 @@
             "Mount Kenya",
             "Mount Stanley",
             "Mount Meru"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q02",
@@ -3648,7 +3883,8 @@
             "Atlantic Ocean",
             "Arctic Ocean",
             "Gulf of Mexico"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q02",
@@ -3662,7 +3898,8 @@
             "Yellow Sea",
             "East China Sea",
             "Bering Sea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q02",
@@ -3676,7 +3913,8 @@
             "Iguazu Falls",
             "Angel Falls",
             "Victoria Falls"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q02",
@@ -3690,7 +3928,8 @@
             "Mindanao",
             "Samar",
             "Palawan"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q02",
@@ -3704,7 +3943,8 @@
             "Mount Pinatubo",
             "Mount Taal",
             "Mount Apo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q02",
@@ -3718,7 +3958,8 @@
             "7107",
             "1000",
             "10000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q02",
@@ -3732,7 +3973,8 @@
             "Mariana Trench",
             "Java Trench",
             "Tonga Trench"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q02",
@@ -3746,7 +3988,8 @@
             "Camiguin",
             "Siquijor",
             "Marinduque"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -3764,7 +4007,8 @@
             "Water",
             "Soil",
             "Air"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q03",
@@ -3778,7 +4022,66 @@
             "Earth",
             "Moon",
             "Mars"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS011",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which gas do humans breathe in to survive?",
+          "answer": "Oxygen",
+          "options": [
+            "Oxygen",
+            "Carbon Dioxide",
+            "Helium",
+            "Nitrogen"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS012",
+          "category": "science",
+          "tier": "basic",
+          "type": "tf",
+          "question": "The Earth orbits around the Sun.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS013",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "H2O is the chemical formula of which everyday substance?",
+          "answer": "Water",
+          "options": [
+            "Water",
+            "Salt",
+            "Sugar",
+            "Air"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS014",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many planets are in our solar system?",
+          "answer": "8",
+          "options": [
+            "8",
+            "7",
+            "9",
+            "10"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -3794,7 +4097,8 @@
             "186",
             "196",
             "216"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q03",
@@ -3806,7 +4110,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q03",
@@ -3820,7 +4125,8 @@
             "HO",
             "H2O2",
             "OH"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q03",
@@ -3834,7 +4140,36 @@
             "Oxygen",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS015",
+          "category": "science",
+          "tier": "holo",
+          "type": "mc",
+          "question": "What is the freezing point of water in degrees Celsius?",
+          "answer": "0",
+          "options": [
+            "0",
+            "32",
+            "100",
+            "-10"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS016",
+          "category": "science",
+          "tier": "holo",
+          "type": "tf",
+          "question": "Fish breathe using gills.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -3850,7 +4185,8 @@
             "Condensation",
             "Precipitation",
             "Sublimation"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q03",
@@ -3864,7 +4200,8 @@
             "23",
             "48",
             "52"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q03",
@@ -3876,7 +4213,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q03",
@@ -3890,7 +4228,8 @@
             "Magnetism",
             "Friction",
             "Inertia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q03",
@@ -3904,7 +4243,8 @@
             "Atmosphere",
             "Stratosphere",
             "Troposphere"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q03",
@@ -3918,7 +4258,8 @@
             "-10",
             "10",
             "-5"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q03",
@@ -3932,7 +4273,8 @@
             "7",
             "9",
             "10"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q03",
@@ -3946,7 +4288,8 @@
             "5",
             "12",
             "20"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -3962,7 +4305,8 @@
             "Oxygen",
             "Carbon Dioxide",
             "Argon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q03",
@@ -3974,7 +4318,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q03",
@@ -3988,7 +4333,8 @@
             "Evolution",
             "Transformation",
             "Germination"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q03",
@@ -4002,7 +4348,8 @@
             "Carbon Dioxide",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q03",
@@ -4016,7 +4363,8 @@
             "150000",
             "500000",
             "1000000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q03",
@@ -4028,7 +4376,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q03",
@@ -4042,7 +4391,8 @@
             "Saturn",
             "Neptune",
             "Earth"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g2q03",
@@ -4056,7 +4406,8 @@
             "Helium",
             "Lithium",
             "Oxygen"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q03",
@@ -4070,7 +4421,8 @@
             "Respiration",
             "Transpiration",
             "Germination"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -4086,7 +4438,8 @@
             "Ag",
             "Gd",
             "Go"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q03",
@@ -4100,7 +4453,8 @@
             "Molecule",
             "Cell",
             "Quark"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q03",
@@ -4114,7 +4468,8 @@
             "90",
             "110",
             "212"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q03",
@@ -4128,7 +4483,8 @@
             "Liver",
             "Brain",
             "Lungs"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q03",
@@ -4142,7 +4498,8 @@
             "100",
             "180",
             "232"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q03",
@@ -4156,7 +4513,8 @@
             "Oxygen",
             "Carbon Dioxide",
             "Argon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q03",
@@ -4170,7 +4528,8 @@
             "So",
             "Sd",
             "S"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q03",
@@ -4184,7 +4543,8 @@
             "Steel",
             "Granite",
             "Titanium"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q03",
@@ -4196,7 +4556,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q03",
@@ -4210,7 +4571,8 @@
             "Stronger reaction",
             "Delayed reaction",
             "Random reaction"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q03",
@@ -4224,7 +4586,8 @@
             "A+",
             "B+",
             "AB+"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q03",
@@ -4238,7 +4601,8 @@
             "Jupiter",
             "Neptune",
             "Uranus"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q03",
@@ -4252,7 +4616,8 @@
             "Mercury",
             "Mars",
             "Jupiter"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q03",
@@ -4266,7 +4631,8 @@
             "Ir",
             "In",
             "I"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q03",
@@ -4280,7 +4646,8 @@
             "0",
             "16",
             "40"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q03",
@@ -4294,7 +4661,8 @@
             "206",
             "150",
             "400"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q03",
@@ -4308,7 +4676,8 @@
             "Sirius",
             "Alpha Centauri A",
             "Betelgeuse"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q03",
@@ -4322,7 +4691,8 @@
             "African Elephant",
             "Sperm Whale",
             "Tyrannosaurus Rex"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q03",
@@ -4336,7 +4706,8 @@
             "2",
             "3",
             "6"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q03",
@@ -4350,7 +4721,8 @@
             "108",
             "128",
             "100"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q03",
@@ -4364,7 +4736,8 @@
             "Carbon Dioxide",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q03",
@@ -4378,7 +4751,8 @@
             "300",
             "500",
             "1000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q03",
@@ -4392,7 +4766,8 @@
             "Hurricanes",
             "Cold weather",
             "Coral reefs"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q03",
@@ -4406,7 +4781,8 @@
             "Shield volcano",
             "Cinder cone",
             "Caldera"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q03",
@@ -4420,7 +4796,8 @@
             "Loris",
             "Lemur",
             "Slender Loris"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q03",
@@ -4434,7 +4811,8 @@
             "Mango",
             "Acacia",
             "Bamboo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q03",
@@ -4448,7 +4826,8 @@
             "Mars",
             "Mercury",
             "Jupiter"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -4466,7 +4845,81 @@
             "Errol",
             "Pigwidgeon",
             "Fawkes"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS017",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Who wrote 'The BFG' and 'Matilda'?",
+          "answer": "Roald Dahl",
+          "options": [
+            "Roald Dahl",
+            "J.K. Rowling",
+            "C.S. Lewis",
+            "Rick Riordan"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS018",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which Hogwarts house values bravery above all?",
+          "answer": "Gryffindor",
+          "options": [
+            "Gryffindor",
+            "Slytherin",
+            "Ravenclaw",
+            "Hufflepuff"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS019",
+          "category": "books",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Lord Voldemort is Harry Potter's main enemy.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS020",
+          "category": "books",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble Harry Potter's enemy: V-O-L-D-E-M-O-R-T",
+          "answer": "Voldemort",
+          "options": [
+            "Voldemort",
+            "Voldermot",
+            "Voldmoret",
+            "Voldemrot"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS021",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "In Percy Jackson, who is Annabeth Chase's mother?",
+          "answer": "Athena",
+          "options": [
+            "Athena",
+            "Aphrodite",
+            "Hera",
+            "Demeter"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -4482,21 +4935,23 @@
             "Flying",
             "Reading minds",
             "Invisibility"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q04",
           "category": "books",
           "tier": "holo",
           "type": "unscramble",
-          "question": "Unscramble: G-R-U-F-F-A-L-O",
-          "answer": "Gruffalo",
+          "question": "Unscramble Harry Potter house: G-R-Y-F-F-I-N-D-O-R",
+          "answer": "Gryffindor",
           "options": [
-            "Gruffalo",
-            "Gruffall",
-            "Gruffolo",
-            "Gruffele"
-          ]
+            "Gryffindor",
+            "Gryfindorr",
+            "Gryfindor",
+            "Gryffinodr"
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q04",
@@ -4510,7 +4965,8 @@
             "Hogwrast",
             "Hogrwats",
             "Hwogarts"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q04",
@@ -4524,7 +4980,8 @@
             "Big Funny Giraffe",
             "Bold Flying Giant",
             "Brave Friendly Goblin"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q04",
@@ -4538,7 +4995,8 @@
             "Vincent Crabbe",
             "Gregory Goyle",
             "Pansy Parkinson"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g2q04",
@@ -4552,7 +5010,8 @@
             "Zeus",
             "Ares",
             "Hades"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q04",
@@ -4566,7 +5025,8 @@
             "Niraan",
             "Nanria",
             "Nairna"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -4582,7 +5042,8 @@
             "Maltida",
             "Matilad",
             "Maitdla"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q04",
@@ -4596,7 +5057,8 @@
             "Uncle Monty",
             "Mr. Poe",
             "Captain Sham"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q04",
@@ -4610,7 +5072,8 @@
             "Her necklace",
             "Her ring",
             "Her crown"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q04",
@@ -4624,7 +5087,8 @@
             "Vaultex",
             "Goldsworth",
             "Ironbank"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q04",
@@ -4638,7 +5102,8 @@
             "Rapunlze",
             "Raunpzel",
             "Rapnuzel"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q04",
@@ -4652,7 +5117,8 @@
             "Cinderalle",
             "Cinedella",
             "Cinderalla"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q04",
@@ -4666,7 +5132,8 @@
             "Centaur",
             "Dwarf",
             "Elf"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -4682,7 +5149,8 @@
             "Klaus, Violet and Isadora",
             "Violet, Duncan and Sunny",
             "Sunny, Klaus and Beatrice"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q04",
@@ -4696,7 +5164,8 @@
             "Silver Coin",
             "Map",
             "Key"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q04",
@@ -4710,7 +5179,8 @@
             "Mtailda",
             "Matlida",
             "Matidla"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q04",
@@ -4724,7 +5194,8 @@
             "Roald Dahl",
             "C.S. Lewis",
             "J.K. Rowling"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q04",
@@ -4738,7 +5209,8 @@
             "Snicket",
             "Olaf",
             "Quagmire"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q04",
@@ -4752,7 +5224,8 @@
             "Zeus",
             "Hades",
             "Apollo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q04",
@@ -4766,7 +5239,8 @@
             "Roald Dahl",
             "Beatrix Potter",
             "Dr. Seuss"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -4782,7 +5256,8 @@
             "The Witch",
             "The Troll",
             "The Giant"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q04",
@@ -4796,7 +5271,8 @@
             "Wizards",
             "Knights",
             "Spies"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q04",
@@ -4810,7 +5286,8 @@
             "J.R.R. Tolkien",
             "Philip Pullman",
             "Roald Dahl"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q04",
@@ -4824,7 +5301,8 @@
             "Draco Malfoy",
             "Voldemort",
             "Bellatrix Lestrange"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q04",
@@ -4838,7 +5316,8 @@
             "Tom Riddle Marvolo",
             "Marvolo Tom Riddle",
             "Salazar Tom Riddle"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q04",
@@ -4852,7 +5331,8 @@
             "C.S. Lewis",
             "Beatrix Potter",
             "E.B. White"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q04",
@@ -4866,7 +5346,8 @@
             "Eagle",
             "Lion",
             "Snake"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q04",
@@ -4880,7 +5361,8 @@
             "Tiger",
             "Bear",
             "Wolf"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q04",
@@ -4894,7 +5376,8 @@
             "C.S. Lewis",
             "J.K. Rowling",
             "Beatrix Potter"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q04",
@@ -4908,21 +5391,23 @@
             "Morgana",
             "Maleficent",
             "Ursula"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q04",
           "category": "books",
           "tier": "ultra",
           "type": "mc",
-          "question": "Which author wrote 'The Cat in the Hat' and 'Green Eggs and Ham'?",
-          "answer": "Dr. Seuss",
+          "question": "Which author wrote 'A Series of Unfortunate Events'?",
+          "answer": "Lemony Snicket",
           "options": [
+            "Lemony Snicket",
             "Dr. Seuss",
             "Roald Dahl",
-            "Maurice Sendak",
             "Eric Carle"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q04",
@@ -4936,21 +5421,23 @@
             "Frobscottle",
             "Whangdoodle",
             "Whizzpopper"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q04",
           "category": "books",
           "tier": "ultra",
           "type": "mc",
-          "question": "Who wrote The Tale of Peter Rabbit?",
-          "answer": "Beatrix Potter",
+          "question": "Who wrote The Hobbit and The Lord of the Rings?",
+          "answer": "J.R.R. Tolkien",
           "options": [
+            "J.R.R. Tolkien",
             "Beatrix Potter",
-            "Roald Dahl",
-            "Julia Donaldson",
-            "Enid Blyton"
-          ]
+            "C.S. Lewis",
+            "Philip Pullman"
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q04",
@@ -4964,7 +5451,8 @@
             "Fang",
             "Norbert",
             "Cerberus"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q04",
@@ -4978,7 +5466,8 @@
             "Enid Blyton",
             "Dr. Seuss",
             "Beatrix Potter"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q04",
@@ -4992,7 +5481,8 @@
             "J.R.R. Tolkien",
             "Philip Pullman",
             "Lewis Carroll"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q04",
@@ -5006,21 +5496,23 @@
             "Esmé Squalor",
             "Carmelita Spats",
             "Coachman"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q04",
           "category": "books",
           "tier": "ultra",
           "type": "mc",
-          "question": "Who wrote and illustrated 'Where the Wild Things Are'?",
-          "answer": "Maurice Sendak",
+          "question": "Who wrote The Hunger Games trilogy?",
+          "answer": "Suzanne Collins",
           "options": [
+            "Suzanne Collins",
             "Maurice Sendak",
-            "Eric Carle",
-            "Dr. Seuss",
-            "Roald Dahl"
-          ]
+            "Veronica Roth",
+            "Stephenie Meyer"
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q04",
@@ -5034,7 +5526,8 @@
             "Susan",
             "Sophie",
             "Sandra"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q04",
@@ -5048,7 +5541,8 @@
             "C.S. Lewis",
             "Beatrix Potter",
             "Eric Carle"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q04",
@@ -5062,7 +5556,8 @@
             "A mirror",
             "A book",
             "A doorway"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q04",
@@ -5076,7 +5571,8 @@
             "Roald Dahl",
             "E.B. White",
             "Beverly Cleary"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q04",
@@ -5090,7 +5586,8 @@
             "Violet and Carl",
             "Sunny and Olaf",
             "Klaus and Esmé"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q04",
@@ -5104,7 +5601,8 @@
             "Francisco Balagtas",
             "Nick Joaquin",
             "F. Sionil Jose"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q04",
@@ -5118,7 +5616,8 @@
             "Mi Ultimo Adios",
             "Sa Aking Mga Kabata",
             "Florante at Laura"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q04",
@@ -5132,7 +5631,8 @@
             "Law",
             "Engineering",
             "Theology"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q04",
@@ -5146,7 +5646,8 @@
             "C.S. Lewis",
             "Roald Dahl",
             "Philip Pullman"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q04",
@@ -5160,7 +5661,8 @@
             "Agatha Christie",
             "Edgar Allan Poe",
             "Charles Dickens"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -5178,7 +5680,81 @@
             "Fire",
             "Grass",
             "Normal"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS022",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is Charmander's primary type?",
+          "answer": "Fire",
+          "options": [
+            "Fire",
+            "Water",
+            "Grass",
+            "Dragon"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS023",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Pikachu evolves into Raichu.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS024",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble the Pokemon: C-H-A-R-M-A-N-D-E-R",
+          "answer": "Charmander",
+          "options": [
+            "Charmander",
+            "Charmnader",
+            "Charmadner",
+            "Cahrmander"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS025",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which professor gives Ash his first Pokemon?",
+          "answer": "Professor Oak",
+          "options": [
+            "Professor Oak",
+            "Professor Elm",
+            "Professor Birch",
+            "Professor Rowan"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS026",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "In which region does Ash Ketchum begin his journey?",
+          "answer": "Kanto",
+          "options": [
+            "Kanto",
+            "Johto",
+            "Hoenn",
+            "Sinnoh"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -5194,7 +5770,8 @@
             "Kakuna",
             "Weedle",
             "Wurmple"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q05",
@@ -5206,7 +5783,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q05",
@@ -5220,7 +5798,8 @@
             "Normal only",
             "Fairy only",
             "Psychic"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q05",
@@ -5234,7 +5813,8 @@
             "Charzarid",
             "Chariazrd",
             "Charzaidr"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q05",
@@ -5246,7 +5826,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g2q05",
@@ -5260,7 +5841,8 @@
             "Lapras",
             "Dragonair",
             "Vaporeon"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -5274,7 +5856,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q05",
@@ -5288,7 +5871,8 @@
             "Thunder",
             "Volt Tackle",
             "Quick Attack"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q05",
@@ -5302,7 +5886,8 @@
             "Gyardaos",
             "Gyardoas",
             "Gyadroas"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q05",
@@ -5314,7 +5899,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q05",
@@ -5328,7 +5914,8 @@
             "Dragon only",
             "Flying only",
             "Dragon and Psychic"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q05",
@@ -5340,7 +5927,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q05",
@@ -5354,7 +5942,8 @@
             "Swampret",
             "Swamptre",
             "Swapmert"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q05",
@@ -5368,7 +5957,8 @@
             "Hoenn",
             "Johto",
             "Unova"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q05",
@@ -5382,7 +5972,8 @@
             "Palkia",
             "Giratina",
             "Arceus"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -5398,7 +5989,8 @@
             "Moonblast",
             "Dazzling Gleam",
             "Aromatherapy"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q05",
@@ -5412,7 +6004,8 @@
             "Dialga",
             "Giratina",
             "Cresselia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q05",
@@ -5426,7 +6019,8 @@
             "Luciaro",
             "Lucairo",
             "Luarico"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q05",
@@ -5440,7 +6034,8 @@
             "Shadow Realm",
             "Dark Dimension",
             "Ultra Space"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q05",
@@ -5454,7 +6049,8 @@
             "Sinnoh",
             "Kalos",
             "Alola"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g2q05",
@@ -5468,7 +6064,8 @@
             "Zekrom",
             "Kyurem",
             "Landorus"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q05",
@@ -5482,7 +6079,8 @@
             "Galar",
             "Alola",
             "Paldea"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -5498,7 +6096,8 @@
             "Reshiram",
             "Kyurem",
             "Tornadus"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q05",
@@ -5512,7 +6111,8 @@
             "Kyruem",
             "Kyumer",
             "Krymeu"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q05",
@@ -5526,7 +6126,8 @@
             "Dialga and Palkia",
             "Latios and Latias",
             "Zacian and Zamazenta"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q05",
@@ -5540,7 +6141,8 @@
             "Generation 2",
             "Generation 3",
             "Generation 4"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q05",
@@ -5554,7 +6156,8 @@
             "Yveltal",
             "Zygarde",
             "Diancie"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q05",
@@ -5568,7 +6171,8 @@
             "Xerneas",
             "Zygarde",
             "Volcanion"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q05",
@@ -5582,7 +6186,8 @@
             "Greninaj",
             "Grenjina",
             "Genrinja"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q05",
@@ -5596,7 +6201,8 @@
             "Kalos",
             "Galar",
             "Paldea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q05",
@@ -5610,7 +6216,8 @@
             "Necrozma or Mewtwo",
             "Dialga or Palkia",
             "Reshiram or Zekrom"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q05",
@@ -5624,7 +6231,8 @@
             "Lunala",
             "Necrozma",
             "Tapu Koko"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q05",
@@ -5638,7 +6246,8 @@
             "Solgaleo",
             "Necrozma",
             "Cresselia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q05",
@@ -5652,7 +6261,8 @@
             "Ghost",
             "Dark",
             "Fighting"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q05",
@@ -5666,7 +6276,8 @@
             "Alola",
             "Kalos",
             "Paldea"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q05",
@@ -5680,7 +6291,8 @@
             "Zamazenta",
             "Eternatus",
             "Calyrex"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q05",
@@ -5694,7 +6306,8 @@
             "Zacian",
             "Eternatus",
             "Calyrex"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q05",
@@ -5708,7 +6321,8 @@
             "Zacian",
             "Zamazenta",
             "Necrozma"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q05",
@@ -5722,7 +6336,8 @@
             "Daynmax",
             "Dynaxma",
             "Dxynama"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q05",
@@ -5736,7 +6351,8 @@
             "Galar",
             "Alola",
             "Kalos"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q05",
@@ -5750,7 +6366,8 @@
             "Miraidon",
             "Calyrex",
             "Zacian"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q05",
@@ -5764,7 +6381,8 @@
             "Koraidon",
             "Eternatus",
             "Necrozma"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q05",
@@ -5778,7 +6396,8 @@
             "Dynamax",
             "Z-Moves",
             "Mega Evolution"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q05",
@@ -5792,7 +6411,8 @@
             "Padlea",
             "Pdaela",
             "Plaeda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q05",
@@ -5806,7 +6426,8 @@
             "Aura Sphere",
             "Hyper Beam",
             "Future Sight"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q05",
@@ -5820,7 +6441,8 @@
             "Caterpie to Metapod to Butterfree",
             "Wurmple to Cascoon to Dustox",
             "Scyther to Scizor"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q05",
@@ -5834,7 +6456,8 @@
             "Bulbasaur",
             "Charmander",
             "Squirtle"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q05",
@@ -5848,7 +6471,8 @@
             "Fighting",
             "Psychic",
             "Fairy"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q05",
@@ -5862,7 +6486,8 @@
             "Shigeru Miyamoto",
             "Ken Sugimori",
             "Junichi Masuda"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -5880,7 +6505,8 @@
             "Scar",
             "Rafiki",
             "Zazu"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q06",
@@ -5894,21 +6520,66 @@
             "Chris Evans",
             "Chris Hemsworth",
             "Mark Ruffalo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q06",
           "category": "music",
           "tier": "basic",
           "type": "mc",
-          "question": "Who is the snowman in Frozen?",
-          "answer": "Olaf",
+          "question": "Who plays Tony Stark / Iron Man in the Marvel movies?",
+          "answer": "Robert Downey Jr.",
           "options": [
-            "Olaf",
-            "Sven",
-            "Hans",
-            "Kristoff"
-          ]
+            "Robert Downey Jr.",
+            "Chris Evans",
+            "Chris Hemsworth",
+            "Mark Ruffalo"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS027",
+          "category": "music",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which band recorded 'Hey Jude' in 1968?",
+          "answer": "The Beatles",
+          "options": [
+            "The Beatles",
+            "The Rolling Stones",
+            "Queen",
+            "U2"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS028",
+          "category": "music",
+          "tier": "basic",
+          "type": "tf",
+          "question": "BTS is a Korean pop (K-pop) group.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS029",
+          "category": "music",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Who plays Thor in the Marvel Cinematic Universe?",
+          "answer": "Chris Hemsworth",
+          "options": [
+            "Chris Hemsworth",
+            "Chris Evans",
+            "Chris Pratt",
+            "Chris Pine"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -5924,7 +6595,8 @@
             "Hamltion",
             "Hamilotn",
             "Halmtion"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q06",
@@ -5938,7 +6610,8 @@
             "1955",
             "1962",
             "1958"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q06",
@@ -5952,7 +6625,8 @@
             "Buddy",
             "Max",
             "Rex"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q06",
@@ -5966,7 +6640,8 @@
             "Iron Man",
             "Captain America",
             "Hulk"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q06",
@@ -5980,7 +6655,21 @@
             "Wickde",
             "Wicekd",
             "Wickad"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS030",
+          "category": "music",
+          "tier": "holo",
+          "type": "tf",
+          "question": "Lin-Manuel Miranda created the musical 'Hamilton'.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -5996,7 +6685,8 @@
             "Angelica Schuyler",
             "Peggy Schuyler",
             "Maria Reynolds"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q06",
@@ -6010,7 +6700,8 @@
             "Popular",
             "For Good",
             "No Good Deed"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q06",
@@ -6024,7 +6715,8 @@
             "Zira",
             "Shenzi",
             "Ed"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q06",
@@ -6038,7 +6730,8 @@
             "Avengres",
             "Avenrges",
             "Avegnres"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q06",
@@ -6052,7 +6745,23 @@
             "Andrew Lloyd Webber",
             "Stephen Sondheim",
             "Stephen Schwartz"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS031",
+          "category": "music",
+          "tier": "rare",
+          "type": "mc",
+          "question": "Who plays Loki in the Marvel Cinematic Universe?",
+          "answer": "Tom Hiddleston",
+          "options": [
+            "Tom Hiddleston",
+            "Tom Holland",
+            "Tom Hardy",
+            "Tom Cruise"
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -6068,7 +6777,8 @@
             "Sugar, Chocolate, Ice Cream, Cake",
             "Sweets, Cookies, Cake, Pie",
             "Donuts, Marshmallows, Pie, Soda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q06",
@@ -6082,7 +6792,8 @@
             "Zamunda",
             "Genosha",
             "Latveria"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q06",
@@ -6096,7 +6807,8 @@
             "The Cabinet Room",
             "The Oval Office",
             "The War Room"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q06",
@@ -6110,7 +6822,8 @@
             "Paul McCartney",
             "George Harrison",
             "Ringo Starr"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q06",
@@ -6124,7 +6837,8 @@
             "Hans Zimmer",
             "Howard Shore",
             "Danny Elfman"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q06",
@@ -6138,7 +6852,8 @@
             "Tobey Maguire",
             "Andrew Garfield",
             "Tom Hiddleston"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q06",
@@ -6152,7 +6867,8 @@
             "Pepper",
             "Natasha",
             "Wanda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q06",
@@ -6166,7 +6882,8 @@
             "Abbey Road",
             "Revolver",
             "Let It Be"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q06",
@@ -6180,7 +6897,8 @@
             "Mike Tyson",
             "Floyd Mayweather",
             "Sugar Ray Robinson"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -6196,7 +6914,8 @@
             "John Lennon",
             "George Harrison",
             "Ringo Starr"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q06",
@@ -6210,7 +6929,8 @@
             "Mozart",
             "Bach",
             "Tchaikovsky"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q06",
@@ -6224,7 +6944,8 @@
             "Jack Kirby",
             "Walt Disney",
             "Bob Kane"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q06",
@@ -6238,7 +6959,8 @@
             "Emma Watson",
             "Jennifer Lawrence",
             "Natalie Portman"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q06",
@@ -6252,7 +6974,8 @@
             "John Williams",
             "Hans Zimmer",
             "James Horner"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q06",
@@ -6266,7 +6989,8 @@
             "Brian May",
             "Roger Taylor",
             "John Deacon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q06",
@@ -6280,21 +7004,23 @@
             "Elton John",
             "Tim Rice",
             "Alan Menken"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q06",
           "category": "music",
           "tier": "ultra",
           "type": "mc",
-          "question": "What is the title of Elsa's most famous song in Frozen?",
-          "answer": "Let It Go",
+          "question": "In Marvel, who carries the hammer named Mjolnir?",
+          "answer": "Thor",
           "options": [
-            "Let It Go",
-            "Into the Unknown",
-            "Show Yourself",
-            "For the First Time"
-          ]
+            "Thor",
+            "Hulk",
+            "Loki",
+            "Hawkeye"
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q06",
@@ -6308,7 +7034,8 @@
             "Stephen Sondheim",
             "Stephen Schwartz",
             "Lin-Manuel Miranda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q06",
@@ -6322,7 +7049,8 @@
             "This Is Me",
             "A Million Dreams",
             "Rewrite the Stars"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q06",
@@ -6336,7 +7064,8 @@
             "Bono",
             "Adam Levine",
             "Brandon Flowers"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q06",
@@ -6350,7 +7079,8 @@
             "Stephen Sondheim",
             "Tim Rice",
             "Alan Menken"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q06",
@@ -6364,7 +7094,8 @@
             "Chris Hemsworth",
             "Chris Pratt",
             "Chris Pine"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q06",
@@ -6378,7 +7109,8 @@
             "Stephen Sondheim",
             "Andrew Lloyd Webber",
             "Lin-Manuel Miranda"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q06",
@@ -6392,7 +7124,8 @@
             "Emma Stone",
             "Bonnie Wright",
             "Evanna Lynch"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q06",
@@ -6406,7 +7139,8 @@
             "Hans Zimmer",
             "Howard Shore",
             "Alan Silvestri"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q06",
@@ -6420,7 +7154,8 @@
             "Brie Larson",
             "Gal Gadot",
             "Zoe Saldana"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q06",
@@ -6434,7 +7169,8 @@
             "Ariana Grande",
             "Idina Menzel",
             "Jennifer Hudson"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q06",
@@ -6448,7 +7184,8 @@
             "Scarlett Johansson",
             "Brie Larson",
             "Margot Robbie"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q06",
@@ -6462,7 +7199,8 @@
             "Jin",
             "Jimin",
             "Suga"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q06",
@@ -6476,7 +7214,8 @@
             "John Lennon",
             "Elton John",
             "David Bowie"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q06",
@@ -6490,7 +7229,8 @@
             "Jim Carrey",
             "Adam Sandler",
             "Steve Carell"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q06",
@@ -6504,7 +7244,8 @@
             "Foreigner",
             "Bon Jovi",
             "REO Speedwagon"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q06",
@@ -6518,7 +7259,8 @@
             "Lea Salonga",
             "Apo Hiking Society",
             "Levi Celerio"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q06",
@@ -6532,7 +7274,8 @@
             "My Hero",
             "My Home",
             "My Land"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q06",
@@ -6546,7 +7289,8 @@
             "Lea Salonga",
             "Sarah Geronimo",
             "Charice"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q06",
@@ -6560,21 +7304,23 @@
             "A Filipino folk dance",
             "A Filipino festival",
             "A traditional song for weddings"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q06",
           "category": "music",
           "tier": "ultra",
           "type": "mc",
-          "question": "Who originally voiced Elsa in Disney's Frozen and performed 'Let It Go'?",
-          "answer": "Idina Menzel",
+          "question": "Which musical features the song 'My Shot' by Lin-Manuel Miranda?",
+          "answer": "Hamilton",
           "options": [
-            "Idina Menzel",
-            "Kristen Bell",
-            "Demi Lovato",
-            "Auli'i Cravalho"
-          ]
+            "Hamilton",
+            "Wicked",
+            "Hairspray",
+            "Annie"
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -6590,7 +7336,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q07",
@@ -6602,7 +7349,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q07",
@@ -6614,7 +7362,51 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS032",
+          "category": "sports",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many points is a touchdown worth in American football?",
+          "answer": "6",
+          "options": [
+            "6",
+            "3",
+            "7",
+            "2"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS033",
+          "category": "sports",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Volleyball is played mainly with the hands and arms.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS034",
+          "category": "sports",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many strikes does it take for a strikeout in baseball?",
+          "answer": "3",
+          "options": [
+            "3",
+            "2",
+            "4",
+            "5"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -6630,7 +7422,8 @@
             "18",
             "20",
             "28"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q07",
@@ -6644,7 +7437,8 @@
             "4",
             "6",
             "7"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q07",
@@ -6656,7 +7450,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g2q07",
@@ -6668,7 +7463,36 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS035",
+          "category": "sports",
+          "tier": "holo",
+          "type": "tf",
+          "question": "A standard professional tennis match can be best-of-3 or best-of-5 sets.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS036",
+          "category": "sports",
+          "tier": "holo",
+          "type": "mc",
+          "question": "In bowling, what is it called when you knock down all pins in two rolls?",
+          "answer": "A spare",
+          "options": [
+            "A spare",
+            "A strike",
+            "A frame",
+            "A split"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -6684,7 +7508,8 @@
             "3",
             "5",
             "6"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q07",
@@ -6696,7 +7521,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q07",
@@ -6710,7 +7536,8 @@
             "5",
             "7",
             "8"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q07",
@@ -6722,7 +7549,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q07",
@@ -6736,7 +7564,8 @@
             "80",
             "100",
             "120"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q07",
@@ -6750,7 +7579,8 @@
             "8",
             "10",
             "11"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q07",
@@ -6762,7 +7592,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q07",
@@ -6776,7 +7607,8 @@
             "Olypmics",
             "Olmpyics",
             "Olypmcis"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -6790,7 +7622,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q07",
@@ -6802,7 +7635,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q07",
@@ -6816,7 +7650,8 @@
             "9",
             "16",
             "20"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q07",
@@ -6830,7 +7665,8 @@
             "US Open",
             "French Open",
             "Australian Open"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q07",
@@ -6844,7 +7680,8 @@
             "29",
             "49",
             "59"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q07",
@@ -6858,7 +7695,8 @@
             "200",
             "270",
             "350"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g2q07",
@@ -6870,7 +7708,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q07",
@@ -6884,7 +7723,8 @@
             "US Open",
             "Wimbledon",
             "Australian Open"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -6900,7 +7740,8 @@
             "Cristiano Ronaldo",
             "Pele",
             "Diego Maradona"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q07",
@@ -6914,7 +7755,8 @@
             "China",
             "Korea",
             "Mongolia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q07",
@@ -6926,7 +7768,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q07",
@@ -6940,7 +7783,8 @@
             "Germany",
             "Argentina",
             "Italy"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q07",
@@ -6954,7 +7798,8 @@
             "LeBron James",
             "Kobe Bryant",
             "Magic Johnson"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q07",
@@ -6968,7 +7813,8 @@
             "Cricket",
             "Badminton",
             "Squash"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q07",
@@ -6982,7 +7828,8 @@
             "Athens, Greece",
             "Rome, Italy",
             "Sparta, Greece"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q07",
@@ -6996,7 +7843,8 @@
             "Three saves by a goalkeeper",
             "Three yellow cards",
             "Three red cards"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q07",
@@ -7010,7 +7858,8 @@
             "7",
             "10",
             "11"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q07",
@@ -7024,7 +7873,8 @@
             "Rio de Janeiro",
             "London",
             "Beijing"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q07",
@@ -7036,7 +7886,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q07",
@@ -7050,7 +7901,8 @@
             "Lacrosse",
             "Field Hockey",
             "Curling"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q07",
@@ -7064,7 +7916,8 @@
             "Baseball",
             "Tennis",
             "Football"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q07",
@@ -7078,7 +7931,8 @@
             "15",
             "23",
             "25"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q07",
@@ -7092,7 +7946,8 @@
             "Cricket",
             "Golf",
             "Badminton"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q07",
@@ -7104,7 +7959,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q07",
@@ -7118,7 +7974,8 @@
             "Tokyo",
             "Los Angeles",
             "Brisbane"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q07",
@@ -7132,7 +7989,8 @@
             "25 meters",
             "100 meters",
             "75 meters"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q07",
@@ -7146,7 +8004,8 @@
             "Tennis",
             "Basketball",
             "Cricket"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q07",
@@ -7158,7 +8017,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q07",
@@ -7172,7 +8032,8 @@
             "England",
             "Ireland",
             "Netherlands"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q07",
@@ -7186,7 +8047,8 @@
             "3",
             "7",
             "4"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q07",
@@ -7200,7 +8062,8 @@
             "Nonito Donaire",
             "Flash Elorde",
             "Onyok Velasco"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q07",
@@ -7214,7 +8077,8 @@
             "Carlos Yulo",
             "Manny Pacquiao",
             "Onyok Velasco"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q07",
@@ -7228,7 +8092,8 @@
             "Spia",
             "Pisa",
             "Apsi"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q07",
@@ -7242,7 +8107,8 @@
             "Sipa",
             "Karate",
             "Taekwondo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q07",
@@ -7256,7 +8122,8 @@
             "Cleveland Cavaliers",
             "Miami Heat",
             "Brooklyn Nets"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -7272,7 +8139,81 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS037",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Chocolate is made from which plant ingredient?",
+          "answer": "Cocoa beans",
+          "options": [
+            "Cocoa beans",
+            "Coffee beans",
+            "Sugar cane",
+            "Vanilla pods"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS038",
+          "category": "food",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Bread rises because of yeast.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS039",
+          "category": "food",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble the Italian food: P-A-S-T-A",
+          "answer": "Pasta",
+          "options": [
+            "Pasta",
+            "Patsa",
+            "Pasat",
+            "Tapas"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS040",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Soy sauce was originally developed in which country?",
+          "answer": "China",
+          "options": [
+            "China",
+            "Japan",
+            "Korea",
+            "Vietnam"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS041",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Coffee beans grow on what kind of plant?",
+          "answer": "Coffee shrub",
+          "options": [
+            "Coffee shrub",
+            "Cocoa tree",
+            "Tea bush",
+            "Sugar cane"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -7288,7 +8229,8 @@
             "Fish",
             "Seaweed",
             "Wasabi"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q08",
@@ -7302,7 +8244,8 @@
             "Aboob",
             "Adoob",
             "Abodo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q08",
@@ -7316,7 +8259,8 @@
             "Steaming",
             "Baking",
             "Boiling"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q08",
@@ -7328,7 +8272,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q08",
@@ -7342,7 +8287,23 @@
             "Lentils",
             "Kidney beans",
             "Soybeans"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS042",
+          "category": "food",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Most pasta is made primarily from which grain?",
+          "answer": "Wheat",
+          "options": [
+            "Wheat",
+            "Rice",
+            "Corn",
+            "Barley"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -7358,7 +8319,8 @@
             "Italy",
             "France",
             "Portugal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q08",
@@ -7372,7 +8334,8 @@
             "Siniagng",
             "Singiang",
             "Sinagang"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q08",
@@ -7386,7 +8349,8 @@
             "Baguette",
             "Croissant",
             "Brioche"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q08",
@@ -7398,7 +8362,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q08",
@@ -7412,7 +8377,8 @@
             "Sashimi",
             "Ramen",
             "Tempura"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q08",
@@ -7426,7 +8392,8 @@
             "Kare-kare",
             "Sinigang",
             "Mechado"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q08",
@@ -7440,7 +8407,8 @@
             "Lehcon",
             "Lcheon",
             "Lecohn"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q08",
@@ -7454,7 +8422,8 @@
             "Paprika",
             "Cumin",
             "Saffron"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -7470,7 +8439,8 @@
             "Buko Pandan",
             "Leche Flan",
             "Mais con Hielo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q08",
@@ -7482,7 +8452,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q08",
@@ -7494,7 +8465,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q08",
@@ -7508,7 +8480,8 @@
             "8",
             "25",
             "40"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q08",
@@ -7522,7 +8495,8 @@
             "Pacnit",
             "Pnacit",
             "Pacint"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q08",
@@ -7536,7 +8510,8 @@
             "Coffee beans",
             "Vanilla beans",
             "Sugar cane"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q08",
@@ -7548,7 +8523,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q08",
@@ -7562,7 +8538,8 @@
             "Greece",
             "France",
             "Spain"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -7578,7 +8555,8 @@
             "10",
             "50",
             "100"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q08",
@@ -7592,7 +8570,8 @@
             "Bagutete",
             "Baguettte",
             "Baguteet"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q08",
@@ -7606,7 +8585,8 @@
             "France",
             "Germany",
             "Italy"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q08",
@@ -7620,7 +8600,8 @@
             "The Romans",
             "The Egyptians",
             "The Vikings"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q08",
@@ -7634,7 +8615,8 @@
             "Lumipa",
             "Lupmia",
             "Lipuma"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q08",
@@ -7648,7 +8630,8 @@
             "Parsley",
             "Cilantro",
             "Mint"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q08",
@@ -7660,7 +8643,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q08",
@@ -7674,7 +8658,8 @@
             "Lentils",
             "Beans",
             "Peas"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q08",
@@ -7688,7 +8673,8 @@
             "Spain",
             "Mexico",
             "Indonesia"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q08",
@@ -7702,7 +8688,8 @@
             "Tirasimu",
             "Tiramusi",
             "Trimasiu"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q08",
@@ -7716,7 +8703,8 @@
             "Austria",
             "Belgium",
             "Switzerland"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q08",
@@ -7730,7 +8718,8 @@
             "China",
             "Korea",
             "Vietnam"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q08",
@@ -7744,7 +8733,8 @@
             "Rambutan",
             "Mangosteen",
             "Duhat"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q08",
@@ -7758,7 +8748,8 @@
             "Sunday roast",
             "Bangers and mash",
             "Shepherd's pie"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q08",
@@ -7772,7 +8763,8 @@
             "Paeall",
             "Plaeal",
             "Palael"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q08",
@@ -7786,7 +8778,8 @@
             "Parsley",
             "Spinach",
             "Mint"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q08",
@@ -7800,7 +8793,8 @@
             "Doenjang",
             "Miso",
             "Sambal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q08",
@@ -7814,7 +8808,8 @@
             "Fish sauce",
             "Vinegar",
             "Oyster sauce"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q08",
@@ -7828,7 +8823,8 @@
             "Spain",
             "USA",
             "Guatemala"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q08",
@@ -7840,7 +8836,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q08",
@@ -7854,7 +8851,8 @@
             "Pansedal",
             "Padesnal",
             "Padnesal"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q08",
@@ -7868,7 +8866,8 @@
             "Sinigang",
             "Kare-Kare",
             "Adobo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q08",
@@ -7882,7 +8881,8 @@
             "55",
             "150",
             "200"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q08",
@@ -7896,7 +8896,8 @@
             "Sinigang",
             "Lechon",
             "Kare-Kare"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q08",
@@ -7910,7 +8911,8 @@
             "Lumpia",
             "Lechon",
             "Sinigang"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q08",
@@ -7924,7 +8926,8 @@
             "Aluminum foil",
             "Coconut husks",
             "Bamboo"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q08",
@@ -7938,7 +8941,8 @@
             "Hot soup",
             "Grilled meat dish",
             "Rice cake"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q08",
@@ -7952,7 +8956,8 @@
             "Banana",
             "Pineapple",
             "Calamansi"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -7971,7 +8976,8 @@
             "Sorry",
             "Hello",
             "Goodbye"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g2q09",
@@ -7985,7 +8991,8 @@
             "Buenas noches",
             "Buenas tardes",
             "Hola"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q09",
@@ -7999,7 +9006,8 @@
             "Kalsada",
             "Tubig",
             "Langit"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q09",
@@ -8013,7 +9021,8 @@
             "Garcias",
             "Grascia",
             "Gracais"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q09",
@@ -8027,7 +9036,8 @@
             "I miss you",
             "Thank you",
             "Good luck"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g1q09",
@@ -8041,7 +9051,8 @@
             "Cama",
             "Calle",
             "Cocina"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -8057,7 +9068,8 @@
             "Are you hungry?",
             "What did you eat?",
             "Do you like food?"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q09",
@@ -8071,7 +9083,8 @@
             "Apoy",
             "Hangin",
             "Lupa"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q09",
@@ -8085,7 +9098,8 @@
             "Garcias",
             "Grascia",
             "Gracais"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q09",
@@ -8099,7 +9113,8 @@
             "Te quiero",
             "Me gusta",
             "Te extrano"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g1q09",
@@ -8113,7 +9128,8 @@
             "Fuego",
             "Tierra",
             "Aire"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q09",
@@ -8127,7 +9143,8 @@
             "What time is it?",
             "Where are you going?",
             "Can I help you?"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q09",
@@ -8141,7 +9158,8 @@
             "Amoig",
             "Amogi",
             "Aiomg"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q09",
@@ -8155,7 +9173,8 @@
             "To sleep",
             "To drink",
             "To walk"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q09",
@@ -8169,7 +9188,8 @@
             "Good evening",
             "Good afternoon",
             "Goodbye"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -8185,7 +9205,8 @@
             "Pamilya",
             "Kapitbahay",
             "Kapatid"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q09",
@@ -8199,7 +9220,8 @@
             "Buenas tardes",
             "Buenos dias",
             "Hasta luego"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q09",
@@ -8213,7 +9235,8 @@
             "Good morning",
             "Good night",
             "Goodbye"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q09",
@@ -8225,7 +9248,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q09",
@@ -8239,7 +9263,8 @@
             "Fire",
             "Air",
             "Earth"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q09",
@@ -8253,7 +9278,8 @@
             "Cat",
             "Horse",
             "Bird"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q09",
@@ -8267,7 +9293,8 @@
             "Goodbye",
             "Please",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -8283,7 +9310,8 @@
             "Sorry",
             "Hello",
             "Goodbye"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q09",
@@ -8297,7 +9325,8 @@
             "Hello",
             "Sorry",
             "Yes"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q09",
@@ -8311,7 +9340,8 @@
             "Goodbye",
             "Sorry",
             "Thank you"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q09",
@@ -8325,7 +9355,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q09",
@@ -8339,7 +9370,8 @@
             "Goodbye",
             "Sorry",
             "Thanks"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q09",
@@ -8353,7 +9385,8 @@
             "Thanks",
             "Yes",
             "Please"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q09",
@@ -8367,7 +9400,8 @@
             "Hello",
             "Goodbye",
             "Please"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q09",
@@ -8381,7 +9415,8 @@
             "Salamat po",
             "Kumusta ka",
             "Magandang araw"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q09",
@@ -8395,7 +9430,8 @@
             "Good evening",
             "Goodbye",
             "Thank you"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q09",
@@ -8409,7 +9445,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q09",
@@ -8423,7 +9460,8 @@
             "Hello",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q09",
@@ -8437,7 +9475,8 @@
             "Hello",
             "Thank you",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q09",
@@ -8451,7 +9490,8 @@
             "Alaoh",
             "Aolah",
             "Ohala"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q09",
@@ -8465,7 +9505,8 @@
             "Good night",
             "Goodbye",
             "Please"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q09",
@@ -8479,7 +9520,8 @@
             "Good morning",
             "Welcome",
             "Farewell"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q09",
@@ -8493,7 +9535,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q09",
@@ -8507,7 +9550,8 @@
             "Hello",
             "Sorry",
             "Please"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q09",
@@ -8521,7 +9565,8 @@
             "Ni hao",
             "Zai jian",
             "Dui bu qi"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q09",
@@ -8535,7 +9580,8 @@
             "Goodbye",
             "Thank you",
             "Sorry"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q09",
@@ -8549,7 +9595,8 @@
             "One",
             "Two",
             "Five"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q09",
@@ -8563,7 +9610,8 @@
             "Three",
             "Five",
             "Six"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q09",
@@ -8577,7 +9625,8 @@
             "Goodbye",
             "Thank you",
             "Excuse me"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q09",
@@ -8591,7 +9640,8 @@
             "Four",
             "Six",
             "Seven"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q09",
@@ -8605,7 +9655,8 @@
             "You're welcome",
             "Hello",
             "Please come in"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q09",
@@ -8619,7 +9670,8 @@
             "Good morning",
             "Good afternoon",
             "Goodbye"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q09",
@@ -8631,7 +9683,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q09",
@@ -8645,7 +9698,8 @@
             "Mahal kita",
             "Je t'aime",
             "Ich liebe dich"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q09",
@@ -8659,7 +9713,8 @@
             "Where are you going?",
             "What is your name?",
             "Goodbye for now"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     },
@@ -8677,7 +9732,81 @@
             "35",
             "45",
             "48"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS043",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 15 plus 27?",
+          "answer": "42",
+          "options": [
+            "42",
+            "32",
+            "52",
+            "41"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS044",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 81 minus 36?",
+          "answer": "45",
+          "options": [
+            "45",
+            "55",
+            "35",
+            "47"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS045",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 9 multiplied by 8?",
+          "answer": "72",
+          "options": [
+            "72",
+            "63",
+            "81",
+            "64"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS046",
+          "category": "math",
+          "tier": "basic",
+          "type": "tf",
+          "question": "17 is a prime number.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS047",
+          "category": "math",
+          "tier": "basic",
+          "type": "closest",
+          "question": "How many seconds are in 5 minutes?",
+          "answer": "300",
+          "options": [
+            "300",
+            "60",
+            "500",
+            "1000"
+          ],
+          "age_band": "senior"
         }
       ],
       "holo": [
@@ -8693,7 +9822,8 @@
             "20",
             "30",
             "40"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g3q10",
@@ -8707,7 +9837,8 @@
             "15",
             "25",
             "40"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g4q10",
@@ -8721,7 +9852,8 @@
             "54",
             "56",
             "72"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k1g5q10",
@@ -8735,7 +9867,38 @@
             "26",
             "35",
             "45"
-          ]
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS048",
+          "category": "math",
+          "tier": "holo",
+          "type": "mc",
+          "question": "What is 13 squared?",
+          "answer": "169",
+          "options": [
+            "169",
+            "139",
+            "189",
+            "144"
+          ],
+          "age_band": "senior"
+        },
+        {
+          "id": "tuS049",
+          "category": "math",
+          "tier": "holo",
+          "type": "mc",
+          "question": "How many degrees are in a right angle?",
+          "answer": "90",
+          "options": [
+            "90",
+            "45",
+            "180",
+            "360"
+          ],
+          "age_band": "senior"
         }
       ],
       "rare": [
@@ -8751,7 +9914,8 @@
             "25",
             "35",
             "40"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g2q10",
@@ -8765,7 +9929,8 @@
             "15",
             "19",
             "21"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g3q10",
@@ -8779,7 +9944,8 @@
             "180km",
             "200km",
             "260km"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g4q10",
@@ -8793,7 +9959,8 @@
             "14cm",
             "21cm",
             "49cm"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k2g5q10",
@@ -8807,7 +9974,8 @@
             "20",
             "40",
             "60"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g1q10",
@@ -8821,7 +9989,8 @@
             "10",
             "14",
             "16"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "super": [
@@ -8837,7 +10006,8 @@
             "11",
             "13",
             "14"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g2q10",
@@ -8851,7 +10021,8 @@
             "3/10",
             "2/5",
             "3/5"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g3q10",
@@ -8865,7 +10036,8 @@
             "5",
             "9",
             "13"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g4q10",
@@ -8879,7 +10051,8 @@
             "14",
             "21",
             "30"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k3g5q10",
@@ -8893,7 +10066,8 @@
             "87",
             "89",
             "90"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g2q10",
@@ -8907,7 +10081,8 @@
             "3.12",
             "3.16",
             "3.18"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g3q10",
@@ -8921,7 +10096,8 @@
             "215",
             "245",
             "200"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g4q10",
@@ -8935,7 +10111,8 @@
             "1648",
             "1828",
             "1928"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k4g5q10",
@@ -8949,7 +10126,8 @@
             "11.5",
             "13",
             "10.5"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g1q10",
@@ -8963,7 +10141,8 @@
             "3.12",
             "3.16",
             "3.41"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g1q10",
@@ -8977,7 +10156,8 @@
             "72",
             "96",
             "78"
-          ]
+          ],
+          "age_band": "senior"
         }
       ],
       "ultra": [
@@ -8993,7 +10173,8 @@
             "40",
             "60",
             "100"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g3q10",
@@ -9007,7 +10188,8 @@
             "2 × pi × r",
             "pi × d",
             "r squared"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g4q10",
@@ -9021,7 +10203,8 @@
             "9",
             "10",
             "13"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k5g5q10",
@@ -9035,7 +10218,8 @@
             "40320",
             "725760",
             "120000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g2q10",
@@ -9049,7 +10233,8 @@
             "10",
             "14",
             "20"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g3q10",
@@ -9063,7 +10248,8 @@
             "7",
             "8",
             "11"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g4q10",
@@ -9077,7 +10263,8 @@
             "1.41",
             "3.14",
             "1.62"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k6g5q10",
@@ -9091,7 +10278,8 @@
             "111",
             "131",
             "144"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g1q10",
@@ -9105,7 +10293,8 @@
             "11",
             "13",
             "14"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g2q10",
@@ -9119,7 +10308,8 @@
             "1",
             "3",
             "0"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g3q10",
@@ -9133,7 +10323,8 @@
             "512",
             "2048",
             "1000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g4q10",
@@ -9147,7 +10338,8 @@
             "30000",
             "3000000",
             "1000000"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k7g5q10",
@@ -9161,7 +10353,8 @@
             "13",
             "17",
             "25"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g1q10",
@@ -9175,7 +10368,8 @@
             "64",
             "81",
             "63"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g2q10",
@@ -9189,7 +10383,8 @@
             "0.14",
             "0.4",
             "0.5"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g3q10",
@@ -9203,7 +10398,8 @@
             "62",
             "82",
             "144"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g4q10",
@@ -9217,7 +10413,8 @@
             "72",
             "90",
             "18"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k8g5q10",
@@ -9231,7 +10428,8 @@
             "30.14",
             "33.14",
             "28.62"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g1q10",
@@ -9245,7 +10443,8 @@
             "36",
             "48",
             "56"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g2q10",
@@ -9259,7 +10458,8 @@
             "63",
             "43",
             "57"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g3q10",
@@ -9273,7 +10473,8 @@
             "720",
             "40320",
             "2520"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g4q10",
@@ -9287,7 +10488,8 @@
             "72",
             "99",
             "89"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k9g5q10",
@@ -9301,7 +10503,8 @@
             "36",
             "60",
             "144"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g1q10",
@@ -9315,7 +10518,8 @@
             "80",
             "20",
             "18"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g2q10",
@@ -9329,7 +10533,8 @@
             "80",
             "150",
             "200"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g3q10",
@@ -9343,7 +10548,8 @@
             "115",
             "135",
             "145"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g4q10",
@@ -9357,7 +10563,8 @@
             "133",
             "153",
             "150"
-          ]
+          ],
+          "age_band": "senior"
         },
         {
           "id": "k10g5q10",
@@ -9371,7 +10578,8 @@
             "421",
             "461",
             "484"
-          ]
+          ],
+          "age_band": "senior"
         }
       ]
     }
@@ -9391,7 +10599,8 @@
           "Pikachu, Eevee, Meowth",
           "Caterpie, Pidgey, Rattata",
           "Oddish, Growlithe, Poliwag"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_k2",
@@ -9406,7 +10615,8 @@
           "Team Magma",
           "Team Plasma",
           "Team Flare"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_k3",
@@ -9419,7 +10629,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_k4",
@@ -9434,7 +10645,8 @@
           "Cerulean City",
           "Cinnabar Island",
           "Saffron City"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_k5",
@@ -9449,7 +10661,8 @@
           "150",
           "152",
           "160"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_k6",
@@ -9464,7 +10677,150 @@
           "Mew",
           "Mewtwo",
           "Dialga"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS001",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "How many badges must you collect to reach Kanto's Indigo Plateau?",
+        "answer": "8",
+        "options": [
+          "8",
+          "6",
+          "10",
+          "16"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS002",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What are Charizard's two types?",
+        "answer": "Fire and Flying",
+        "options": [
+          "Fire and Flying",
+          "Fire and Dragon",
+          "Fire only",
+          "Dragon and Flying"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS003",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Eevee has 8 different evolutions as of Gen 8.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS004",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Who is the first gym leader of Kanto, based in Pewter City?",
+        "answer": "Brock",
+        "options": [
+          "Brock",
+          "Misty",
+          "Lt. Surge",
+          "Sabrina"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS005",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble: M-A-G-I-K-A-R-P",
+        "answer": "Magikarp",
+        "options": [
+          "Magikarp",
+          "Magkiarp",
+          "Maigkarp",
+          "Magkairp"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS006",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Gyarados is the powerful evolution of which weak Pokemon?",
+        "answer": "Magikarp",
+        "options": [
+          "Magikarp",
+          "Feebas",
+          "Goldeen",
+          "Horsea"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS007",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Which Pokemon occupies slot #001 in the National Pokedex?",
+        "answer": "Bulbasaur",
+        "options": [
+          "Bulbasaur",
+          "Pikachu",
+          "Charmander",
+          "Mew"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS008",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the original Kanto champion at the end of Red/Blue?",
+        "answer": "Blue",
+        "options": [
+          "Blue",
+          "Red",
+          "Lance",
+          "Giovanni"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS009",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "In which Kanto location were Mewtwo's creation experiments carried out?",
+        "answer": "Cinnabar Island",
+        "options": [
+          "Cinnabar Island",
+          "Cerulean Cave",
+          "Seafoam Islands",
+          "Mt. Moon"
+        ],
+        "age_band": "senior"
       }
     ],
     "2": [
@@ -9481,7 +10837,8 @@
           "Treecko, Torchic, Mudkip",
           "Turtwig, Chimchar, Piplup",
           "Snivy, Tepig, Oshawott"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_j2",
@@ -9496,7 +10853,8 @@
           "Ho-Oh",
           "Suicune",
           "Kyogre"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_j3",
@@ -9509,7 +10867,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_j4",
@@ -9524,7 +10883,8 @@
           "Professor Oak",
           "Professor Birch",
           "Professor Rowan"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_j5",
@@ -9539,7 +10899,8 @@
           "Articuno, Zapdos, Moltres",
           "Uxie, Mesprit, Azelf",
           "Cobalion, Terrakion, Virizion"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_j6",
@@ -9554,7 +10915,150 @@
           "Bell Tower",
           "Tin Tower",
           "Crystal Tower"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS010",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "How many NEW Pokemon were added in Johto (Generation 2)?",
+        "answer": "100",
+        "options": [
+          "100",
+          "150",
+          "80",
+          "120"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS011",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble Johto starter: T-O-T-O-D-I-L-E",
+        "answer": "Totodile",
+        "options": [
+          "Totodile",
+          "Totoidel",
+          "Totdiole",
+          "Totodiel"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS012",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Totodile is what type?",
+        "answer": "Water",
+        "options": [
+          "Water",
+          "Dragon",
+          "Ground",
+          "Ice"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS013",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Who is the protagonist's rival in Johto?",
+        "answer": "Silver",
+        "options": [
+          "Silver",
+          "Blue",
+          "Wally",
+          "N"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS014",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Pokemon Eggs and breeding were introduced in Generation 2.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS015",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Falkner specializes in Pokemon of which type?",
+        "answer": "Flying",
+        "options": [
+          "Flying",
+          "Bird",
+          "Normal",
+          "Bug"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS016",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Totodile's final evolution is which Pokemon?",
+        "answer": "Feraligatr",
+        "options": [
+          "Feraligatr",
+          "Swampert",
+          "Empoleon",
+          "Greninja"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS017",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Lance, the Johto champion, specializes in which type?",
+        "answer": "Dragon",
+        "options": [
+          "Dragon",
+          "Flying",
+          "Psychic",
+          "Fire"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS018",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "In Gold/Silver, how many gym badges can you earn across Kanto + Johto?",
+        "answer": "16",
+        "options": [
+          "16",
+          "8",
+          "12",
+          "20"
+        ],
+        "age_band": "senior"
       }
     ],
     "3": [
@@ -9571,7 +11075,8 @@
           "Turtwig, Chimchar, Piplup",
           "Chikorita, Cyndaquil, Totodile",
           "Snivy, Tepig, Oshawott"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_h2",
@@ -9586,7 +11091,8 @@
           "Team Rocket and Plasma",
           "Team Flare and Skull",
           "Team Yell and Macro"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_h3",
@@ -9599,7 +11105,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_h4",
@@ -9614,7 +11121,8 @@
           "Kyogre",
           "Rayquaza",
           "Regice"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_h5",
@@ -9629,7 +11137,8 @@
           "Z-Moves",
           "Dynamax",
           "Terastallization"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_h6",
@@ -9644,7 +11153,150 @@
           "Mega Evolution",
           "Origin Form",
           "Delta Episode"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS019",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble Hoenn rival's name: B-R-E-N-D-A-N",
+        "answer": "Brendan",
+        "options": [
+          "Brendan",
+          "Bernadn",
+          "Brenadn",
+          "Bredann"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS020",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Which side activity beyond battling was introduced in Hoenn?",
+        "answer": "Pokemon Contests",
+        "options": [
+          "Pokemon Contests",
+          "Pokemon Showcases",
+          "Pokemon Camp",
+          "Pokeathlon"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS021",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Mudkip's middle evolution is called what?",
+        "answer": "Marshtomp",
+        "options": [
+          "Marshtomp",
+          "Mudbray",
+          "Marshadow",
+          "Quagsire"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS022",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Hoenn is based on which Japanese island?",
+        "answer": "Kyushu",
+        "options": [
+          "Kyushu",
+          "Hokkaido",
+          "Honshu",
+          "Shikoku"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS023",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Hoenn introduced Pokemon 'abilities' as a battle mechanic.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS024",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Torchic's final evolution is which Pokemon?",
+        "answer": "Blaziken",
+        "options": [
+          "Blaziken",
+          "Infernape",
+          "Emboar",
+          "Charizard"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS025",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Brendan and May are the protagonists of which region's games?",
+        "answer": "Hoenn",
+        "options": [
+          "Hoenn",
+          "Sinnoh",
+          "Kanto",
+          "Johto"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS026",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Steven Stone, Hoenn's champion, specializes in which type?",
+        "answer": "Steel",
+        "options": [
+          "Steel",
+          "Rock",
+          "Dragon",
+          "Psychic"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS027",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Rayquaza can Mega Evolve without a Mega Stone — but only if it knows which move?",
+        "answer": "Dragon Ascent",
+        "options": [
+          "Dragon Ascent",
+          "Outrage",
+          "Hyper Beam",
+          "Sky Attack"
+        ],
+        "age_band": "senior"
       }
     ],
     "4": [
@@ -9661,7 +11313,8 @@
           "Snivy, Tepig, Oshawott",
           "Rowlet, Litten, Popplio",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_s2",
@@ -9676,7 +11329,8 @@
           "Palkia",
           "Giratina",
           "Arceus"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_s3",
@@ -9689,7 +11343,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_s4",
@@ -9704,7 +11359,8 @@
           "Shadow Realm",
           "Dark World",
           "Reverse World"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_s5",
@@ -9719,7 +11375,8 @@
           "Dialga, Palkia, Giratina",
           "Articuno, Zapdos, Moltres",
           "Raikou, Entei, Suicune"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_s6",
@@ -9734,7 +11391,150 @@
           "Mt. Silver",
           "Mt. Pyre",
           "Mt. Chimney"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS028",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble the female protagonist of Sinnoh: D-A-W-N",
+        "answer": "Dawn",
+        "options": [
+          "Dawn",
+          "Dwan",
+          "Adwn",
+          "Dnaw"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS029",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Piplup eventually evolves into which Pokemon?",
+        "answer": "Empoleon",
+        "options": [
+          "Empoleon",
+          "Swampert",
+          "Samurott",
+          "Feraligatr"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS030",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Sinnoh's region professor is named what?",
+        "answer": "Professor Rowan",
+        "options": [
+          "Professor Rowan",
+          "Professor Oak",
+          "Professor Birch",
+          "Professor Elm"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS031",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Sinnoh was the first region to split physical and special moves by individual move.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS032",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Chimchar's final evolution is which Pokemon?",
+        "answer": "Infernape",
+        "options": [
+          "Infernape",
+          "Blaziken",
+          "Emboar",
+          "Typhlosion"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS033",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Cyrus is the leader of which villainous team?",
+        "answer": "Team Galactic",
+        "options": [
+          "Team Galactic",
+          "Team Rocket",
+          "Team Magma",
+          "Team Plasma"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS034",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What iconic location sits atop Mt. Coronet in Sinnoh?",
+        "answer": "Spear Pillar",
+        "options": [
+          "Spear Pillar",
+          "Sky Pillar",
+          "Mt. Pyre",
+          "Cerulean Cave"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS035",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Cynthia, the Sinnoh champion, has a signature dragon. Which one?",
+        "answer": "Garchomp",
+        "options": [
+          "Garchomp",
+          "Dragonite",
+          "Salamence",
+          "Hydreigon"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS036",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which orb powers up Palkia's strongest attacks?",
+        "answer": "Lustrous Orb",
+        "options": [
+          "Lustrous Orb",
+          "Adamant Orb",
+          "Griseous Orb",
+          "Soul Heart"
+        ],
+        "age_band": "senior"
       }
     ],
     "5": [
@@ -9751,7 +11551,8 @@
           "Chespin, Fennekin, Froakie",
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_u2",
@@ -9766,7 +11567,8 @@
           "N",
           "Lysandre",
           "Cyrus"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_u3",
@@ -9779,7 +11581,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_u4",
@@ -9794,7 +11597,8 @@
           "Fire and Thunder",
           "Past and Future",
           "Land and Sea"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_u5",
@@ -9809,7 +11613,8 @@
           "Zygarde",
           "Rayquaza",
           "Giratina"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_u6",
@@ -9824,7 +11629,150 @@
           "One king",
           "Three sages",
           "Four guardians"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS037",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble the male protagonist of Unova: H-I-L-B-E-R-T",
+        "answer": "Hilbert",
+        "options": [
+          "Hilbert",
+          "Hibrelt",
+          "Hilbret",
+          "Hibelrt"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS038",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Unova is the first Pokemon region inspired by which real city?",
+        "answer": "New York City",
+        "options": [
+          "New York City",
+          "Tokyo",
+          "London",
+          "Paris"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS039",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Generation 5 introduced 156 new Pokemon, the most ever in a single generation.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS040",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Snivy's final evolution is which Pokemon?",
+        "answer": "Serperior",
+        "options": [
+          "Serperior",
+          "Sceptile",
+          "Decidueye",
+          "Meganium"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS041",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the champion of Unova in Black and White?",
+        "answer": "Alder",
+        "options": [
+          "Alder",
+          "Iris",
+          "Lance",
+          "Steven"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS042",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is Unova's biggest city, modeled on NYC?",
+        "answer": "Castelia City",
+        "options": [
+          "Castelia City",
+          "Nimbasa City",
+          "Aspertia City",
+          "Driftveil City"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS043",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Which legendary trio of Unova is collectively called the Swords of Justice?",
+        "answer": "Cobalion, Terrakion, Virizion",
+        "options": [
+          "Cobalion, Terrakion, Virizion",
+          "Reshiram, Zekrom, Kyurem",
+          "Tornadus, Thundurus, Landorus",
+          "Articuno, Zapdos, Moltres"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS044",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is Black Kyurem's signature move?",
+        "answer": "Freeze Shock",
+        "options": [
+          "Freeze Shock",
+          "Ice Burn",
+          "Glaciate",
+          "Bolt Strike"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS045",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is White Kyurem's signature move?",
+        "answer": "Ice Burn",
+        "options": [
+          "Ice Burn",
+          "Freeze Shock",
+          "Glaciate",
+          "Fusion Flare"
+        ],
+        "age_band": "senior"
       }
     ],
     "6": [
@@ -9841,7 +11789,8 @@
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble",
           "Sprigatito, Fuecoco, Quaxly"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_ka2",
@@ -9856,7 +11805,8 @@
           "Z-Moves",
           "Dynamax",
           "Terastallization"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_ka3",
@@ -9869,7 +11819,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_ka4",
@@ -9884,7 +11835,8 @@
           "Control legendaries",
           "Rule the world",
           "Steal all Pokemon"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_ka5",
@@ -9899,7 +11851,8 @@
           "The Infinity Edge",
           "The Life Orb",
           "The Death Ray"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_ka6",
@@ -9914,7 +11867,152 @@
           "Found eternal life",
           "Made a deal with Yveltal",
           "Born immortal"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS046",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble Kalos starter: C-H-E-S-P-I-N",
+        "answer": "Chespin",
+        "options": [
+          "Chespin",
+          "Chepsin",
+          "Chesinp",
+          "Chsepin"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS047",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What special form does Greninja take in the anime when bonded to Ash?",
+        "answer": "Ash-Greninja",
+        "options": [
+          "Ash-Greninja",
+          "Mega-Greninja",
+          "Shiny Greninja",
+          "Battle-Greninja"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS048",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Generation 6 introduced which new Pokemon type?",
+        "answer": "Fairy",
+        "options": [
+          "Fairy",
+          "Dark",
+          "Steel",
+          "Dragon"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS049",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Kalos champion?",
+        "answer": "Diantha",
+        "options": [
+          "Diantha",
+          "Cynthia",
+          "Iris",
+          "Alder"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS050",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is Kalos's capital-like city, modeled on Paris?",
+        "answer": "Lumiose City",
+        "options": [
+          "Lumiose City",
+          "Castelia City",
+          "Saffron City",
+          "Hau'oli City"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS051",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Which legendary Pokemon roams Kalos in its 50% Form?",
+        "answer": "Zygarde",
+        "options": [
+          "Zygarde",
+          "Mewtwo",
+          "Volcanion",
+          "Diancie"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS052",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Roughly how long does AZ's story arc in Kalos lore span?",
+        "answer": "3000 years",
+        "options": [
+          "3000 years",
+          "300 years",
+          "100 years",
+          "10000 years"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS053",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which two stones must a trainer possess for Mega Evolution to work?",
+        "answer": "Mega Stone and Key Stone",
+        "options": [
+          "Mega Stone and Key Stone",
+          "Mega Stone and Soul Heart",
+          "Key Stone and Aurora Stone",
+          "Mega Stone and Fire Stone"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS054",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "In Kalos lore, what concept does Zygarde represent?",
+        "answer": "Order/Balance",
+        "options": [
+          "Order/Balance",
+          "Truth",
+          "Ideals",
+          "Eternity"
+        ],
+        "age_band": "senior"
       }
     ],
     "7": [
@@ -9931,7 +12029,8 @@
           "Grookey, Scorbunny, Sobble",
           "Sprigatito, Fuecoco, Quaxly",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_al2",
@@ -9946,7 +12045,8 @@
           "Contests",
           "Showcases",
           "Battle Facilities"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_al3",
@@ -9959,7 +12059,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_al4",
@@ -9974,7 +12075,8 @@
           "Kanto, Johto, Hoenn, Sinnoh",
           "North, South, East, West",
           "Sun, Moon, Star, Cloud"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_al5",
@@ -9989,7 +12091,8 @@
           "Dark Portal",
           "Shadow Gate",
           "Dimension Rift"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_al6",
@@ -10004,7 +12107,152 @@
           "Arceus",
           "Dialga",
           "Necrozma"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS055",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble Alola starter: L-I-T-T-E-N",
+        "answer": "Litten",
+        "options": [
+          "Litten",
+          "Litent",
+          "Lintet",
+          "Litnet"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS056",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Rowlet's final evolution is which Pokemon?",
+        "answer": "Decidueye",
+        "options": [
+          "Decidueye",
+          "Primarina",
+          "Incineroar",
+          "Toucannon"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS057",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What new battle mechanic was introduced in Alola?",
+        "answer": "Z-Moves",
+        "options": [
+          "Z-Moves",
+          "Mega Evolution",
+          "Dynamax",
+          "Terastallization"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS058",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Alola is based on which real-world archipelago?",
+        "answer": "Hawaii",
+        "options": [
+          "Hawaii",
+          "Polynesia",
+          "Maldives",
+          "Caribbean"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS059",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is the name of the antagonist team in Sun and Moon?",
+        "answer": "Team Skull",
+        "options": [
+          "Team Skull",
+          "Team Flare",
+          "Team Yell",
+          "Team Star"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS060",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "The four Tapu guardians of Alola are collectively known as what?",
+        "answer": "The Tapus",
+        "options": [
+          "The Tapus",
+          "The Guardians",
+          "The Spirit Trio",
+          "The Island Four"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS061",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Necrozma fused with Solgaleo is called what?",
+        "answer": "Dusk Mane Necrozma",
+        "options": [
+          "Dusk Mane Necrozma",
+          "Dawn Wings Necrozma",
+          "Ultra Necrozma",
+          "Twilight Necrozma"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS062",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Necrozma fused with Lunala is called what?",
+        "answer": "Dawn Wings Necrozma",
+        "options": [
+          "Dawn Wings Necrozma",
+          "Dusk Mane Necrozma",
+          "Sun Wings Necrozma",
+          "Eclipse Necrozma"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS063",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which organization in Alola secretly studies (and abuses) Ultra Beasts?",
+        "answer": "Aether Foundation",
+        "options": [
+          "Aether Foundation",
+          "Team Skull",
+          "Pokemon League",
+          "Devon Corporation"
+        ],
+        "age_band": "senior"
       }
     ],
     "8": [
@@ -10021,7 +12269,8 @@
           "Sprigatito, Fuecoco, Quaxly",
           "Rowlet, Litten, Popplio",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_g2",
@@ -10036,7 +12285,8 @@
           "Mega Evolution",
           "Z-Moves",
           "Terastallization"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_g3",
@@ -10049,7 +12299,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_g4",
@@ -10064,7 +12315,8 @@
           "Truth and Ideals",
           "Life and Death",
           "Sun and Moon"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_g5",
@@ -10079,7 +12331,8 @@
           "The Great Calamity",
           "The Black Storm",
           "The Dark Eclipse"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_g6",
@@ -10094,7 +12347,152 @@
           "Leon created it",
           "Scientists made it",
           "Kings summoned it"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS064",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "unscramble",
+        "question": "Unscramble Galar starter: S-C-O-R-B-U-N-N-Y",
+        "answer": "Scorbunny",
+        "options": [
+          "Scorbunny",
+          "Scrobunny",
+          "Sorcbunny",
+          "Scoburnny"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS065",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Scorbunny's final evolution is which Pokemon?",
+        "answer": "Cinderace",
+        "options": [
+          "Cinderace",
+          "Inteleon",
+          "Rillaboom",
+          "Emboar"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS066",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Sobble's final evolution is which Pokemon?",
+        "answer": "Inteleon",
+        "options": [
+          "Inteleon",
+          "Cinderace",
+          "Rillaboom",
+          "Greninja"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS067",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the chairman who secretly orchestrates the Darkest Day?",
+        "answer": "Chairman Rose",
+        "options": [
+          "Chairman Rose",
+          "Leon",
+          "Sonia",
+          "Hop"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS068",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Calyrex rides one of two horse-like Pokemon. Name one.",
+        "answer": "Spectrier",
+        "options": [
+          "Spectrier",
+          "Rapidash",
+          "Keldeo",
+          "Ponyta"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS069",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Dynamax has a rarer 'G-Max'-exclusive form called what?",
+        "answer": "Gigantamax",
+        "options": [
+          "Gigantamax",
+          "Mega-Dynamax",
+          "Ultra Dynamax",
+          "Hyper Dynamax"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS070",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "How many official paid DLC packs were released for Sword/Shield?",
+        "answer": "2",
+        "options": [
+          "2",
+          "1",
+          "3",
+          "4"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS071",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Galar takes inspiration from which real country?",
+        "answer": "United Kingdom",
+        "options": [
+          "United Kingdom",
+          "Ireland",
+          "Germany",
+          "France"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS072",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the name of Charizard's Gigantamax-exclusive move?",
+        "answer": "G-Max Wildfire",
+        "options": [
+          "G-Max Wildfire",
+          "G-Max Fireball",
+          "G-Max Inferno",
+          "G-Max Volcano"
+        ],
+        "age_band": "senior"
       }
     ],
     "9": [
@@ -10111,7 +12509,8 @@
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_p2",
@@ -10126,7 +12525,8 @@
           "Mega Evolution",
           "Z-Moves",
           "Dynamax"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_p3",
@@ -10139,7 +12539,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_p4",
@@ -10154,7 +12555,8 @@
           "Gym, Plasma, Trials",
           "Main, Side, True",
           "Battle, Catch, Explore"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_p5",
@@ -10169,7 +12571,8 @@
           "Dark Hollow",
           "Zero Gate",
           "The Abyss"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_p6",
@@ -10184,7 +12587,152 @@
           "Legendary Pokemon",
           "Ancient kings",
           "Team Star leaders"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS073",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "unscramble",
+        "question": "Unscramble Paldea starter: F-U-E-C-O-C-O",
+        "answer": "Fuecoco",
+        "options": [
+          "Fuecoco",
+          "Feucoco",
+          "Fueccoo",
+          "Fueoccc"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS074",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Fuecoco's final evolution is which Pokemon?",
+        "answer": "Skeledirge",
+        "options": [
+          "Skeledirge",
+          "Cinderace",
+          "Blaziken",
+          "Talonflame"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS075",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Quaxly's final evolution is which Pokemon?",
+        "answer": "Quaquaval",
+        "options": [
+          "Quaquaval",
+          "Inteleon",
+          "Primarina",
+          "Empoleon"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS076",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which new battle mechanic is exclusive to Scarlet and Violet?",
+        "answer": "Terastallization",
+        "options": [
+          "Terastallization",
+          "Dynamax",
+          "Z-Moves",
+          "Mega Evolution"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS077",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Professors Sada and Turo are eventually revealed to be what?",
+        "answer": "AI copies of the real professors",
+        "options": [
+          "AI copies of the real professors",
+          "Their original selves",
+          "Legendary Pokemon in disguise",
+          "Identical twins"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS078",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What are 'Paradox Pokemon' in Paldea?",
+        "answer": "Past or future versions of existing Pokemon",
+        "options": [
+          "Past or future versions of existing Pokemon",
+          "Mythical Pokemon",
+          "Mega evolutions",
+          "Ultra Beasts"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS079",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Scarlet's box legendary Koraidon represents which time period?",
+        "answer": "Ancient past",
+        "options": [
+          "Ancient past",
+          "Distant future",
+          "Present",
+          "Alternate dimension"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS080",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Violet's box legendary Miraidon represents which time period?",
+        "answer": "Distant future",
+        "options": [
+          "Distant future",
+          "Ancient past",
+          "Present",
+          "Alternate dimension"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS081",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What three storylines do you complete in Scarlet/Violet?",
+        "answer": "Victory Road, Path of Legends, Starfall Street",
+        "options": [
+          "Victory Road, Path of Legends, Starfall Street",
+          "Gym, Contest, Trial",
+          "Sword, Shield, Crown",
+          "Past, Present, Future"
+        ],
+        "age_band": "senior"
       }
     ],
     "10": [
@@ -10201,7 +12749,8 @@
           "Individual strength",
           "Family loyalty",
           "National pride"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_pi2",
@@ -10216,7 +12765,8 @@
           "Andres Bonifacio",
           "Emilio Aguinaldo",
           "Lapu-Lapu"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_pi3",
@@ -10229,7 +12779,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_pi4",
@@ -10244,7 +12795,8 @@
           "Palawan, Cebu, Davao",
           "Manila, Cebu, Mindanao",
           "North, Central, South"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_pi5",
@@ -10259,7 +12811,8 @@
           "Alibata",
           "Kulitan",
           "Badlit"
-        ]
+        ],
+        "age_band": "senior"
       },
       {
         "id": "ct_pi6",
@@ -10274,7 +12827,150 @@
           "Wrote the constitution",
           "Led EDSA revolution",
           "Founded Manila"
-        ]
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS082",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "About how many Pokemon exist in the National Pokedex as of Gen 9?",
+        "answer": "Over 1000",
+        "options": [
+          "Over 1000",
+          "About 700",
+          "About 350",
+          "About 2000"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS083",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "tf",
+        "question": "The Pokemon Trading Card Game's very first set is called 'Base Set'.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS084",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which Pokemon was the very first one ever designed by Game Freak?",
+        "answer": "Rhydon",
+        "options": [
+          "Rhydon",
+          "Pikachu",
+          "Bulbasaur",
+          "Charmander"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS085",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What was the title of the very first Pokemon theatrical film (1998)?",
+        "answer": "Pokemon: The First Movie",
+        "options": [
+          "Pokemon: The First Movie",
+          "Pokemon 2000",
+          "Pokemon: The Movie 2000",
+          "Pokemon: Mewtwo's Revenge"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS086",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which iconic shiny Pokemon appears at the Lake of Rage in Johto?",
+        "answer": "Red Gyarados",
+        "options": [
+          "Red Gyarados",
+          "Shiny Mewtwo",
+          "Shiny Charizard",
+          "Shiny Lugia"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS087",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the maximum number of Pokemon in a player's active party?",
+        "answer": "6",
+        "options": [
+          "6",
+          "5",
+          "8",
+          "10"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS088",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which Pokemon is officially listed as the longest, at about 14.5 meters?",
+        "answer": "Wailord",
+        "options": [
+          "Wailord",
+          "Onix",
+          "Gyarados",
+          "Eternatus"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS089",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which generation introduced the Fairy type?",
+        "answer": "Generation 6",
+        "options": [
+          "Generation 6",
+          "Generation 5",
+          "Generation 7",
+          "Generation 8"
+        ],
+        "age_band": "senior"
+      },
+      {
+        "id": "ctuS090",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "unscramble",
+        "question": "Unscramble the Paldea mechanic: T-E-R-A-S-T-A-L",
+        "answer": "Terastal",
+        "options": [
+          "Terastal",
+          "Trestal",
+          "Terastla",
+          "Teratsal"
+        ],
+        "age_band": "senior"
       }
     ]
   },
@@ -10291,7 +12987,8 @@
         "Maya Bird",
         "Kalapati",
         "Tikling"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb02",
@@ -10303,7 +13000,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb03",
@@ -10317,7 +13015,8 @@
         "Tahanan",
         "Magulang",
         "Kaibigan"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb04",
@@ -10331,7 +13030,8 @@
         "Osaka",
         "Kyoto",
         "Hiroshima"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb05",
@@ -10343,7 +13043,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb06",
@@ -10357,7 +13058,8 @@
         "Asia",
         "Europe",
         "Australia"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb07",
@@ -10371,7 +13073,8 @@
         "Venus",
         "Mars",
         "Earth"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb08",
@@ -10383,7 +13086,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb09",
@@ -10397,7 +13101,8 @@
         "6",
         "10",
         "12"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb10",
@@ -10411,33 +13116,36 @@
         "Beauxbatons",
         "Durmstrang",
         "Ilvermorny"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb11",
       "category": "books",
       "tier": "holo",
       "type": "mc",
-      "question": "In The Gruffalo, what animal is the Gruffalo afraid of?",
-      "answer": "Mouse",
+      "question": "In Percy Jackson, what is Percy's father the god of?",
+      "answer": "The Sea",
       "options": [
-        "Mouse",
-        "Fox",
-        "Owl",
-        "Snake"
-      ]
+        "The Sea",
+        "The Sky",
+        "The Underworld",
+        "War"
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb12",
       "category": "books",
       "tier": "holo",
       "type": "tf",
-      "question": "In Dr. Seuss, the Cat in the Hat wears a red and white striped hat.",
+      "question": "In Harry Potter, the Sorting Hat decides which house each student joins.",
       "answer": "True",
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb13",
@@ -10451,7 +13159,8 @@
         "Fire",
         "Water",
         "Normal"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb14",
@@ -10463,7 +13172,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb15",
@@ -10477,21 +13187,23 @@
         "Blue",
         "Red",
         "Green"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb16",
       "category": "music",
       "tier": "holo",
       "type": "mc",
-      "question": "What is the name of Elsa's kingdom in Frozen?",
-      "answer": "Arendelle",
+      "question": "In Marvel, who is Tony Stark also known as?",
+      "answer": "Iron Man",
       "options": [
-        "Arendelle",
-        "Narnia",
-        "Wakanda",
-        "Agrabah"
-      ]
+        "Iron Man",
+        "Spider-Man",
+        "Captain America",
+        "Thor"
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb17",
@@ -10503,7 +13215,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb18",
@@ -10517,7 +13230,8 @@
         "Pizza",
         "Spaghetti",
         "Cookies"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb19",
@@ -10531,7 +13245,8 @@
         "6",
         "7",
         "11"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb20",
@@ -10543,7 +13258,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb21",
@@ -10557,7 +13273,8 @@
         "Brazil",
         "Argentina",
         "Italy"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb22",
@@ -10571,7 +13288,8 @@
         "USA",
         "France",
         "Greece"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb23",
@@ -10583,7 +13301,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb24",
@@ -10597,7 +13316,8 @@
         "Tomato",
         "Onion",
         "Lime"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb25",
@@ -10611,7 +13331,8 @@
         "Good night",
         "Good afternoon",
         "Goodbye"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb26",
@@ -10623,7 +13344,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb27",
@@ -10637,7 +13359,8 @@
         "Fuego",
         "Tierra",
         "Viento"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb28",
@@ -10651,7 +13374,8 @@
         "124",
         "132",
         "148"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb29",
@@ -10663,7 +13387,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "senior"
     },
     {
       "id": "pb30",
@@ -10677,7 +13402,8 @@
         "53",
         "73",
         "67"
-      ]
+      ],
+      "age_band": "senior"
     }
   ]
 }

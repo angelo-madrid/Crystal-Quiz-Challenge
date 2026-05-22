@@ -1,0 +1,1574 @@
+{
+  "version": "1.0",
+  "level_multipliers": {
+    "1": 1,
+    "2": 1.5,
+    "3": 2,
+    "4": 3,
+    "5": 5
+  },
+  "starters": [
+    {
+      "id": "pikachu",
+      "name": "Pikachu",
+      "emoji": "⚡",
+      "type": "Electric",
+      "rarity": "rare",
+      "ability": "Thunderbolt",
+      "abilityEffect": {
+        "mechanic": "ELIMINATE",
+        "value": 2,
+        "description": "Eliminates 2 wrong answers"
+      },
+      "baseValue": 300
+    },
+    {
+      "id": "charmander",
+      "name": "Charmander",
+      "emoji": "🔥",
+      "type": "Fire",
+      "rarity": "common",
+      "ability": "Ember",
+      "abilityEffect": {
+        "mechanic": "TIME",
+        "value": 5,
+        "description": "Adds +5 seconds to your timer"
+      },
+      "baseValue": 200
+    },
+    {
+      "id": "squirtle",
+      "name": "Squirtle",
+      "emoji": "💧",
+      "type": "Water",
+      "rarity": "rare",
+      "ability": "Water Gun",
+      "abilityEffect": {
+        "mechanic": "SKIP",
+        "value": 1,
+        "description": "Skip current question — no penalty"
+      },
+      "baseValue": 300
+    },
+    {
+      "id": "bulbasaur",
+      "name": "Bulbasaur",
+      "emoji": "🌿",
+      "type": "Grass/Poison",
+      "rarity": "common",
+      "ability": "Vine Whip",
+      "abilityEffect": {
+        "mechanic": "REVEAL",
+        "value": 1,
+        "description": "Reveals the category of the next question"
+      },
+      "baseValue": 200
+    },
+    {
+      "id": "eevee",
+      "name": "Eevee",
+      "emoji": "🌙",
+      "type": "Normal",
+      "rarity": "super",
+      "ability": "Adapt",
+      "abilityEffect": {
+        "mechanic": "RETRY",
+        "value": 1,
+        "description": "Change your answer once after locking in"
+      },
+      "baseValue": 500
+    },
+    {
+      "id": "gengar",
+      "name": "Gengar",
+      "emoji": "👻",
+      "type": "Ghost/Poison",
+      "rarity": "super",
+      "ability": "Shadow Ball",
+      "abilityEffect": {
+        "mechanic": "STEAL",
+        "value": 150,
+        "description": "Steal 150 crystals from the current leader if you answer correctly"
+      },
+      "baseValue": 500
+    },
+    {
+      "id": "snorlax",
+      "name": "Snorlax",
+      "emoji": "💤",
+      "type": "Normal",
+      "rarity": "rare",
+      "ability": "Rest",
+      "abilityEffect": {
+        "mechanic": "TIME",
+        "value": 0,
+        "description": "Freeze your own timer — but you forfeit the speed bonus this question"
+      },
+      "baseValue": 300
+    },
+    {
+      "id": "alakazam",
+      "name": "Alakazam",
+      "emoji": "🔮",
+      "type": "Psychic",
+      "rarity": "super",
+      "ability": "Psychic",
+      "abilityEffect": {
+        "mechanic": "REVEAL",
+        "value": 0,
+        "description": "Confirms whether your selected answer is correct before you lock it in"
+      },
+      "baseValue": 500
+    },
+    {
+      "id": "dratini",
+      "name": "Dratini",
+      "emoji": "🐉",
+      "type": "Dragon",
+      "rarity": "super",
+      "ability": "Dragon Rage",
+      "abilityEffect": {
+        "mechanic": "DOUBLE_OR_NOTHING",
+        "value": 2,
+        "description": "Doubles crystals if you answer correctly, 0 if you answer wrong"
+      },
+      "baseValue": 500
+    },
+    {
+      "id": "jigglypuff",
+      "name": "Jigglypuff",
+      "emoji": "🎵",
+      "type": "Normal/Fairy",
+      "rarity": "super",
+      "ability": "Sing",
+      "abilityEffect": {
+        "mechanic": "FREEZE",
+        "value": 5,
+        "description": "All opponents lose 5 seconds from their current timer"
+      },
+      "baseValue": 500
+    }
+  ],
+  "regional": {
+    "1": [
+      {
+        "id": "butterfree",
+        "name": "Butterfree",
+        "emoji": "🦋",
+        "type": "Bug/Flying",
+        "rarity": "common",
+        "ability": "Sleep Powder",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 3,
+          "description": "Adds +3 seconds to your timer"
+        },
+        "baseValue": 200
+      },
+      {
+        "id": "lapras",
+        "name": "Lapras",
+        "emoji": "🐳",
+        "type": "Water/Ice",
+        "rarity": "rare",
+        "ability": "Ice Beam",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 2,
+          "description": "Reveals one wrong answer for the current question"
+        },
+        "baseValue": 300
+      },
+      {
+        "id": "charizard",
+        "name": "Charizard",
+        "emoji": "🐉",
+        "type": "Fire/Flying",
+        "rarity": "rare",
+        "ability": "Sunny Day",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 10,
+          "description": "Adds +10 seconds to your timer"
+        },
+        "baseValue": 300
+      },
+      {
+        "id": "blastoise",
+        "name": "Blastoise",
+        "emoji": "🐢",
+        "type": "Water",
+        "rarity": "rare",
+        "ability": "Hydro Cannon",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 1,
+          "description": "Blocks the next STEAL attack against you"
+        },
+        "baseValue": 300
+      },
+      {
+        "id": "venusaur",
+        "name": "Venusaur",
+        "emoji": "🌺",
+        "type": "Grass/Poison",
+        "rarity": "rare",
+        "ability": "Solar Beam",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 3,
+          "description": "Reveals the tier (basic / holo / rare / etc.) of the current question"
+        },
+        "baseValue": 300
+      },
+      {
+        "id": "gyarados",
+        "name": "Gyarados",
+        "emoji": "🌊",
+        "type": "Water/Flying",
+        "rarity": "super",
+        "ability": "Hyper Beam",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 200,
+          "description": "Steal 200 crystals from the current leader"
+        },
+        "baseValue": 400
+      },
+      {
+        "id": "dragonite",
+        "name": "Dragonite",
+        "emoji": "🐲",
+        "type": "Dragon/Flying",
+        "rarity": "super",
+        "ability": "Outrage",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 3,
+          "description": "Triples crystals earned for the current question if correct"
+        },
+        "baseValue": 400
+      },
+      {
+        "id": "articuno",
+        "name": "Articuno",
+        "emoji": "❄️",
+        "type": "Ice/Flying",
+        "rarity": "super",
+        "ability": "Blizzard",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 5,
+          "description": "Freezes one chosen opponent's timer for 5 seconds"
+        },
+        "baseValue": 400
+      },
+      {
+        "id": "mewtwo",
+        "name": "Mewtwo",
+        "emoji": "🧬",
+        "type": "Psychic",
+        "rarity": "legendary",
+        "ability": "Psystrike",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 5,
+          "description": "Quintuples crystals earned for the current question if correct"
+        },
+        "baseValue": 600
+      },
+      {
+        "id": "mew",
+        "name": "Mew",
+        "emoji": "💗",
+        "type": "Psychic",
+        "rarity": "legendary",
+        "ability": "Transform",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 99,
+          "description": "Retry any one question once per gym — fresh choice, fresh timer"
+        },
+        "baseValue": 600
+      }
+    ],
+    "2": [
+      {
+        "id": "houndoom",
+        "name": "Houndoom",
+        "emoji": "👹",
+        "type": "Dark/Fire",
+        "rarity": "common",
+        "ability": "Smog",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 7,
+          "description": "Adds +7 seconds to your timer"
+        },
+        "baseValue": 350
+      },
+      {
+        "id": "espeon",
+        "name": "Espeon",
+        "emoji": "🌅",
+        "type": "Psychic",
+        "rarity": "rare",
+        "ability": "Morning Sun",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 4,
+          "description": "Reveals a one-word hint about the correct answer"
+        },
+        "baseValue": 525
+      },
+      {
+        "id": "umbreon",
+        "name": "Umbreon",
+        "emoji": "🌙",
+        "type": "Dark",
+        "rarity": "rare",
+        "ability": "Foul Play",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 2,
+          "description": "Blocks the next FREEZE attack against you"
+        },
+        "baseValue": 525
+      },
+      {
+        "id": "typhlosion",
+        "name": "Typhlosion",
+        "emoji": "🔥",
+        "type": "Fire",
+        "rarity": "rare",
+        "ability": "Eruption",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 4,
+          "description": "Eliminates 1 wrong answer AND reveals the question's category"
+        },
+        "baseValue": 525
+      },
+      {
+        "id": "feraligatr",
+        "name": "Feraligatr",
+        "emoji": "🐊",
+        "type": "Water",
+        "rarity": "rare",
+        "ability": "Crunch",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 15,
+          "description": "Crystals are multiplied by 1.5× for the next 2 questions"
+        },
+        "baseValue": 525
+      },
+      {
+        "id": "meganium",
+        "name": "Meganium",
+        "emoji": "🌸",
+        "type": "Grass",
+        "rarity": "rare",
+        "ability": "Petal Dance",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 5,
+          "description": "Reveals the format (mc / tf / closest / unscramble / chain) of the current question"
+        },
+        "baseValue": 525
+      },
+      {
+        "id": "suicune",
+        "name": "Suicune",
+        "emoji": "💧",
+        "type": "Water",
+        "rarity": "super",
+        "ability": "Sheer Cold",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 55,
+          "description": "Freezes 2 chosen opponents' timers for 5 seconds each"
+        },
+        "baseValue": 700
+      },
+      {
+        "id": "tyranitar",
+        "name": "Tyranitar",
+        "emoji": "🦖",
+        "type": "Rock/Dark",
+        "rarity": "super",
+        "ability": "Dark Pulse",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 300,
+          "description": "Drains 300 crystals from the current leader"
+        },
+        "baseValue": 700
+      },
+      {
+        "id": "lugia",
+        "name": "Lugia",
+        "emoji": "🕊️",
+        "type": "Psychic/Flying",
+        "rarity": "legendary",
+        "ability": "Aeroblast",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 4,
+          "description": "Quadruples crystals earned for the current question if correct"
+        },
+        "baseValue": 1050
+      },
+      {
+        "id": "hoOh",
+        "name": "Ho-Oh",
+        "emoji": "🌅",
+        "type": "Fire/Flying",
+        "rarity": "legendary",
+        "ability": "Sacred Fire",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 10,
+          "description": "For one entire gym, every wrong answer auto-retries (one shot)"
+        },
+        "baseValue": 1050
+      }
+    ],
+    "3": [
+      {
+        "id": "treecko",
+        "name": "Treecko",
+        "emoji": "🦎",
+        "type": "Grass",
+        "rarity": "common",
+        "ability": "Pound",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 12,
+          "description": "Crystals earned are multiplied by 1.2× on every question (passive)"
+        },
+        "baseValue": 550
+      },
+      {
+        "id": "salamence",
+        "name": "Salamence",
+        "emoji": "🐲",
+        "type": "Dragon/Flying",
+        "rarity": "rare",
+        "ability": "Dragon Breath",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 100,
+          "description": "Steal 100 crystals from the current leader"
+        },
+        "baseValue": 825
+      },
+      {
+        "id": "metagross",
+        "name": "Metagross",
+        "emoji": "🤖",
+        "type": "Steel/Psychic",
+        "rarity": "rare",
+        "ability": "Meteor Mash",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 6,
+          "description": "Eliminates 1 wrong answer AND grants +50 crystals if you answer correctly"
+        },
+        "baseValue": 825
+      },
+      {
+        "id": "blaziken",
+        "name": "Blaziken",
+        "emoji": "🦅",
+        "type": "Fire/Fighting",
+        "rarity": "super",
+        "ability": "Sky Uppercut",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 7,
+          "description": "Eliminates 2 wrong answers AND adds +5 seconds to your timer"
+        },
+        "baseValue": 1100
+      },
+      {
+        "id": "swampert",
+        "name": "Swampert",
+        "emoji": "🌊",
+        "type": "Water/Ground",
+        "rarity": "super",
+        "ability": "Muddy Water",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 3,
+          "description": "Blocks ALL negative opponent abilities targeting you for the current question"
+        },
+        "baseValue": 1100
+      },
+      {
+        "id": "groudon",
+        "name": "Groudon",
+        "emoji": "🌋",
+        "type": "Ground",
+        "rarity": "legendary",
+        "ability": "Earthquake",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 30,
+          "description": "Freezes ALL opponents' timers for 3 seconds at once"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "latias",
+        "name": "Latias",
+        "emoji": "💖",
+        "type": "Dragon/Psychic",
+        "rarity": "super",
+        "ability": "Mist Ball",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 15,
+          "description": "Adds +15 seconds to your timer"
+        },
+        "baseValue": 1100
+      },
+      {
+        "id": "latios",
+        "name": "Latios",
+        "emoji": "💙",
+        "type": "Dragon/Psychic",
+        "rarity": "super",
+        "ability": "Luster Purge",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 6,
+          "description": "Reveals the categories of the next 3 questions in advance"
+        },
+        "baseValue": 1100
+      },
+      {
+        "id": "rayquaza",
+        "name": "Rayquaza",
+        "emoji": "🐲",
+        "type": "Dragon/Flying",
+        "rarity": "legendary",
+        "ability": "Dragon Ascent",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 10,
+          "description": "On the FINAL question of a gym only, crystals earned are multiplied by 10×"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "kyogre",
+        "name": "Kyogre",
+        "emoji": "🐋",
+        "type": "Water",
+        "rarity": "legendary",
+        "ability": "Origin Pulse",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 5,
+          "description": "Freezes the ENTIRE gym (including yourself) for 5 seconds"
+        },
+        "baseValue": 1650
+      }
+    ],
+    "4": [
+      {
+        "id": "rotom",
+        "name": "Rotom",
+        "emoji": "⚡",
+        "type": "Electric/Ghost",
+        "rarity": "common",
+        "ability": "Trick",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 7,
+          "description": "Reveals the time-remaining bonus you would earn if you locked in right now"
+        },
+        "baseValue": 800
+      },
+      {
+        "id": "glaceon",
+        "name": "Glaceon",
+        "emoji": "❄️",
+        "type": "Ice",
+        "rarity": "rare",
+        "ability": "Frost Breath",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 12,
+          "description": "Adds +12 seconds to your timer"
+        },
+        "baseValue": 1200
+      },
+      {
+        "id": "empoleon",
+        "name": "Empoleon",
+        "emoji": "🐧",
+        "type": "Water/Steel",
+        "rarity": "rare",
+        "ability": "Drill Peck",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 25,
+          "description": "If correct: 2.5× crystals. If wrong: you still get half the base crystals"
+        },
+        "baseValue": 1200
+      },
+      {
+        "id": "lucario",
+        "name": "Lucario",
+        "emoji": "🥋",
+        "type": "Fighting/Steel",
+        "rarity": "super",
+        "ability": "Aura Sphere",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 8,
+          "description": "Reveals the correct answer along with one wrong distractor"
+        },
+        "baseValue": 1600
+      },
+      {
+        "id": "garchomp",
+        "name": "Garchomp",
+        "emoji": "🦈",
+        "type": "Dragon/Ground",
+        "rarity": "super",
+        "ability": "Sandstorm",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 10,
+          "description": "Steal 10% of the current leader's total crystals"
+        },
+        "baseValue": 1600
+      },
+      {
+        "id": "infernape",
+        "name": "Infernape",
+        "emoji": "🐒",
+        "type": "Fire/Fighting",
+        "rarity": "super",
+        "ability": "Flare Blitz",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 20,
+          "description": "Crystals earned are multiplied by 2× for the rest of the current gym"
+        },
+        "baseValue": 1600
+      },
+      {
+        "id": "arceus",
+        "name": "Arceus",
+        "emoji": "👑",
+        "type": "Normal",
+        "rarity": "legendary",
+        "ability": "Judgment",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 10,
+          "description": "For the rest of the gym, NO opponent ability can target you"
+        },
+        "baseValue": 2400
+      },
+      {
+        "id": "dialga",
+        "name": "Dialga",
+        "emoji": "⏰",
+        "type": "Steel/Dragon",
+        "rarity": "legendary",
+        "ability": "Roar of Time",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 25,
+          "description": "Adds +25 seconds to your timer"
+        },
+        "baseValue": 2400
+      },
+      {
+        "id": "palkia",
+        "name": "Palkia",
+        "emoji": "🌌",
+        "type": "Water/Dragon",
+        "rarity": "legendary",
+        "ability": "Spacial Rend",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 100,
+          "description": "Freezes the current leader's timer for 10 seconds"
+        },
+        "baseValue": 2400
+      },
+      {
+        "id": "giratina",
+        "name": "Giratina",
+        "emoji": "🌑",
+        "type": "Ghost/Dragon",
+        "rarity": "legendary",
+        "ability": "Shadow Force",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 9,
+          "description": "If your selected answer is wrong, reveals the correct answer (only one use per gym)"
+        },
+        "baseValue": 2400
+      }
+    ],
+    "5": [
+      {
+        "id": "serperior",
+        "name": "Serperior",
+        "emoji": "🐍",
+        "type": "Grass",
+        "rarity": "rare",
+        "ability": "Leaf Storm",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 2,
+          "description": "Doubles crystals earned for the current question if correct"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "emboar",
+        "name": "Emboar",
+        "emoji": "🔥",
+        "type": "Fire/Fighting",
+        "rarity": "rare",
+        "ability": "Heat Crash",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 8,
+          "description": "Eliminates 2 wrong answers — costs 100 crystals to use"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "samurott",
+        "name": "Samurott",
+        "emoji": "⚔️",
+        "type": "Water",
+        "rarity": "rare",
+        "ability": "Hydro Pump",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 2,
+          "description": "Retry one wrong answer per gym"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "volcarona",
+        "name": "Volcarona",
+        "emoji": "🦋",
+        "type": "Bug/Fire",
+        "rarity": "rare",
+        "ability": "Fiery Dance",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 4,
+          "description": "Freezes one chosen opponent's timer for 4 seconds"
+        },
+        "baseValue": 1650
+      },
+      {
+        "id": "zoroark",
+        "name": "Zoroark",
+        "emoji": "🦊",
+        "type": "Dark",
+        "rarity": "super",
+        "ability": "Night Daze",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 10,
+          "description": "Reveals which Pokemon are currently on each opponent's team"
+        },
+        "baseValue": 2200
+      },
+      {
+        "id": "hydreigon",
+        "name": "Hydreigon",
+        "emoji": "🐲",
+        "type": "Dark/Dragon",
+        "rarity": "super",
+        "ability": "Dragon Pulse",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 25,
+          "description": "2.5× crystals earned for the current question if correct"
+        },
+        "baseValue": 2200
+      },
+      {
+        "id": "victini",
+        "name": "Victini",
+        "emoji": "✨",
+        "type": "Psychic/Fire",
+        "rarity": "super",
+        "ability": "Searing Shot",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 33,
+          "description": "3× crystals if you have a correct-answer streak of 3 or more"
+        },
+        "baseValue": 2200
+      },
+      {
+        "id": "reshiram",
+        "name": "Reshiram",
+        "emoji": "🔥",
+        "type": "Dragon/Fire",
+        "rarity": "legendary",
+        "ability": "Blue Flare",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 3,
+          "description": "If correct: 3× crystals. If wrong: lose 100 crystals"
+        },
+        "baseValue": 3300
+      },
+      {
+        "id": "zekrom",
+        "name": "Zekrom",
+        "emoji": "⚡",
+        "type": "Dragon/Electric",
+        "rarity": "legendary",
+        "ability": "Bolt Strike",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 5,
+          "description": "If correct: 5× crystals. If wrong: lose 500 crystals"
+        },
+        "baseValue": 3300
+      },
+      {
+        "id": "kyurem",
+        "name": "Kyurem",
+        "emoji": "❄️",
+        "type": "Dragon/Ice",
+        "rarity": "legendary",
+        "ability": "Glaciate",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 60,
+          "description": "Disables one opponent's Pokemon abilities for the ENTIRE current gym"
+        },
+        "baseValue": 3300
+      }
+    ],
+    "6": [
+      {
+        "id": "meowstic",
+        "name": "Meowstic",
+        "emoji": "😺",
+        "type": "Psychic",
+        "rarity": "common",
+        "ability": "Psybeam",
+        "abilityEffect": {
+          "mechanic": "SKIP",
+          "value": 2,
+          "description": "Skip the current question AND reveal the next question's category"
+        },
+        "baseValue": 1500
+      },
+      {
+        "id": "sylveon",
+        "name": "Sylveon",
+        "emoji": "🎀",
+        "type": "Fairy",
+        "rarity": "rare",
+        "ability": "Moonblast",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 4,
+          "description": "Blocks the next 2 STEAL attacks against you"
+        },
+        "baseValue": 2250
+      },
+      {
+        "id": "chesnaught",
+        "name": "Chesnaught",
+        "emoji": "🛡️",
+        "type": "Grass/Fighting",
+        "rarity": "rare",
+        "ability": "Spiky Shield",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 5,
+          "description": "Blocks one incoming ability AND counter-attacks the user for +50 crystals to you"
+        },
+        "baseValue": 2250
+      },
+      {
+        "id": "delphox",
+        "name": "Delphox",
+        "emoji": "🦊",
+        "type": "Fire/Psychic",
+        "rarity": "rare",
+        "ability": "Mystical Fire",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 9,
+          "description": "Eliminates 1 wrong answer AND reveals the category at the same time"
+        },
+        "baseValue": 2250
+      },
+      {
+        "id": "goodra",
+        "name": "Goodra",
+        "emoji": "💧",
+        "type": "Dragon",
+        "rarity": "rare",
+        "ability": "Acid Armor",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 20,
+          "description": "Adds +20 seconds to your timer"
+        },
+        "baseValue": 2250
+      },
+      {
+        "id": "aegislash",
+        "name": "Aegislash",
+        "emoji": "⚔️",
+        "type": "Steel/Ghost",
+        "rarity": "super",
+        "ability": "King's Shield",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 6,
+          "description": "Blocks ALL negative opponent abilities for the rest of the current gym"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "greninja",
+        "name": "Greninja",
+        "emoji": "🥷",
+        "type": "Water/Dark",
+        "rarity": "super",
+        "ability": "Water Shuriken",
+        "abilityEffect": {
+          "mechanic": "SKIP",
+          "value": 3,
+          "description": "Skip the current question AND the next one — both treated as neutral"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "zygarde",
+        "name": "Zygarde",
+        "emoji": "🐍",
+        "type": "Dragon/Ground",
+        "rarity": "legendary",
+        "ability": "Land's Wrath",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 11,
+          "description": "Permanent shield (once per game): you become immune to ALL opponent abilities forever"
+        },
+        "baseValue": 4500
+      },
+      {
+        "id": "xerneas",
+        "name": "Xerneas",
+        "emoji": "🦌",
+        "type": "Fairy",
+        "rarity": "legendary",
+        "ability": "Geomancy",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 3,
+          "description": "Retry up to 2 wrong answers per gym"
+        },
+        "baseValue": 4500
+      },
+      {
+        "id": "yveltal",
+        "name": "Yveltal",
+        "emoji": "🦅",
+        "type": "Dark/Flying",
+        "rarity": "legendary",
+        "ability": "Oblivion Wing",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 500,
+          "description": "Steal 500 crystals from the current leader"
+        },
+        "baseValue": 4500
+      }
+    ],
+    "7": [
+      {
+        "id": "mimikyu",
+        "name": "Mimikyu",
+        "emoji": "🎭",
+        "type": "Ghost/Fairy",
+        "rarity": "common",
+        "ability": "Disguise",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 7,
+          "description": "Blocks the next FREEZE attack AND reveals which opponent cast it"
+        },
+        "baseValue": 2000
+      },
+      {
+        "id": "primarina",
+        "name": "Primarina",
+        "emoji": "🎶",
+        "type": "Water/Fairy",
+        "rarity": "rare",
+        "ability": "Sparkling Aria",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 15,
+          "description": "Crystals earned are multiplied by 1.5× on every question (passive, whole gym)"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "incineroar",
+        "name": "Incineroar",
+        "emoji": "🐅",
+        "type": "Fire/Dark",
+        "rarity": "rare",
+        "ability": "Darkest Lariat",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 25,
+          "description": "Steal 25 crystals from EACH opponent at once"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "decidueye",
+        "name": "Decidueye",
+        "emoji": "🏹",
+        "type": "Grass/Ghost",
+        "rarity": "rare",
+        "ability": "Spirit Shackle",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 11,
+          "description": "Reveals the final question of the current gym (text only) right now"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "lycanroc",
+        "name": "Lycanroc",
+        "emoji": "🐺",
+        "type": "Rock",
+        "rarity": "rare",
+        "ability": "Accelerock",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 8,
+          "description": "Blocks the next incoming ability AND reveals who cast it"
+        },
+        "baseValue": 3000
+      },
+      {
+        "id": "tapuKoko",
+        "name": "Tapu Koko",
+        "emoji": "⚡",
+        "type": "Electric/Fairy",
+        "rarity": "super",
+        "ability": "Discharge",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 33,
+          "description": "Freezes ALL opponents' timers for 3 seconds simultaneously"
+        },
+        "baseValue": 4000
+      },
+      {
+        "id": "tapuLele",
+        "name": "Tapu Lele",
+        "emoji": "🦋",
+        "type": "Psychic/Fairy",
+        "rarity": "super",
+        "ability": "Psyshock",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 30,
+          "description": "Doubles your available time for the NEXT question only"
+        },
+        "baseValue": 4000
+      },
+      {
+        "id": "solgaleo",
+        "name": "Solgaleo",
+        "emoji": "☀️",
+        "type": "Psychic/Steel",
+        "rarity": "legendary",
+        "ability": "Sunsteel Strike",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 4,
+          "description": "If correct: 4× crystals. If wrong: your own timer freezes 5s on the next question"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "lunala",
+        "name": "Lunala",
+        "emoji": "🌙",
+        "type": "Psychic/Ghost",
+        "rarity": "legendary",
+        "ability": "Moongeist Beam",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 10,
+          "description": "Eliminates ALL wrong answers — only the correct option remains visible"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "necrozma",
+        "name": "Necrozma",
+        "emoji": "💎",
+        "type": "Psychic",
+        "rarity": "legendary",
+        "ability": "Prismatic Laser",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 6,
+          "description": "If correct: 2× crystals. If wrong: the leader steals 200 crystals from you"
+        },
+        "baseValue": 6000
+      }
+    ],
+    "8": [
+      {
+        "id": "rillaboom",
+        "name": "Rillaboom",
+        "emoji": "🥁",
+        "type": "Grass",
+        "rarity": "rare",
+        "ability": "Drum Beating",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 7,
+          "description": "On True/False questions only: 2× crystals if correct, 0 if wrong"
+        },
+        "baseValue": 4050
+      },
+      {
+        "id": "cinderace",
+        "name": "Cinderace",
+        "emoji": "⚽",
+        "type": "Fire",
+        "rarity": "rare",
+        "ability": "Pyro Ball",
+        "abilityEffect": {
+          "mechanic": "SKIP",
+          "value": 4,
+          "description": "Skip the current question — you still earn half the base crystals"
+        },
+        "baseValue": 4050
+      },
+      {
+        "id": "inteleon",
+        "name": "Inteleon",
+        "emoji": "🦎",
+        "type": "Water",
+        "rarity": "rare",
+        "ability": "Snipe Shot",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 12,
+          "description": "Reveals exactly how many crystals you would earn if you locked your current answer right now"
+        },
+        "baseValue": 4050
+      },
+      {
+        "id": "dragapult",
+        "name": "Dragapult",
+        "emoji": "🚀",
+        "type": "Dragon/Ghost",
+        "rarity": "super",
+        "ability": "Dragon Darts",
+        "abilityEffect": {
+          "mechanic": "SKIP",
+          "value": 5,
+          "description": "Skip the current question AND receive 50% of the average crystals earned this gym"
+        },
+        "baseValue": 5400
+      },
+      {
+        "id": "spectrier",
+        "name": "Spectrier",
+        "emoji": "🐎",
+        "type": "Ghost",
+        "rarity": "super",
+        "ability": "Phantom Force",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 100,
+          "description": "Freezes your own timer for 10 seconds (still earn speed bonus from elapsed time)"
+        },
+        "baseValue": 5400
+      },
+      {
+        "id": "glastrier",
+        "name": "Glastrier",
+        "emoji": "🐴",
+        "type": "Ice",
+        "rarity": "super",
+        "ability": "Glacial Lance",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 80,
+          "description": "Freezes the current leader's timer for 8 seconds"
+        },
+        "baseValue": 5400
+      },
+      {
+        "id": "calyrex",
+        "name": "Calyrex",
+        "emoji": "👑",
+        "type": "Psychic/Grass",
+        "rarity": "legendary",
+        "ability": "Astral Barrage",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 11,
+          "description": "Borrow (and use) one opponent's Pokemon ability for the next question"
+        },
+        "baseValue": 8100
+      },
+      {
+        "id": "zacian",
+        "name": "Zacian",
+        "emoji": "⚔️",
+        "type": "Fairy/Steel",
+        "rarity": "legendary",
+        "ability": "Behemoth Blade",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 8,
+          "description": "If correct: 2× crystals AND streak counter doubles. If wrong: streak resets to 0"
+        },
+        "baseValue": 8100
+      },
+      {
+        "id": "zamazenta",
+        "name": "Zamazenta",
+        "emoji": "🛡️",
+        "type": "Fighting/Steel",
+        "rarity": "legendary",
+        "ability": "Behemoth Bash",
+        "abilityEffect": {
+          "mechanic": "SHIELD",
+          "value": 9,
+          "description": "Blocks one incoming ability AND counter-attacks the user for +100 crystals to you"
+        },
+        "baseValue": 8100
+      },
+      {
+        "id": "eternatus",
+        "name": "Eternatus",
+        "emoji": "☄️",
+        "type": "Poison/Dragon",
+        "rarity": "legendary",
+        "ability": "Dynamax Cannon",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 8,
+          "description": "Freezes the ENTIRE gym (including yourself) for 8 seconds"
+        },
+        "baseValue": 8100
+      }
+    ],
+    "9": [
+      {
+        "id": "sprigatito",
+        "name": "Sprigatito",
+        "emoji": "🌿",
+        "type": "Grass",
+        "rarity": "common",
+        "ability": "Leafage",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 11,
+          "description": "Crystals earned for True/False questions only are multiplied by 1.2×"
+        },
+        "baseValue": 3500
+      },
+      {
+        "id": "fuecoco",
+        "name": "Fuecoco",
+        "emoji": "🔥",
+        "type": "Fire",
+        "rarity": "common",
+        "ability": "Incinerate",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 4,
+          "description": "Adds +4 seconds to your timer"
+        },
+        "baseValue": 3500
+      },
+      {
+        "id": "quaxly",
+        "name": "Quaxly",
+        "emoji": "🦆",
+        "type": "Water",
+        "rarity": "common",
+        "ability": "Aqua Jet",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 4,
+          "description": "Retry one wrong answer — costs 50 crystals if still wrong"
+        },
+        "baseValue": 3500
+      },
+      {
+        "id": "meowscarada",
+        "name": "Meowscarada",
+        "emoji": "🌹",
+        "type": "Grass/Dark",
+        "rarity": "rare",
+        "ability": "Flower Trick",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 11,
+          "description": "50/50 mode: only the correct answer and one wrong answer remain visible"
+        },
+        "baseValue": 5250
+      },
+      {
+        "id": "skeledirge",
+        "name": "Skeledirge",
+        "emoji": "🎤",
+        "type": "Fire/Ghost",
+        "rarity": "rare",
+        "ability": "Torch Song",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 50,
+          "description": "Steal 50 crystals from a random opponent (not necessarily the leader)"
+        },
+        "baseValue": 5250
+      },
+      {
+        "id": "quaquaval",
+        "name": "Quaquaval",
+        "emoji": "💃",
+        "type": "Water/Fighting",
+        "rarity": "rare",
+        "ability": "Aqua Step",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 5,
+          "description": "Retry one wrong answer per gym — free if you have a streak ≥ 3"
+        },
+        "baseValue": 5250
+      },
+      {
+        "id": "ogerpon",
+        "name": "Ogerpon",
+        "emoji": "🎭",
+        "type": "Grass",
+        "rarity": "super",
+        "ability": "Ivy Cudgel",
+        "abilityEffect": {
+          "mechanic": "SKIP",
+          "value": 6,
+          "description": "Skip the current question — the system auto-credits it as a normal mid-tier reward"
+        },
+        "baseValue": 7000
+      },
+      {
+        "id": "miraidon",
+        "name": "Miraidon",
+        "emoji": "🔮",
+        "type": "Electric/Dragon",
+        "rarity": "legendary",
+        "ability": "Electro Drift",
+        "abilityEffect": {
+          "mechanic": "RETRY",
+          "value": 6,
+          "description": "Every wrong answer for the rest of the current gym automatically gives a fresh retry"
+        },
+        "baseValue": 10500
+      },
+      {
+        "id": "koraidon",
+        "name": "Koraidon",
+        "emoji": "🦖",
+        "type": "Fighting/Dragon",
+        "rarity": "legendary",
+        "ability": "Collision Course",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 9,
+          "description": "Wager ALL crystals earned this gym: if you answer correctly, double them; if wrong, lose them"
+        },
+        "baseValue": 10500
+      },
+      {
+        "id": "terapagos",
+        "name": "Terapagos",
+        "emoji": "💎",
+        "type": "Normal",
+        "rarity": "legendary",
+        "ability": "Tera Starstorm",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 30,
+          "description": "On Ultra Rare tier questions only: triples crystals if you answer correctly"
+        },
+        "baseValue": 10500
+      }
+    ],
+    "10": [
+      {
+        "id": "aswang",
+        "name": "Aswang",
+        "emoji": "👹",
+        "type": "Dark/Ghost",
+        "rarity": "rare",
+        "ability": "Shape Shift",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 75,
+          "description": "Steal 75 crystals from a chosen opponent (not just the leader)"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "tikbalang",
+        "name": "Tikbalang",
+        "emoji": "🐴",
+        "type": "Ground/Fighting",
+        "rarity": "rare",
+        "ability": "Trail Trick",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 13,
+          "description": "Reveals which option each opponent has currently selected (no answers locked yet)"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "kapre",
+        "name": "Kapre",
+        "emoji": "🌳",
+        "type": "Grass/Dark",
+        "rarity": "rare",
+        "ability": "Smoke Wreath",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 90,
+          "description": "Surrounds one opponent in smoke: their timer freezes for 9 seconds"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "sigbin",
+        "name": "Sigbin",
+        "emoji": "🐂",
+        "type": "Dark",
+        "rarity": "rare",
+        "ability": "Heart Stalk",
+        "abilityEffect": {
+          "mechanic": "STEAL",
+          "value": 150,
+          "description": "Drain 150 crystals from the player CLOSEST to you on the leaderboard"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "mangkukulam",
+        "name": "Mangkukulam",
+        "emoji": "🔮",
+        "type": "Psychic/Dark",
+        "rarity": "rare",
+        "ability": "Hex Doll",
+        "abilityEffect": {
+          "mechanic": "REVEAL",
+          "value": 14,
+          "description": "Reveals the COMPLETE answer key for the current question (you still need to lock it in)"
+        },
+        "baseValue": 6000
+      },
+      {
+        "id": "diwata",
+        "name": "Diwata",
+        "emoji": "🧚",
+        "type": "Fairy",
+        "rarity": "super",
+        "ability": "Forest Blessing",
+        "abilityEffect": {
+          "mechanic": "TIME",
+          "value": 18,
+          "description": "Adds +18 seconds to your timer"
+        },
+        "baseValue": 8000
+      },
+      {
+        "id": "agila",
+        "name": "Agila",
+        "emoji": "🦅",
+        "type": "Flying",
+        "rarity": "super",
+        "ability": "Eagle Strike",
+        "abilityEffect": {
+          "mechanic": "ELIMINATE",
+          "value": 12,
+          "description": "Eliminates 3 wrong answers — only the correct answer plus one decoy remain"
+        },
+        "baseValue": 8000
+      },
+      {
+        "id": "sarimanok",
+        "name": "Sarimanok",
+        "emoji": "🦚",
+        "type": "Fairy/Fire",
+        "rarity": "super",
+        "ability": "Rainbow Song",
+        "abilityEffect": {
+          "mechanic": "MULTIPLY",
+          "value": 6,
+          "description": "Quadruples (4×) crystals earned for the current question if correct (no penalty if wrong)"
+        },
+        "baseValue": 8000
+      },
+      {
+        "id": "manananggal",
+        "name": "Manananggal",
+        "emoji": "🦇",
+        "type": "Dark/Flying",
+        "rarity": "super",
+        "ability": "Wing Split",
+        "abilityEffect": {
+          "mechanic": "FREEZE",
+          "value": 90,
+          "description": "Freezes 2 chosen opponents' timers for 9 seconds each (longer than Suicune)"
+        },
+        "baseValue": 8000
+      },
+      {
+        "id": "bakunawa",
+        "name": "Bakunawa",
+        "emoji": "🐲",
+        "type": "Dragon/Dark",
+        "rarity": "legendary",
+        "ability": "Moon Eater",
+        "abilityEffect": {
+          "mechanic": "DOUBLE_OR_NOTHING",
+          "value": 10,
+          "description": "ALL-IN: wager every crystal you've earned this entire game. If correct: double total. If wrong: lose half"
+        },
+        "baseValue": 12000
+      }
+    ]
+  }
+}

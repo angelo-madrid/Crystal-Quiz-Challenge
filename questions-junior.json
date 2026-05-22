@@ -35,7 +35,8 @@
       "catch": 60,
       "gym": 500
     },
-    "note": "Archived source. Runtime loads questions-junior.json / questions-senior.json."
+    "note": "Age-tuned content for junior band. Currently mirrors archived source; age-specific tuning happens in a later step.",
+    "age_band": "junior"
   },
   "gym_blueprints": [
     {
@@ -2354,7 +2355,8 @@
             "Cebu",
             "Davao",
             "Quezon City"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q01",
@@ -2368,7 +2370,8 @@
             "Rose",
             "Sunflower",
             "Orchid"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q01",
@@ -2382,7 +2385,8 @@
             "Eagle",
             "Tarsier",
             "Tamaraw"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q01",
@@ -2394,7 +2398,36 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ001",
+          "category": "filipino",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is the Filipino word for 'friend'?",
+          "answer": "Kaibigan",
+          "options": [
+            "Kaibigan",
+            "Kapatid",
+            "Kalye",
+            "Kaldero"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ002",
+          "category": "filipino",
+          "tier": "basic",
+          "type": "tf",
+          "question": "The Philippine flag has a sun on it.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -2408,7 +2441,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q01",
@@ -2422,7 +2456,66 @@
             "Pahiyas",
             "Ati-Atihan",
             "Kadayawan"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ003",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which Philippine city is known as the 'Summer Capital'?",
+          "answer": "Baguio",
+          "options": [
+            "Baguio",
+            "Manila",
+            "Cebu",
+            "Davao"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ004",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Adobo is best described as what kind of dish?",
+          "answer": "A savory braised meat dish",
+          "options": [
+            "A savory braised meat dish",
+            "A sweet dessert",
+            "A noodle soup",
+            "A type of bread"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ005",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "tf",
+          "question": "Manila is on the island of Luzon.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ006",
+          "category": "filipino",
+          "tier": "holo",
+          "type": "mc",
+          "question": "What is the Filipino word for 'water'?",
+          "answer": "Tubig",
+          "options": [
+            "Tubig",
+            "Bahay",
+            "Bigas",
+            "Apoy"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -2438,7 +2531,8 @@
             "Alibata",
             "Kulitan",
             "Badlit"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q01",
@@ -2452,7 +2546,8 @@
             "Goodbye",
             "Thank you",
             "Good luck"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q01",
@@ -2464,7 +2559,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q01",
@@ -2476,7 +2572,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q01",
@@ -2490,7 +2587,8 @@
             "Batad",
             "Ifugao",
             "Sagada"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q01",
@@ -2504,7 +2602,8 @@
             "Jose Palma",
             "Levi Celerio",
             "Nicanor Abelardo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q01",
@@ -2518,7 +2617,8 @@
             "Ati-Atihan",
             "Dinagyang",
             "Pahiyas"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -2534,7 +2634,8 @@
             "Jose Palma",
             "Emilio Aguinaldo",
             "Juan Luna"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q01",
@@ -2548,7 +2649,8 @@
             "Propaganda Movement",
             "La Liga Filipina",
             "Ilustrado"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q01",
@@ -2560,7 +2662,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q01",
@@ -2572,7 +2675,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q01",
@@ -2586,7 +2690,8 @@
             "Jose Rizal",
             "Andres Bonifacio",
             "Amado Hernandez"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q01",
@@ -2598,7 +2703,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q01",
@@ -2612,7 +2718,8 @@
             "Pasig River",
             "Agusan River",
             "Rio Grande de Mindanao"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q01",
@@ -2626,7 +2733,8 @@
             "July 4, 1946",
             "August 21, 1983",
             "February 25, 1986"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g2q01",
@@ -2640,7 +2748,8 @@
             "Ilocos Norte",
             "Cagayan",
             "Apayao"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q01",
@@ -2654,7 +2763,8 @@
             "Singkil",
             "Pandanggo",
             "Itik-Itik"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -2670,21 +2780,23 @@
             "Jose Rizal",
             "Andres Bonifacio",
             "Apolinario Mabini"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q01",
           "category": "filipino",
           "tier": "ultra",
           "type": "mc",
-          "question": "What does the acronym EDSA stand for?",
-          "answer": "Epifanio de los Santos Avenue",
+          "question": "What is the name of the famous Filipino freedom march on EDSA?",
+          "answer": "People Power",
           "options": [
-            "Epifanio de los Santos Avenue",
-            "East Davao South Annex",
-            "Edsa de los Santos Area",
-            "Epifanio Diaz Santiago Avenue"
-          ]
+            "People Power",
+            "World War",
+            "Spanish War",
+            "Tribal Wars"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q01",
@@ -2698,7 +2810,8 @@
             "University of the Philippines",
             "Ateneo de Manila",
             "De La Salle University"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q01",
@@ -2712,7 +2825,8 @@
             "Family loyalty",
             "National pride",
             "Religious devotion"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q01",
@@ -2726,7 +2840,8 @@
             "Mount Pulag",
             "Mount Mayon",
             "Mount Kanlaon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q01",
@@ -2740,7 +2855,8 @@
             "South China Sea",
             "Celebes Sea",
             "Sulu Sea"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q01",
@@ -2754,7 +2870,8 @@
             "Mexico",
             "Spain",
             "Italy"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q01",
@@ -2768,7 +2885,8 @@
             "Bibingka",
             "Leche Flan",
             "Turon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q01",
@@ -2782,7 +2900,8 @@
             "Gloria Macapagal Arroyo",
             "Imelda Marcos",
             "Leni Robredo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q01",
@@ -2796,7 +2915,8 @@
             "Bayong",
             "Banig",
             "Buntal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q01",
@@ -2810,21 +2930,23 @@
             "Mount Mayon",
             "Mount Pinatubo",
             "Mount Taal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q01",
           "category": "filipino",
           "tier": "ultra",
           "type": "mc",
-          "question": "What is the traditional Filipino single-edged blade often used in farming and combat?",
+          "question": "What is the curved Filipino knife used by farmers called?",
           "answer": "Bolo",
           "options": [
             "Bolo",
             "Kris",
-            "Kampilan",
-            "Balisong"
-          ]
+            "Spoon",
+            "Sword"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q01",
@@ -2838,21 +2960,23 @@
             "Julian Felipe",
             "Jose Rizal",
             "Manuel Quezon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q01",
           "category": "filipino",
           "tier": "ultra",
           "type": "mc",
-          "question": "What is the Filipino dining tradition where food is eaten with bare hands on banana leaves?",
+          "question": "What is it called when Filipinos eat with their hands instead of utensils?",
           "answer": "Kamayan",
           "options": [
             "Kamayan",
-            "Boodle Fight",
             "Salu-Salo",
-            "Handaan"
-          ]
+            "Handaan",
+            "Boodle"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q01",
@@ -2866,7 +2990,8 @@
             "Bohol",
             "Cebu",
             "Mindoro"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q01",
@@ -2880,7 +3005,8 @@
             "Sulu Sea",
             "Celebes Sea",
             "Philippine Sea"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q01",
@@ -2894,7 +3020,8 @@
             "English",
             "Cebuano",
             "Spanish"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q01",
@@ -2908,7 +3035,8 @@
             "Tricycle",
             "Kalesa",
             "Bangka"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q01",
@@ -2922,7 +3050,8 @@
             "A folk dance",
             "A festival",
             "A type of food"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q01",
@@ -2936,7 +3065,8 @@
             "Cebu",
             "Bohol",
             "Samar"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q01",
@@ -2950,21 +3080,23 @@
             "Sinulog",
             "Ati-Atihan",
             "Panagbenga"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q01",
           "category": "filipino",
           "tier": "ultra",
           "type": "mc",
-          "question": "The Philippines lies along which major tectonic feature?",
+          "question": "The Philippines has many volcanoes because it sits on what?",
           "answer": "Pacific Ring of Fire",
           "options": [
             "Pacific Ring of Fire",
-            "Mid-Atlantic Ridge",
-            "Great Rift Valley",
-            "Andes Belt"
-          ]
+            "Coral Triangle",
+            "Coffee Belt",
+            "Banana Region"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q01",
@@ -2978,21 +3110,23 @@
             "Jose Rizal",
             "Emilio Aguinaldo",
             "Apolinario Mabini"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q01",
           "category": "filipino",
           "tier": "ultra",
           "type": "mc",
-          "question": "Where in Manila was Jose Rizal executed in 1896?",
-          "answer": "Bagumbayan (now Rizal Park)",
+          "question": "Where in Manila is Rizal Park (where Jose Rizal is honored)?",
+          "answer": "Manila",
           "options": [
-            "Bagumbayan (now Rizal Park)",
-            "Intramuros",
-            "Fort Santiago",
-            "Plaza Miranda"
-          ]
+            "Manila",
+            "Cebu",
+            "Davao",
+            "Baguio"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q01",
@@ -3006,7 +3140,8 @@
             "Cebuano",
             "Ilocano",
             "Spanish"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q01",
@@ -3020,7 +3155,8 @@
             "Kamote",
             "Gabi",
             "Singkamas"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q01",
@@ -3034,7 +3170,8 @@
             "Welcome to the Philippines",
             "I love the Philippines",
             "Save the Philippines"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -3052,7 +3189,8 @@
             "Atlantic Ocean",
             "Indian Ocean",
             "Arctic Ocean"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q02",
@@ -3066,7 +3204,8 @@
             "Amazon",
             "Yangtze",
             "Mississippi"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q02",
@@ -3080,7 +3219,8 @@
             "5",
             "6",
             "8"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q02",
@@ -3094,7 +3234,36 @@
             "Farenc",
             "Farnce",
             "Frcane"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ007",
+          "category": "geography",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many oceans are there on Earth?",
+          "answer": "5",
+          "options": [
+            "5",
+            "3",
+            "4",
+            "7"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ008",
+          "category": "geography",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Africa is a continent, not a country.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -3110,7 +3279,8 @@
             "Monaco",
             "San Marino",
             "Liechtenstein"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q02",
@@ -3124,7 +3294,8 @@
             "Lyon",
             "Marseille",
             "Nice"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g2q02",
@@ -3138,7 +3309,8 @@
             "K2",
             "Kilimanjaro",
             "Mont Blanc"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q02",
@@ -3152,7 +3324,36 @@
             "Bazril",
             "Brzail",
             "Baizrl"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ009",
+          "category": "geography",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which continent is Egypt part of?",
+          "answer": "Africa",
+          "options": [
+            "Africa",
+            "Asia",
+            "Europe",
+            "South America"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ010",
+          "category": "geography",
+          "tier": "holo",
+          "type": "tf",
+          "question": "The Pacific Ocean is the largest ocean in the world.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -3168,7 +3369,8 @@
             "Sydney",
             "Melbourne",
             "Brisbane"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q02",
@@ -3182,7 +3384,8 @@
             "Rio de Janeiro",
             "Sao Paulo",
             "Salvador"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q02",
@@ -3196,7 +3399,8 @@
             "Canada",
             "China",
             "USA"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q02",
@@ -3210,7 +3414,8 @@
             "Toronto",
             "Vancouver",
             "Montreal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q02",
@@ -3224,7 +3429,8 @@
             "Autrsalia",
             "Australai",
             "Austraila"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q02",
@@ -3238,7 +3444,8 @@
             "Europe",
             "Antarctica",
             "South America"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -3254,7 +3461,8 @@
             "Mesoamerican Reef",
             "Coral Triangle",
             "Andros Reef"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q02",
@@ -3268,7 +3476,8 @@
             "Prime Meridian",
             "Tropic of Cancer",
             "International Date Line"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q02",
@@ -3282,7 +3491,8 @@
             "Puerto Rico Trench",
             "Java Trench",
             "Philippine Trench"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q02",
@@ -3296,7 +3506,8 @@
             "China",
             "United States",
             "Indonesia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q02",
@@ -3310,7 +3521,8 @@
             "Gobi",
             "Kalahari",
             "Arabian"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q02",
@@ -3324,7 +3536,8 @@
             "Russia and China",
             "India and China",
             "USA and Mexico"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q02",
@@ -3338,7 +3551,8 @@
             "Rio de Janeiro",
             "Sao Paulo",
             "Salvador"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q02",
@@ -3352,7 +3566,8 @@
             "Rome",
             "London",
             "Madrid"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -3368,7 +3583,8 @@
             "Atlantic Ocean",
             "Pacific Ocean",
             "Southern Ocean"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q02",
@@ -3382,7 +3598,8 @@
             "Canada",
             "China",
             "United States"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q02",
@@ -3396,7 +3613,8 @@
             "44",
             "64",
             "74"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q02",
@@ -3410,7 +3628,8 @@
             "K2",
             "Kangchenjunga",
             "Mount Apo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q02",
@@ -3424,7 +3643,8 @@
             "Lyon",
             "Marseille",
             "Nice"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q02",
@@ -3438,7 +3658,8 @@
             "Lake Tanganyika",
             "Lake Malawi",
             "Lake Chad"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q02",
@@ -3452,7 +3673,8 @@
             "Sydney",
             "Melbourne",
             "Perth"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q02",
@@ -3466,7 +3688,8 @@
             "Lake Tanganyika",
             "Caspian Sea",
             "Lake Superior"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q02",
@@ -3480,7 +3703,8 @@
             "Bali",
             "Surabaya",
             "Bandung"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q02",
@@ -3494,7 +3718,8 @@
             "Mekong",
             "Ganges",
             "Yellow River"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q02",
@@ -3508,7 +3733,8 @@
             "Asia",
             "Australia",
             "South America"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q02",
@@ -3522,7 +3748,8 @@
             "Argentina",
             "Peru",
             "Colombia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q02",
@@ -3536,21 +3763,23 @@
             "Australia",
             "South America",
             "Africa"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q02",
           "category": "geography",
           "tier": "ultra",
           "type": "mc",
-          "question": "Which sea lies between Greece and Turkey?",
+          "question": "Which sea is named after a Greek mythological king?",
           "answer": "Aegean Sea",
           "options": [
             "Aegean Sea",
-            "Adriatic Sea",
-            "Black Sea",
-            "Mediterranean Sea"
-          ]
+            "North Sea",
+            "Yellow Sea",
+            "Red Sea"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q02",
@@ -3564,7 +3793,8 @@
             "New Guinea",
             "Borneo",
             "Madagascar"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q02",
@@ -3578,7 +3808,8 @@
             "Sudan",
             "Iraq",
             "Libya"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q02",
@@ -3592,7 +3823,8 @@
             "Southern Ocean",
             "Indian Ocean",
             "Atlantic Ocean"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q02",
@@ -3606,7 +3838,8 @@
             "Bangkok",
             "Manila",
             "Seoul"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q02",
@@ -3620,7 +3853,8 @@
             "Barcelona",
             "Seville",
             "Valencia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q02",
@@ -3634,7 +3868,8 @@
             "Mount Kenya",
             "Mount Stanley",
             "Mount Meru"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q02",
@@ -3648,7 +3883,8 @@
             "Atlantic Ocean",
             "Arctic Ocean",
             "Gulf of Mexico"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q02",
@@ -3662,7 +3898,8 @@
             "Yellow Sea",
             "East China Sea",
             "Bering Sea"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q02",
@@ -3676,7 +3913,8 @@
             "Iguazu Falls",
             "Angel Falls",
             "Victoria Falls"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q02",
@@ -3690,7 +3928,8 @@
             "Mindanao",
             "Samar",
             "Palawan"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q02",
@@ -3704,7 +3943,8 @@
             "Mount Pinatubo",
             "Mount Taal",
             "Mount Apo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q02",
@@ -3718,21 +3958,23 @@
             "7107",
             "1000",
             "10000"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q02",
           "category": "geography",
           "tier": "ultra",
           "type": "mc",
-          "question": "Which deep oceanic trench lies east of the Philippines?",
-          "answer": "Philippine Trench",
+          "question": "What is on the seafloor east of the Philippines?",
+          "answer": "A very deep trench",
           "options": [
-            "Philippine Trench",
-            "Mariana Trench",
-            "Java Trench",
-            "Tonga Trench"
-          ]
+            "A very deep trench",
+            "A flat plain",
+            "A coral reef",
+            "An island"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q02",
@@ -3746,7 +3988,8 @@
             "Camiguin",
             "Siquijor",
             "Marinduque"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -3764,7 +4007,8 @@
             "Water",
             "Soil",
             "Air"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q03",
@@ -3778,7 +4022,66 @@
             "Earth",
             "Moon",
             "Mars"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ011",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What gas do we need to breathe to stay alive?",
+          "answer": "Oxygen",
+          "options": [
+            "Oxygen",
+            "Helium",
+            "Carbon Dioxide",
+            "Smoke"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ012",
+          "category": "science",
+          "tier": "basic",
+          "type": "tf",
+          "question": "The Earth is round.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ013",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What kind of animal is a chicken?",
+          "answer": "Bird",
+          "options": [
+            "Bird",
+            "Mammal",
+            "Fish",
+            "Reptile"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ014",
+          "category": "science",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Where does milk come from?",
+          "answer": "Cows",
+          "options": [
+            "Cows",
+            "Pigs",
+            "Sheep",
+            "Plants"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -3794,7 +4097,8 @@
             "186",
             "196",
             "216"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q03",
@@ -3806,7 +4110,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q03",
@@ -3820,7 +4125,8 @@
             "HO",
             "H2O2",
             "OH"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q03",
@@ -3834,7 +4140,36 @@
             "Oxygen",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ015",
+          "category": "science",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which body part pumps blood through your body?",
+          "answer": "Heart",
+          "options": [
+            "Heart",
+            "Brain",
+            "Lungs",
+            "Stomach"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ016",
+          "category": "science",
+          "tier": "holo",
+          "type": "tf",
+          "question": "Sharks are fish.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -3850,7 +4185,8 @@
             "Condensation",
             "Precipitation",
             "Sublimation"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q03",
@@ -3864,7 +4200,8 @@
             "23",
             "48",
             "52"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q03",
@@ -3876,7 +4213,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q03",
@@ -3890,7 +4228,8 @@
             "Magnetism",
             "Friction",
             "Inertia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q03",
@@ -3904,7 +4243,8 @@
             "Atmosphere",
             "Stratosphere",
             "Troposphere"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q03",
@@ -3918,7 +4258,8 @@
             "-10",
             "10",
             "-5"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q03",
@@ -3932,7 +4273,8 @@
             "7",
             "9",
             "10"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q03",
@@ -3946,7 +4288,8 @@
             "5",
             "12",
             "20"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -3962,7 +4305,8 @@
             "Oxygen",
             "Carbon Dioxide",
             "Argon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q03",
@@ -3974,7 +4318,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q03",
@@ -3988,7 +4333,8 @@
             "Evolution",
             "Transformation",
             "Germination"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q03",
@@ -4002,7 +4348,8 @@
             "Carbon Dioxide",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q03",
@@ -4016,7 +4363,8 @@
             "150000",
             "500000",
             "1000000"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q03",
@@ -4028,7 +4376,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q03",
@@ -4042,7 +4391,8 @@
             "Saturn",
             "Neptune",
             "Earth"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g2q03",
@@ -4056,7 +4406,8 @@
             "Helium",
             "Lithium",
             "Oxygen"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q03",
@@ -4070,7 +4421,8 @@
             "Respiration",
             "Transpiration",
             "Germination"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -4086,7 +4438,8 @@
             "Ag",
             "Gd",
             "Go"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q03",
@@ -4100,7 +4453,8 @@
             "Molecule",
             "Cell",
             "Quark"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q03",
@@ -4114,7 +4468,8 @@
             "90",
             "110",
             "212"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q03",
@@ -4128,7 +4483,8 @@
             "Liver",
             "Brain",
             "Lungs"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q03",
@@ -4142,7 +4498,8 @@
             "100",
             "180",
             "232"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q03",
@@ -4156,7 +4513,8 @@
             "Oxygen",
             "Carbon Dioxide",
             "Argon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q03",
@@ -4170,7 +4528,8 @@
             "So",
             "Sd",
             "S"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q03",
@@ -4184,7 +4543,8 @@
             "Steel",
             "Granite",
             "Titanium"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q03",
@@ -4196,21 +4556,23 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q03",
           "category": "science",
           "tier": "ultra",
           "type": "mc",
-          "question": "Newton's third law of motion states that for every action there is a what?",
-          "answer": "Equal and opposite reaction",
+          "question": "When you push a wall, the wall pushes back. What law explains this?",
+          "answer": "Newton's third law",
           "options": [
-            "Equal and opposite reaction",
-            "Stronger reaction",
-            "Delayed reaction",
-            "Random reaction"
-          ]
+            "Newton's third law",
+            "Gravity",
+            "Magnetism",
+            "Friction"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q03",
@@ -4224,7 +4586,8 @@
             "A+",
             "B+",
             "AB+"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q03",
@@ -4238,7 +4601,8 @@
             "Jupiter",
             "Neptune",
             "Uranus"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q03",
@@ -4252,7 +4616,8 @@
             "Mercury",
             "Mars",
             "Jupiter"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q03",
@@ -4266,7 +4631,8 @@
             "Ir",
             "In",
             "I"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q03",
@@ -4280,7 +4646,8 @@
             "0",
             "16",
             "40"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q03",
@@ -4294,7 +4661,8 @@
             "206",
             "150",
             "400"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q03",
@@ -4308,7 +4676,8 @@
             "Sirius",
             "Alpha Centauri A",
             "Betelgeuse"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q03",
@@ -4322,7 +4691,8 @@
             "African Elephant",
             "Sperm Whale",
             "Tyrannosaurus Rex"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q03",
@@ -4336,7 +4706,8 @@
             "2",
             "3",
             "6"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q03",
@@ -4350,7 +4721,8 @@
             "108",
             "128",
             "100"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q03",
@@ -4364,7 +4736,8 @@
             "Carbon Dioxide",
             "Nitrogen",
             "Hydrogen"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q03",
@@ -4378,7 +4751,8 @@
             "300",
             "500",
             "1000"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q03",
@@ -4392,21 +4766,23 @@
             "Hurricanes",
             "Cold weather",
             "Coral reefs"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q03",
           "category": "science",
           "tier": "ultra",
           "type": "mc",
-          "question": "Mount Mayon is what type of volcano (by shape)?",
-          "answer": "Stratovolcano",
+          "question": "Mount Mayon is famous for being what kind of mountain?",
+          "answer": "A volcano",
           "options": [
-            "Stratovolcano",
-            "Shield volcano",
-            "Cinder cone",
-            "Caldera"
-          ]
+            "A volcano",
+            "An iceberg",
+            "A hill",
+            "A cliff"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q03",
@@ -4420,7 +4796,8 @@
             "Loris",
             "Lemur",
             "Slender Loris"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q03",
@@ -4434,7 +4811,8 @@
             "Mango",
             "Acacia",
             "Bamboo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q03",
@@ -4448,7 +4826,8 @@
             "Mars",
             "Mercury",
             "Jupiter"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -4466,7 +4845,81 @@
             "Errol",
             "Pigwidgeon",
             "Fawkes"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ017",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Who wrote 'Charlie and the Chocolate Factory'?",
+          "answer": "Roald Dahl",
+          "options": [
+            "Roald Dahl",
+            "J.K. Rowling",
+            "Dr. Seuss",
+            "C.S. Lewis"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ018",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which Hogwarts house is Harry Potter in?",
+          "answer": "Gryffindor",
+          "options": [
+            "Gryffindor",
+            "Slytherin",
+            "Hufflepuff",
+            "Ravenclaw"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ019",
+          "category": "books",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Hermione Granger is one of Harry Potter's best friends.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ020",
+          "category": "books",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble Harry's owl: H-E-D-W-I-G",
+          "answer": "Hedwig",
+          "options": [
+            "Hedwig",
+            "Hewdig",
+            "Hedgiw",
+            "Hediwg"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ021",
+          "category": "books",
+          "tier": "basic",
+          "type": "mc",
+          "question": "In Narnia, what is the great lion's name?",
+          "answer": "Aslan",
+          "options": [
+            "Aslan",
+            "Tumnus",
+            "Edmund",
+            "Reepicheep"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -4482,7 +4935,8 @@
             "Flying",
             "Reading minds",
             "Invisibility"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q04",
@@ -4496,7 +4950,8 @@
             "Gruffall",
             "Gruffolo",
             "Gruffele"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q04",
@@ -4510,7 +4965,8 @@
             "Hogwrast",
             "Hogrwats",
             "Hwogarts"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q04",
@@ -4524,7 +4980,8 @@
             "Big Funny Giraffe",
             "Bold Flying Giant",
             "Brave Friendly Goblin"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q04",
@@ -4538,7 +4995,8 @@
             "Vincent Crabbe",
             "Gregory Goyle",
             "Pansy Parkinson"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g2q04",
@@ -4552,7 +5010,8 @@
             "Zeus",
             "Ares",
             "Hades"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q04",
@@ -4566,7 +5025,8 @@
             "Niraan",
             "Nanria",
             "Nairna"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -4582,7 +5042,8 @@
             "Maltida",
             "Matilad",
             "Maitdla"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q04",
@@ -4596,7 +5057,8 @@
             "Uncle Monty",
             "Mr. Poe",
             "Captain Sham"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q04",
@@ -4610,7 +5072,8 @@
             "Her necklace",
             "Her ring",
             "Her crown"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q04",
@@ -4624,7 +5087,8 @@
             "Vaultex",
             "Goldsworth",
             "Ironbank"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q04",
@@ -4638,7 +5102,8 @@
             "Rapunlze",
             "Raunpzel",
             "Rapnuzel"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q04",
@@ -4652,7 +5117,8 @@
             "Cinderalle",
             "Cinedella",
             "Cinderalla"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q04",
@@ -4666,7 +5132,8 @@
             "Centaur",
             "Dwarf",
             "Elf"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -4682,7 +5149,8 @@
             "Klaus, Violet and Isadora",
             "Violet, Duncan and Sunny",
             "Sunny, Klaus and Beatrice"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q04",
@@ -4696,7 +5164,8 @@
             "Silver Coin",
             "Map",
             "Key"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q04",
@@ -4710,7 +5179,8 @@
             "Mtailda",
             "Matlida",
             "Matidla"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q04",
@@ -4724,7 +5194,8 @@
             "Roald Dahl",
             "C.S. Lewis",
             "J.K. Rowling"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q04",
@@ -4738,7 +5209,8 @@
             "Snicket",
             "Olaf",
             "Quagmire"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q04",
@@ -4752,7 +5224,8 @@
             "Zeus",
             "Hades",
             "Apollo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q04",
@@ -4766,7 +5239,8 @@
             "Roald Dahl",
             "Beatrix Potter",
             "Dr. Seuss"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -4782,7 +5256,8 @@
             "The Witch",
             "The Troll",
             "The Giant"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q04",
@@ -4796,7 +5271,8 @@
             "Wizards",
             "Knights",
             "Spies"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q04",
@@ -4810,7 +5286,8 @@
             "J.R.R. Tolkien",
             "Philip Pullman",
             "Roald Dahl"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q04",
@@ -4824,7 +5301,8 @@
             "Draco Malfoy",
             "Voldemort",
             "Bellatrix Lestrange"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q04",
@@ -4838,7 +5316,8 @@
             "Tom Riddle Marvolo",
             "Marvolo Tom Riddle",
             "Salazar Tom Riddle"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q04",
@@ -4852,7 +5331,8 @@
             "C.S. Lewis",
             "Beatrix Potter",
             "E.B. White"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q04",
@@ -4866,7 +5346,8 @@
             "Eagle",
             "Lion",
             "Snake"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q04",
@@ -4880,7 +5361,8 @@
             "Tiger",
             "Bear",
             "Wolf"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q04",
@@ -4894,7 +5376,8 @@
             "C.S. Lewis",
             "J.K. Rowling",
             "Beatrix Potter"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q04",
@@ -4908,7 +5391,8 @@
             "Morgana",
             "Maleficent",
             "Ursula"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q04",
@@ -4922,7 +5406,8 @@
             "Roald Dahl",
             "Maurice Sendak",
             "Eric Carle"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q04",
@@ -4936,7 +5421,8 @@
             "Frobscottle",
             "Whangdoodle",
             "Whizzpopper"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q04",
@@ -4950,7 +5436,8 @@
             "Roald Dahl",
             "Julia Donaldson",
             "Enid Blyton"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q04",
@@ -4964,7 +5451,8 @@
             "Fang",
             "Norbert",
             "Cerberus"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q04",
@@ -4978,7 +5466,8 @@
             "Enid Blyton",
             "Dr. Seuss",
             "Beatrix Potter"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q04",
@@ -4992,7 +5481,8 @@
             "J.R.R. Tolkien",
             "Philip Pullman",
             "Lewis Carroll"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q04",
@@ -5006,7 +5496,8 @@
             "Esmé Squalor",
             "Carmelita Spats",
             "Coachman"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q04",
@@ -5020,7 +5511,8 @@
             "Eric Carle",
             "Dr. Seuss",
             "Roald Dahl"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q04",
@@ -5034,7 +5526,8 @@
             "Susan",
             "Sophie",
             "Sandra"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q04",
@@ -5048,7 +5541,8 @@
             "C.S. Lewis",
             "Beatrix Potter",
             "Eric Carle"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q04",
@@ -5062,7 +5556,8 @@
             "A mirror",
             "A book",
             "A doorway"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q04",
@@ -5076,7 +5571,8 @@
             "Roald Dahl",
             "E.B. White",
             "Beverly Cleary"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q04",
@@ -5090,7 +5586,8 @@
             "Violet and Carl",
             "Sunny and Olaf",
             "Klaus and Esmé"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q04",
@@ -5104,7 +5601,8 @@
             "Francisco Balagtas",
             "Nick Joaquin",
             "F. Sionil Jose"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q04",
@@ -5118,21 +5616,23 @@
             "Mi Ultimo Adios",
             "Sa Aking Mga Kabata",
             "Florante at Laura"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q04",
           "category": "books",
           "tier": "ultra",
           "type": "mc",
-          "question": "Which profession did Jose Rizal originally study?",
-          "answer": "Medicine (Ophthalmology)",
+          "question": "What job did Jose Rizal train for?",
+          "answer": "Doctor",
           "options": [
-            "Medicine (Ophthalmology)",
-            "Law",
-            "Engineering",
-            "Theology"
-          ]
+            "Doctor",
+            "Soldier",
+            "Singer",
+            "Sailor"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q04",
@@ -5146,7 +5646,8 @@
             "C.S. Lewis",
             "Roald Dahl",
             "Philip Pullman"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q04",
@@ -5160,7 +5661,8 @@
             "Agatha Christie",
             "Edgar Allan Poe",
             "Charles Dickens"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -5178,7 +5680,81 @@
             "Fire",
             "Grass",
             "Normal"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ022",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What type is Charmander?",
+          "answer": "Fire",
+          "options": [
+            "Fire",
+            "Water",
+            "Grass",
+            "Electric"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ023",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Pikachu can use the move Thunderbolt.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ024",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble the Pokemon: P-I-K-A-C-H-U",
+          "answer": "Pikachu",
+          "options": [
+            "Pikachu",
+            "Pikahcu",
+            "Pickahu",
+            "Pkaichu"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ025",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What does Pikachu evolve into?",
+          "answer": "Raichu",
+          "options": [
+            "Raichu",
+            "Pichu",
+            "Plusle",
+            "Mareep"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ026",
+          "category": "pokemon",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which yellow Pokemon has a lightning-bolt tail?",
+          "answer": "Pikachu",
+          "options": [
+            "Pikachu",
+            "Jigglypuff",
+            "Psyduck",
+            "Meowth"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -5194,7 +5770,8 @@
             "Kakuna",
             "Weedle",
             "Wurmple"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q05",
@@ -5206,7 +5783,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q05",
@@ -5220,7 +5798,8 @@
             "Normal only",
             "Fairy only",
             "Psychic"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q05",
@@ -5234,7 +5813,8 @@
             "Charzarid",
             "Chariazrd",
             "Charzaidr"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q05",
@@ -5246,7 +5826,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g2q05",
@@ -5260,7 +5841,8 @@
             "Lapras",
             "Dragonair",
             "Vaporeon"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -5274,7 +5856,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q05",
@@ -5288,7 +5871,8 @@
             "Thunder",
             "Volt Tackle",
             "Quick Attack"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q05",
@@ -5302,7 +5886,8 @@
             "Gyardaos",
             "Gyardoas",
             "Gyadroas"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q05",
@@ -5314,7 +5899,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q05",
@@ -5328,7 +5914,8 @@
             "Dragon only",
             "Flying only",
             "Dragon and Psychic"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q05",
@@ -5340,7 +5927,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q05",
@@ -5354,7 +5942,8 @@
             "Swampret",
             "Swamptre",
             "Swapmert"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q05",
@@ -5368,7 +5957,8 @@
             "Hoenn",
             "Johto",
             "Unova"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q05",
@@ -5382,7 +5972,8 @@
             "Palkia",
             "Giratina",
             "Arceus"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -5398,7 +5989,8 @@
             "Moonblast",
             "Dazzling Gleam",
             "Aromatherapy"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q05",
@@ -5412,7 +6004,8 @@
             "Dialga",
             "Giratina",
             "Cresselia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q05",
@@ -5426,7 +6019,8 @@
             "Luciaro",
             "Lucairo",
             "Luarico"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q05",
@@ -5440,7 +6034,8 @@
             "Shadow Realm",
             "Dark Dimension",
             "Ultra Space"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q05",
@@ -5454,7 +6049,8 @@
             "Sinnoh",
             "Kalos",
             "Alola"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g2q05",
@@ -5468,7 +6064,8 @@
             "Zekrom",
             "Kyurem",
             "Landorus"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q05",
@@ -5482,7 +6079,8 @@
             "Galar",
             "Alola",
             "Paldea"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -5498,7 +6096,8 @@
             "Reshiram",
             "Kyurem",
             "Tornadus"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q05",
@@ -5512,7 +6111,8 @@
             "Kyruem",
             "Kyumer",
             "Krymeu"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q05",
@@ -5526,7 +6126,8 @@
             "Dialga and Palkia",
             "Latios and Latias",
             "Zacian and Zamazenta"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q05",
@@ -5540,7 +6141,8 @@
             "Generation 2",
             "Generation 3",
             "Generation 4"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q05",
@@ -5554,7 +6156,8 @@
             "Yveltal",
             "Zygarde",
             "Diancie"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q05",
@@ -5568,7 +6171,8 @@
             "Xerneas",
             "Zygarde",
             "Volcanion"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q05",
@@ -5582,7 +6186,8 @@
             "Greninaj",
             "Grenjina",
             "Genrinja"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q05",
@@ -5596,7 +6201,8 @@
             "Kalos",
             "Galar",
             "Paldea"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q05",
@@ -5610,7 +6216,8 @@
             "Necrozma or Mewtwo",
             "Dialga or Palkia",
             "Reshiram or Zekrom"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q05",
@@ -5624,7 +6231,8 @@
             "Lunala",
             "Necrozma",
             "Tapu Koko"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q05",
@@ -5638,7 +6246,8 @@
             "Solgaleo",
             "Necrozma",
             "Cresselia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q05",
@@ -5652,7 +6261,8 @@
             "Ghost",
             "Dark",
             "Fighting"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q05",
@@ -5666,7 +6276,8 @@
             "Alola",
             "Kalos",
             "Paldea"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q05",
@@ -5680,7 +6291,8 @@
             "Zamazenta",
             "Eternatus",
             "Calyrex"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q05",
@@ -5694,7 +6306,8 @@
             "Zacian",
             "Eternatus",
             "Calyrex"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q05",
@@ -5708,7 +6321,8 @@
             "Zacian",
             "Zamazenta",
             "Necrozma"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q05",
@@ -5722,7 +6336,8 @@
             "Daynmax",
             "Dynaxma",
             "Dxynama"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q05",
@@ -5736,7 +6351,8 @@
             "Galar",
             "Alola",
             "Kalos"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q05",
@@ -5750,7 +6366,8 @@
             "Miraidon",
             "Calyrex",
             "Zacian"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q05",
@@ -5764,7 +6381,8 @@
             "Koraidon",
             "Eternatus",
             "Necrozma"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q05",
@@ -5778,7 +6396,8 @@
             "Dynamax",
             "Z-Moves",
             "Mega Evolution"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q05",
@@ -5792,7 +6411,8 @@
             "Padlea",
             "Pdaela",
             "Plaeda"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q05",
@@ -5806,7 +6426,8 @@
             "Aura Sphere",
             "Hyper Beam",
             "Future Sight"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q05",
@@ -5820,7 +6441,8 @@
             "Caterpie to Metapod to Butterfree",
             "Wurmple to Cascoon to Dustox",
             "Scyther to Scizor"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q05",
@@ -5834,7 +6456,8 @@
             "Bulbasaur",
             "Charmander",
             "Squirtle"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q05",
@@ -5848,7 +6471,8 @@
             "Fighting",
             "Psychic",
             "Fairy"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q05",
@@ -5862,7 +6486,8 @@
             "Shigeru Miyamoto",
             "Ken Sugimori",
             "Junichi Masuda"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -5880,7 +6505,8 @@
             "Scar",
             "Rafiki",
             "Zazu"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q06",
@@ -5894,7 +6520,8 @@
             "Chris Evans",
             "Chris Hemsworth",
             "Mark Ruffalo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q06",
@@ -5908,7 +6535,51 @@
             "Sven",
             "Hans",
             "Kristoff"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ027",
+          "category": "music",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Who plays Iron Man in the Marvel movies?",
+          "answer": "Robert Downey Jr.",
+          "options": [
+            "Robert Downey Jr.",
+            "Chris Evans",
+            "Chris Hemsworth",
+            "Mark Ruffalo"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ028",
+          "category": "music",
+          "tier": "basic",
+          "type": "tf",
+          "question": "The Beatles were a band from England.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ029",
+          "category": "music",
+          "tier": "basic",
+          "type": "mc",
+          "question": "In the movie 'Elf', what does Buddy think he is?",
+          "answer": "An elf",
+          "options": [
+            "An elf",
+            "A reindeer",
+            "Santa Claus",
+            "A snowman"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -5924,7 +6595,8 @@
             "Hamltion",
             "Hamilotn",
             "Halmtion"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q06",
@@ -5938,7 +6610,8 @@
             "1955",
             "1962",
             "1958"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q06",
@@ -5952,7 +6625,8 @@
             "Buddy",
             "Max",
             "Rex"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q06",
@@ -5966,7 +6640,8 @@
             "Iron Man",
             "Captain America",
             "Hulk"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q06",
@@ -5980,7 +6655,21 @@
             "Wickde",
             "Wicekd",
             "Wickad"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ030",
+          "category": "music",
+          "tier": "holo",
+          "type": "tf",
+          "question": "BTS has 7 members.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -5996,7 +6685,8 @@
             "Angelica Schuyler",
             "Peggy Schuyler",
             "Maria Reynolds"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q06",
@@ -6010,7 +6700,8 @@
             "Popular",
             "For Good",
             "No Good Deed"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q06",
@@ -6024,7 +6715,8 @@
             "Zira",
             "Shenzi",
             "Ed"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q06",
@@ -6038,7 +6730,8 @@
             "Avengres",
             "Avenrges",
             "Avegnres"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q06",
@@ -6052,7 +6745,23 @@
             "Andrew Lloyd Webber",
             "Stephen Sondheim",
             "Stephen Schwartz"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ031",
+          "category": "music",
+          "tier": "rare",
+          "type": "mc",
+          "question": "When the Hulk gets really angry, what color does he turn?",
+          "answer": "Green",
+          "options": [
+            "Green",
+            "Red",
+            "Blue",
+            "Purple"
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -6068,7 +6777,8 @@
             "Sugar, Chocolate, Ice Cream, Cake",
             "Sweets, Cookies, Cake, Pie",
             "Donuts, Marshmallows, Pie, Soda"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q06",
@@ -6082,7 +6792,8 @@
             "Zamunda",
             "Genosha",
             "Latveria"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q06",
@@ -6096,7 +6807,8 @@
             "The Cabinet Room",
             "The Oval Office",
             "The War Room"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q06",
@@ -6110,7 +6822,8 @@
             "Paul McCartney",
             "George Harrison",
             "Ringo Starr"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q06",
@@ -6124,7 +6837,8 @@
             "Hans Zimmer",
             "Howard Shore",
             "Danny Elfman"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q06",
@@ -6138,7 +6852,8 @@
             "Tobey Maguire",
             "Andrew Garfield",
             "Tom Hiddleston"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q06",
@@ -6152,7 +6867,8 @@
             "Pepper",
             "Natasha",
             "Wanda"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q06",
@@ -6166,7 +6882,8 @@
             "Abbey Road",
             "Revolver",
             "Let It Be"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q06",
@@ -6180,7 +6897,8 @@
             "Mike Tyson",
             "Floyd Mayweather",
             "Sugar Ray Robinson"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -6196,7 +6914,8 @@
             "John Lennon",
             "George Harrison",
             "Ringo Starr"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q06",
@@ -6210,7 +6929,8 @@
             "Mozart",
             "Bach",
             "Tchaikovsky"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q06",
@@ -6224,7 +6944,8 @@
             "Jack Kirby",
             "Walt Disney",
             "Bob Kane"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q06",
@@ -6238,7 +6959,8 @@
             "Emma Watson",
             "Jennifer Lawrence",
             "Natalie Portman"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q06",
@@ -6252,7 +6974,8 @@
             "John Williams",
             "Hans Zimmer",
             "James Horner"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q06",
@@ -6266,7 +6989,8 @@
             "Brian May",
             "Roger Taylor",
             "John Deacon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q06",
@@ -6280,7 +7004,8 @@
             "Elton John",
             "Tim Rice",
             "Alan Menken"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q06",
@@ -6294,7 +7019,8 @@
             "Into the Unknown",
             "Show Yourself",
             "For the First Time"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q06",
@@ -6308,7 +7034,8 @@
             "Stephen Sondheim",
             "Stephen Schwartz",
             "Lin-Manuel Miranda"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q06",
@@ -6322,7 +7049,8 @@
             "This Is Me",
             "A Million Dreams",
             "Rewrite the Stars"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q06",
@@ -6336,7 +7064,8 @@
             "Bono",
             "Adam Levine",
             "Brandon Flowers"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q06",
@@ -6350,7 +7079,8 @@
             "Stephen Sondheim",
             "Tim Rice",
             "Alan Menken"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q06",
@@ -6364,7 +7094,8 @@
             "Chris Hemsworth",
             "Chris Pratt",
             "Chris Pine"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q06",
@@ -6378,7 +7109,8 @@
             "Stephen Sondheim",
             "Andrew Lloyd Webber",
             "Lin-Manuel Miranda"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q06",
@@ -6392,7 +7124,8 @@
             "Emma Stone",
             "Bonnie Wright",
             "Evanna Lynch"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q06",
@@ -6406,7 +7139,8 @@
             "Hans Zimmer",
             "Howard Shore",
             "Alan Silvestri"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q06",
@@ -6420,7 +7154,8 @@
             "Brie Larson",
             "Gal Gadot",
             "Zoe Saldana"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q06",
@@ -6434,7 +7169,8 @@
             "Ariana Grande",
             "Idina Menzel",
             "Jennifer Hudson"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q06",
@@ -6448,7 +7184,8 @@
             "Scarlett Johansson",
             "Brie Larson",
             "Margot Robbie"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q06",
@@ -6462,7 +7199,8 @@
             "Jin",
             "Jimin",
             "Suga"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q06",
@@ -6476,7 +7214,8 @@
             "John Lennon",
             "Elton John",
             "David Bowie"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q06",
@@ -6490,7 +7229,8 @@
             "Jim Carrey",
             "Adam Sandler",
             "Steve Carell"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q06",
@@ -6504,7 +7244,8 @@
             "Foreigner",
             "Bon Jovi",
             "REO Speedwagon"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q06",
@@ -6518,7 +7259,8 @@
             "Lea Salonga",
             "Apo Hiking Society",
             "Levi Celerio"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q06",
@@ -6532,7 +7274,8 @@
             "My Hero",
             "My Home",
             "My Land"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q06",
@@ -6546,7 +7289,8 @@
             "Lea Salonga",
             "Sarah Geronimo",
             "Charice"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q06",
@@ -6560,7 +7304,8 @@
             "A Filipino folk dance",
             "A Filipino festival",
             "A traditional song for weddings"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q06",
@@ -6574,7 +7319,8 @@
             "Kristen Bell",
             "Demi Lovato",
             "Auli'i Cravalho"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -6590,7 +7336,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q07",
@@ -6602,7 +7349,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q07",
@@ -6614,7 +7362,51 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ032",
+          "category": "sports",
+          "tier": "basic",
+          "type": "mc",
+          "question": "How many bases are there in a game of baseball?",
+          "answer": "4",
+          "options": [
+            "4",
+            "3",
+            "5",
+            "9"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ033",
+          "category": "sports",
+          "tier": "basic",
+          "type": "tf",
+          "question": "In soccer, a goal counts when the ball crosses the goal line.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ034",
+          "category": "sports",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which sport is played with a racket and a yellow ball?",
+          "answer": "Tennis",
+          "options": [
+            "Tennis",
+            "Cricket",
+            "Hockey",
+            "Bowling"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -6630,7 +7422,8 @@
             "18",
             "20",
             "28"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q07",
@@ -6644,7 +7437,8 @@
             "4",
             "6",
             "7"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q07",
@@ -6656,7 +7450,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g2q07",
@@ -6668,7 +7463,36 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ035",
+          "category": "sports",
+          "tier": "holo",
+          "type": "tf",
+          "question": "Basketball was invented in the United States.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ036",
+          "category": "sports",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Which sport uses a small club to hit a ball into a hole?",
+          "answer": "Golf",
+          "options": [
+            "Golf",
+            "Tennis",
+            "Cricket",
+            "Hockey"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -6684,7 +7508,8 @@
             "3",
             "5",
             "6"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q07",
@@ -6696,7 +7521,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q07",
@@ -6710,7 +7536,8 @@
             "5",
             "7",
             "8"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q07",
@@ -6722,7 +7549,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q07",
@@ -6736,7 +7564,8 @@
             "80",
             "100",
             "120"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q07",
@@ -6750,7 +7579,8 @@
             "8",
             "10",
             "11"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q07",
@@ -6762,7 +7592,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q07",
@@ -6776,7 +7607,8 @@
             "Olypmics",
             "Olmpyics",
             "Olypmcis"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -6790,7 +7622,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q07",
@@ -6802,7 +7635,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q07",
@@ -6816,7 +7650,8 @@
             "9",
             "16",
             "20"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q07",
@@ -6830,7 +7665,8 @@
             "US Open",
             "French Open",
             "Australian Open"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q07",
@@ -6844,7 +7680,8 @@
             "29",
             "49",
             "59"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q07",
@@ -6858,7 +7695,8 @@
             "200",
             "270",
             "350"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g2q07",
@@ -6870,7 +7708,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q07",
@@ -6884,7 +7723,8 @@
             "US Open",
             "Wimbledon",
             "Australian Open"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -6900,7 +7740,8 @@
             "Cristiano Ronaldo",
             "Pele",
             "Diego Maradona"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q07",
@@ -6914,7 +7755,8 @@
             "China",
             "Korea",
             "Mongolia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q07",
@@ -6926,7 +7768,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q07",
@@ -6940,7 +7783,8 @@
             "Germany",
             "Argentina",
             "Italy"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q07",
@@ -6954,7 +7798,8 @@
             "LeBron James",
             "Kobe Bryant",
             "Magic Johnson"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q07",
@@ -6968,7 +7813,8 @@
             "Cricket",
             "Badminton",
             "Squash"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q07",
@@ -6982,7 +7828,8 @@
             "Athens, Greece",
             "Rome, Italy",
             "Sparta, Greece"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q07",
@@ -6996,7 +7843,8 @@
             "Three saves by a goalkeeper",
             "Three yellow cards",
             "Three red cards"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q07",
@@ -7010,7 +7858,8 @@
             "7",
             "10",
             "11"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q07",
@@ -7024,7 +7873,8 @@
             "Rio de Janeiro",
             "London",
             "Beijing"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q07",
@@ -7036,7 +7886,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q07",
@@ -7050,7 +7901,8 @@
             "Lacrosse",
             "Field Hockey",
             "Curling"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q07",
@@ -7064,7 +7916,8 @@
             "Baseball",
             "Tennis",
             "Football"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q07",
@@ -7078,7 +7931,8 @@
             "15",
             "23",
             "25"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q07",
@@ -7092,7 +7946,8 @@
             "Cricket",
             "Golf",
             "Badminton"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q07",
@@ -7104,7 +7959,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q07",
@@ -7118,7 +7974,8 @@
             "Tokyo",
             "Los Angeles",
             "Brisbane"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q07",
@@ -7132,7 +7989,8 @@
             "25 meters",
             "100 meters",
             "75 meters"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q07",
@@ -7146,7 +8004,8 @@
             "Tennis",
             "Basketball",
             "Cricket"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q07",
@@ -7158,7 +8017,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q07",
@@ -7172,7 +8032,8 @@
             "England",
             "Ireland",
             "Netherlands"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q07",
@@ -7186,7 +8047,8 @@
             "3",
             "7",
             "4"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q07",
@@ -7200,7 +8062,8 @@
             "Nonito Donaire",
             "Flash Elorde",
             "Onyok Velasco"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q07",
@@ -7214,7 +8077,8 @@
             "Carlos Yulo",
             "Manny Pacquiao",
             "Onyok Velasco"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q07",
@@ -7228,7 +8092,8 @@
             "Spia",
             "Pisa",
             "Apsi"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q07",
@@ -7242,7 +8107,8 @@
             "Sipa",
             "Karate",
             "Taekwondo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q07",
@@ -7256,7 +8122,8 @@
             "Cleveland Cavaliers",
             "Miami Heat",
             "Brooklyn Nets"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -7272,7 +8139,81 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ037",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is the main ingredient used to make bread?",
+          "answer": "Flour",
+          "options": [
+            "Flour",
+            "Sugar",
+            "Salt",
+            "Butter"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ038",
+          "category": "food",
+          "tier": "basic",
+          "type": "tf",
+          "question": "Milk comes from cows.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ039",
+          "category": "food",
+          "tier": "basic",
+          "type": "unscramble",
+          "question": "Unscramble the Japanese food: S-U-S-H-I",
+          "answer": "Sushi",
+          "options": [
+            "Sushi",
+            "Sashu",
+            "Suhsi",
+            "Shusi"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ040",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What color is a banana when it is ripe?",
+          "answer": "Yellow",
+          "options": [
+            "Yellow",
+            "Green",
+            "Red",
+            "Blue"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ041",
+          "category": "food",
+          "tier": "basic",
+          "type": "mc",
+          "question": "Which fruit is famous for being grown in the Philippines?",
+          "answer": "Mango",
+          "options": [
+            "Mango",
+            "Apple",
+            "Cherry",
+            "Peach"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -7288,7 +8229,8 @@
             "Fish",
             "Seaweed",
             "Wasabi"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q08",
@@ -7302,7 +8244,8 @@
             "Aboob",
             "Adoob",
             "Abodo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q08",
@@ -7316,7 +8259,8 @@
             "Steaming",
             "Baking",
             "Boiling"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q08",
@@ -7328,7 +8272,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q08",
@@ -7342,7 +8287,23 @@
             "Lentils",
             "Kidney beans",
             "Soybeans"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ042",
+          "category": "food",
+          "tier": "holo",
+          "type": "mc",
+          "question": "Filipino lumpia is similar to which kind of food?",
+          "answer": "Spring roll",
+          "options": [
+            "Spring roll",
+            "Sandwich",
+            "Pizza",
+            "Dumpling"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -7358,7 +8319,8 @@
             "Italy",
             "France",
             "Portugal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q08",
@@ -7372,7 +8334,8 @@
             "Siniagng",
             "Singiang",
             "Sinagang"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q08",
@@ -7386,7 +8349,8 @@
             "Baguette",
             "Croissant",
             "Brioche"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q08",
@@ -7398,7 +8362,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q08",
@@ -7412,7 +8377,8 @@
             "Sashimi",
             "Ramen",
             "Tempura"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q08",
@@ -7426,7 +8392,8 @@
             "Kare-kare",
             "Sinigang",
             "Mechado"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q08",
@@ -7440,7 +8407,8 @@
             "Lehcon",
             "Lcheon",
             "Lecohn"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q08",
@@ -7454,7 +8422,8 @@
             "Paprika",
             "Cumin",
             "Saffron"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -7470,7 +8439,8 @@
             "Buko Pandan",
             "Leche Flan",
             "Mais con Hielo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q08",
@@ -7482,7 +8452,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q08",
@@ -7494,7 +8465,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q08",
@@ -7508,7 +8480,8 @@
             "8",
             "25",
             "40"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q08",
@@ -7522,7 +8495,8 @@
             "Pacnit",
             "Pnacit",
             "Pacint"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q08",
@@ -7536,7 +8510,8 @@
             "Coffee beans",
             "Vanilla beans",
             "Sugar cane"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q08",
@@ -7548,7 +8523,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q08",
@@ -7562,7 +8538,8 @@
             "Greece",
             "France",
             "Spain"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -7578,7 +8555,8 @@
             "10",
             "50",
             "100"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q08",
@@ -7592,7 +8570,8 @@
             "Bagutete",
             "Baguettte",
             "Baguteet"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q08",
@@ -7606,7 +8585,8 @@
             "France",
             "Germany",
             "Italy"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q08",
@@ -7620,7 +8600,8 @@
             "The Romans",
             "The Egyptians",
             "The Vikings"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q08",
@@ -7634,7 +8615,8 @@
             "Lumipa",
             "Lupmia",
             "Lipuma"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q08",
@@ -7648,7 +8630,8 @@
             "Parsley",
             "Cilantro",
             "Mint"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q08",
@@ -7660,7 +8643,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q08",
@@ -7674,7 +8658,8 @@
             "Lentils",
             "Beans",
             "Peas"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q08",
@@ -7688,7 +8673,8 @@
             "Spain",
             "Mexico",
             "Indonesia"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q08",
@@ -7702,7 +8688,8 @@
             "Tirasimu",
             "Tiramusi",
             "Trimasiu"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q08",
@@ -7716,7 +8703,8 @@
             "Austria",
             "Belgium",
             "Switzerland"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q08",
@@ -7730,7 +8718,8 @@
             "China",
             "Korea",
             "Vietnam"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q08",
@@ -7744,7 +8733,8 @@
             "Rambutan",
             "Mangosteen",
             "Duhat"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q08",
@@ -7758,7 +8748,8 @@
             "Sunday roast",
             "Bangers and mash",
             "Shepherd's pie"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q08",
@@ -7772,7 +8763,8 @@
             "Paeall",
             "Plaeal",
             "Palael"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q08",
@@ -7786,7 +8778,8 @@
             "Parsley",
             "Spinach",
             "Mint"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q08",
@@ -7800,7 +8793,8 @@
             "Doenjang",
             "Miso",
             "Sambal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q08",
@@ -7814,7 +8808,8 @@
             "Fish sauce",
             "Vinegar",
             "Oyster sauce"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q08",
@@ -7828,7 +8823,8 @@
             "Spain",
             "USA",
             "Guatemala"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q08",
@@ -7840,7 +8836,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q08",
@@ -7854,7 +8851,8 @@
             "Pansedal",
             "Padesnal",
             "Padnesal"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q08",
@@ -7868,7 +8866,8 @@
             "Sinigang",
             "Kare-Kare",
             "Adobo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q08",
@@ -7882,7 +8881,8 @@
             "55",
             "150",
             "200"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q08",
@@ -7896,7 +8896,8 @@
             "Sinigang",
             "Lechon",
             "Kare-Kare"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q08",
@@ -7910,7 +8911,8 @@
             "Lumpia",
             "Lechon",
             "Sinigang"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q08",
@@ -7924,7 +8926,8 @@
             "Aluminum foil",
             "Coconut husks",
             "Bamboo"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q08",
@@ -7938,7 +8941,8 @@
             "Hot soup",
             "Grilled meat dish",
             "Rice cake"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q08",
@@ -7952,7 +8956,8 @@
             "Banana",
             "Pineapple",
             "Calamansi"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -7971,7 +8976,8 @@
             "Sorry",
             "Hello",
             "Goodbye"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g2q09",
@@ -7985,7 +8991,8 @@
             "Buenas noches",
             "Buenas tardes",
             "Hola"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q09",
@@ -7999,7 +9006,8 @@
             "Kalsada",
             "Tubig",
             "Langit"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q09",
@@ -8013,7 +9021,8 @@
             "Garcias",
             "Grascia",
             "Gracais"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q09",
@@ -8027,7 +9036,8 @@
             "I miss you",
             "Thank you",
             "Good luck"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g1q09",
@@ -8041,7 +9051,8 @@
             "Cama",
             "Calle",
             "Cocina"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -8057,7 +9068,8 @@
             "Are you hungry?",
             "What did you eat?",
             "Do you like food?"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q09",
@@ -8071,7 +9083,8 @@
             "Apoy",
             "Hangin",
             "Lupa"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q09",
@@ -8085,7 +9098,8 @@
             "Garcias",
             "Grascia",
             "Gracais"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q09",
@@ -8099,7 +9113,8 @@
             "Te quiero",
             "Me gusta",
             "Te extrano"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g1q09",
@@ -8113,7 +9128,8 @@
             "Fuego",
             "Tierra",
             "Aire"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q09",
@@ -8127,7 +9143,8 @@
             "What time is it?",
             "Where are you going?",
             "Can I help you?"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q09",
@@ -8141,7 +9158,8 @@
             "Amoig",
             "Amogi",
             "Aiomg"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q09",
@@ -8155,7 +9173,8 @@
             "To sleep",
             "To drink",
             "To walk"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q09",
@@ -8169,7 +9188,8 @@
             "Good evening",
             "Good afternoon",
             "Goodbye"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -8185,7 +9205,8 @@
             "Pamilya",
             "Kapitbahay",
             "Kapatid"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q09",
@@ -8199,7 +9220,8 @@
             "Buenas tardes",
             "Buenos dias",
             "Hasta luego"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q09",
@@ -8213,7 +9235,8 @@
             "Good morning",
             "Good night",
             "Goodbye"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q09",
@@ -8225,7 +9248,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q09",
@@ -8239,7 +9263,8 @@
             "Fire",
             "Air",
             "Earth"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q09",
@@ -8253,7 +9278,8 @@
             "Cat",
             "Horse",
             "Bird"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q09",
@@ -8267,7 +9293,8 @@
             "Goodbye",
             "Please",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -8283,7 +9310,8 @@
             "Sorry",
             "Hello",
             "Goodbye"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q09",
@@ -8297,7 +9325,8 @@
             "Hello",
             "Sorry",
             "Yes"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q09",
@@ -8311,7 +9340,8 @@
             "Goodbye",
             "Sorry",
             "Thank you"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q09",
@@ -8325,7 +9355,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q09",
@@ -8339,7 +9370,8 @@
             "Goodbye",
             "Sorry",
             "Thanks"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q09",
@@ -8353,7 +9385,8 @@
             "Thanks",
             "Yes",
             "Please"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q09",
@@ -8367,7 +9400,8 @@
             "Hello",
             "Goodbye",
             "Please"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q09",
@@ -8381,7 +9415,8 @@
             "Salamat po",
             "Kumusta ka",
             "Magandang araw"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q09",
@@ -8395,7 +9430,8 @@
             "Good evening",
             "Goodbye",
             "Thank you"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q09",
@@ -8409,7 +9445,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q09",
@@ -8423,7 +9460,8 @@
             "Hello",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q09",
@@ -8437,7 +9475,8 @@
             "Hello",
             "Thank you",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q09",
@@ -8451,7 +9490,8 @@
             "Alaoh",
             "Aolah",
             "Ohala"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q09",
@@ -8465,7 +9505,8 @@
             "Good night",
             "Goodbye",
             "Please"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q09",
@@ -8479,7 +9520,8 @@
             "Good morning",
             "Welcome",
             "Farewell"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q09",
@@ -8493,7 +9535,8 @@
             "Thank you",
             "Goodbye",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q09",
@@ -8507,7 +9550,8 @@
             "Hello",
             "Sorry",
             "Please"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q09",
@@ -8521,7 +9565,8 @@
             "Ni hao",
             "Zai jian",
             "Dui bu qi"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q09",
@@ -8535,7 +9580,8 @@
             "Goodbye",
             "Thank you",
             "Sorry"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q09",
@@ -8549,7 +9595,8 @@
             "One",
             "Two",
             "Five"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q09",
@@ -8563,7 +9610,8 @@
             "Three",
             "Five",
             "Six"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q09",
@@ -8577,7 +9625,8 @@
             "Goodbye",
             "Thank you",
             "Excuse me"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q09",
@@ -8591,7 +9640,8 @@
             "Four",
             "Six",
             "Seven"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q09",
@@ -8605,7 +9655,8 @@
             "You're welcome",
             "Hello",
             "Please come in"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q09",
@@ -8619,7 +9670,8 @@
             "Good morning",
             "Good afternoon",
             "Goodbye"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q09",
@@ -8631,7 +9683,8 @@
           "options": [
             "True",
             "False"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q09",
@@ -8645,7 +9698,8 @@
             "Mahal kita",
             "Je t'aime",
             "Ich liebe dich"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q09",
@@ -8659,7 +9713,8 @@
             "Where are you going?",
             "What is your name?",
             "Goodbye for now"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     },
@@ -8677,7 +9732,81 @@
             "35",
             "45",
             "48"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ043",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 2 plus 2?",
+          "answer": "4",
+          "options": [
+            "4",
+            "3",
+            "5",
+            "22"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ044",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 10 minus 3?",
+          "answer": "7",
+          "options": [
+            "7",
+            "6",
+            "8",
+            "13"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ045",
+          "category": "math",
+          "tier": "basic",
+          "type": "mc",
+          "question": "What is 6 times 2?",
+          "answer": "12",
+          "options": [
+            "12",
+            "8",
+            "10",
+            "14"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ046",
+          "category": "math",
+          "tier": "basic",
+          "type": "tf",
+          "question": "5 is an odd number.",
+          "answer": "True",
+          "options": [
+            "True",
+            "False"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ047",
+          "category": "math",
+          "tier": "basic",
+          "type": "closest",
+          "question": "How many minutes are in one hour?",
+          "answer": "60",
+          "options": [
+            "60",
+            "30",
+            "100",
+            "24"
+          ],
+          "age_band": "junior"
         }
       ],
       "holo": [
@@ -8693,7 +9822,8 @@
             "20",
             "30",
             "40"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g3q10",
@@ -8707,7 +9837,8 @@
             "15",
             "25",
             "40"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g4q10",
@@ -8721,7 +9852,8 @@
             "54",
             "56",
             "72"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k1g5q10",
@@ -8735,7 +9867,38 @@
             "26",
             "35",
             "45"
-          ]
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ048",
+          "category": "math",
+          "tier": "holo",
+          "type": "mc",
+          "question": "What is half of 20?",
+          "answer": "10",
+          "options": [
+            "10",
+            "5",
+            "15",
+            "40"
+          ],
+          "age_band": "junior"
+        },
+        {
+          "id": "tuJ049",
+          "category": "math",
+          "tier": "holo",
+          "type": "mc",
+          "question": "How many sides does a hexagon have?",
+          "answer": "6",
+          "options": [
+            "6",
+            "5",
+            "7",
+            "8"
+          ],
+          "age_band": "junior"
         }
       ],
       "rare": [
@@ -8751,7 +9914,8 @@
             "25",
             "35",
             "40"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g2q10",
@@ -8765,7 +9929,8 @@
             "15",
             "19",
             "21"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g3q10",
@@ -8779,7 +9944,8 @@
             "180km",
             "200km",
             "260km"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g4q10",
@@ -8793,7 +9959,8 @@
             "14cm",
             "21cm",
             "49cm"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k2g5q10",
@@ -8807,7 +9974,8 @@
             "20",
             "40",
             "60"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g1q10",
@@ -8821,7 +9989,8 @@
             "10",
             "14",
             "16"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "super": [
@@ -8837,7 +10006,8 @@
             "11",
             "13",
             "14"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g2q10",
@@ -8851,7 +10021,8 @@
             "3/10",
             "2/5",
             "3/5"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g3q10",
@@ -8865,7 +10036,8 @@
             "5",
             "9",
             "13"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g4q10",
@@ -8879,7 +10051,8 @@
             "14",
             "21",
             "30"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k3g5q10",
@@ -8893,21 +10066,23 @@
             "87",
             "89",
             "90"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g2q10",
           "category": "math",
           "tier": "super",
           "type": "closest",
-          "question": "What is pi rounded to two decimal places?",
-          "answer": "3.14",
+          "question": "What is 50 plus 50?",
+          "answer": "100",
           "options": [
-            "3.14",
-            "3.12",
-            "3.16",
-            "3.18"
-          ]
+            "100",
+            "90",
+            "110",
+            "150"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g3q10",
@@ -8921,7 +10096,8 @@
             "215",
             "245",
             "200"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g4q10",
@@ -8935,7 +10111,8 @@
             "1648",
             "1828",
             "1928"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k4g5q10",
@@ -8949,21 +10126,23 @@
             "11.5",
             "13",
             "10.5"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g1q10",
           "category": "math",
           "tier": "super",
           "type": "closest",
-          "question": "What is the value of pi to two decimal places?",
-          "answer": "3.14",
+          "question": "What is 10 times 10?",
+          "answer": "100",
           "options": [
-            "3.14",
-            "3.12",
-            "3.16",
-            "3.41"
-          ]
+            "100",
+            "20",
+            "1000",
+            "110"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g1q10",
@@ -8977,7 +10156,8 @@
             "72",
             "96",
             "78"
-          ]
+          ],
+          "age_band": "junior"
         }
       ],
       "ultra": [
@@ -8993,21 +10173,23 @@
             "40",
             "60",
             "100"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g3q10",
           "category": "math",
           "tier": "ultra",
           "type": "mc",
-          "question": "What is the formula for the area of a circle?",
-          "answer": "pi × r squared",
+          "question": "Which shape has exactly 3 sides?",
+          "answer": "Triangle",
           "options": [
-            "pi × r squared",
-            "2 × pi × r",
-            "pi × d",
-            "r squared"
-          ]
+            "Triangle",
+            "Square",
+            "Circle",
+            "Pentagon"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g4q10",
@@ -9021,35 +10203,38 @@
             "9",
             "10",
             "13"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k5g5q10",
           "category": "math",
           "tier": "ultra",
           "type": "closest",
-          "question": "What is the value of 9 factorial (9!)?",
-          "answer": "362880",
+          "question": "What is 30 plus 30?",
+          "answer": "60",
           "options": [
-            "362880",
-            "40320",
-            "725760",
-            "120000"
-          ]
+            "60",
+            "50",
+            "33",
+            "90"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g2q10",
           "category": "math",
           "tier": "ultra",
           "type": "closest",
-          "question": "How many sides does a dodecagon have?",
-          "answer": "12",
+          "question": "Which shape has 4 equal sides and 4 right angles?",
+          "answer": "Square",
           "options": [
-            "12",
-            "10",
-            "14",
-            "20"
-          ]
+            "Square",
+            "Triangle",
+            "Circle",
+            "Diamond"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g3q10",
@@ -9063,21 +10248,23 @@
             "7",
             "8",
             "11"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g4q10",
           "category": "math",
           "tier": "ultra",
           "type": "closest",
-          "question": "Euler's number 'e' is approximately what value?",
-          "answer": "2.72",
+          "question": "What is 12 plus 12?",
+          "answer": "24",
           "options": [
-            "2.72",
-            "1.41",
-            "3.14",
-            "1.62"
-          ]
+            "24",
+            "22",
+            "144",
+            "21"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k6g5q10",
@@ -9091,7 +10278,8 @@
             "111",
             "131",
             "144"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g1q10",
@@ -9105,7 +10293,8 @@
             "11",
             "13",
             "14"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g2q10",
@@ -9119,7 +10308,8 @@
             "1",
             "3",
             "0"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g3q10",
@@ -9133,7 +10323,8 @@
             "512",
             "2048",
             "1000"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g4q10",
@@ -9147,7 +10338,8 @@
             "30000",
             "3000000",
             "1000000"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k7g5q10",
@@ -9161,7 +10353,8 @@
             "13",
             "17",
             "25"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g1q10",
@@ -9175,7 +10368,8 @@
             "64",
             "81",
             "63"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g2q10",
@@ -9189,7 +10383,8 @@
             "0.14",
             "0.4",
             "0.5"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g3q10",
@@ -9203,7 +10398,8 @@
             "62",
             "82",
             "144"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g4q10",
@@ -9217,21 +10413,23 @@
             "72",
             "90",
             "18"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k8g5q10",
           "category": "math",
           "tier": "ultra",
           "type": "closest",
-          "question": "What is pi multiplied by 10 (to two decimals)?",
-          "answer": "31.42",
+          "question": "What is 50 minus 25?",
+          "answer": "25",
           "options": [
-            "31.42",
-            "30.14",
-            "33.14",
-            "28.62"
-          ]
+            "25",
+            "15",
+            "35",
+            "75"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g1q10",
@@ -9245,7 +10443,8 @@
             "36",
             "48",
             "56"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g2q10",
@@ -9259,21 +10458,23 @@
             "63",
             "43",
             "57"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g3q10",
           "category": "math",
           "tier": "ultra",
           "type": "closest",
-          "question": "What is the value of 7 factorial (7!)?",
-          "answer": "5040",
+          "question": "What is 60 plus 40?",
+          "answer": "100",
           "options": [
-            "5040",
-            "720",
-            "40320",
-            "2520"
-          ]
+            "100",
+            "90",
+            "110",
+            "2400"
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g4q10",
@@ -9287,7 +10488,8 @@
             "72",
             "99",
             "89"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k9g5q10",
@@ -9301,7 +10503,8 @@
             "36",
             "60",
             "144"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g1q10",
@@ -9315,7 +10518,8 @@
             "80",
             "20",
             "18"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g2q10",
@@ -9329,7 +10533,8 @@
             "80",
             "150",
             "200"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g3q10",
@@ -9343,7 +10548,8 @@
             "115",
             "135",
             "145"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g4q10",
@@ -9357,7 +10563,8 @@
             "133",
             "153",
             "150"
-          ]
+          ],
+          "age_band": "junior"
         },
         {
           "id": "k10g5q10",
@@ -9371,7 +10578,8 @@
             "421",
             "461",
             "484"
-          ]
+          ],
+          "age_band": "junior"
         }
       ]
     }
@@ -9391,7 +10599,8 @@
           "Pikachu, Eevee, Meowth",
           "Caterpie, Pidgey, Rattata",
           "Oddish, Growlithe, Poliwag"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_k2",
@@ -9406,7 +10615,8 @@
           "Team Magma",
           "Team Plasma",
           "Team Flare"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_k3",
@@ -9419,7 +10629,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_k4",
@@ -9434,7 +10645,8 @@
           "Cerulean City",
           "Cinnabar Island",
           "Saffron City"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_k5",
@@ -9449,7 +10661,8 @@
           "150",
           "152",
           "160"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_k6",
@@ -9464,7 +10677,150 @@
           "Mew",
           "Mewtwo",
           "Dialga"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ001",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "How many gyms are there in the Kanto region?",
+        "answer": "8",
+        "options": [
+          "8",
+          "6",
+          "10",
+          "16"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ002",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What type is Charizard?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Water",
+          "Grass",
+          "Electric"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ003",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Eevee can evolve into many different Pokemon.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ004",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Who is the gym leader of Pewter City?",
+        "answer": "Brock",
+        "options": [
+          "Brock",
+          "Misty",
+          "Lt. Surge",
+          "Erika"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ005",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Kanto Pokemon: M-A-G-I-K-A-R-P",
+        "answer": "Magikarp",
+        "options": [
+          "Magikarp",
+          "Magkiarp",
+          "Maigkarp",
+          "Magkairp"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ006",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What does Magikarp evolve into?",
+        "answer": "Gyarados",
+        "options": [
+          "Gyarados",
+          "Lapras",
+          "Dratini",
+          "Vaporeon"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ007",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Charizard is the final form of which starter?",
+        "answer": "Charmander",
+        "options": [
+          "Charmander",
+          "Squirtle",
+          "Bulbasaur",
+          "Pikachu"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ008",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is your final rival in Kanto's original games?",
+        "answer": "Blue",
+        "options": [
+          "Blue",
+          "Silver",
+          "Red",
+          "Hop"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ009",
+        "region": 1,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "On which Kanto island was Mewtwo created?",
+        "answer": "Cinnabar Island",
+        "options": [
+          "Cinnabar Island",
+          "Seafoam Islands",
+          "Cerulean Cave",
+          "Mt. Moon"
+        ],
+        "age_band": "junior"
       }
     ],
     "2": [
@@ -9481,7 +10837,8 @@
           "Treecko, Torchic, Mudkip",
           "Turtwig, Chimchar, Piplup",
           "Snivy, Tepig, Oshawott"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_j2",
@@ -9496,7 +10853,8 @@
           "Ho-Oh",
           "Suicune",
           "Kyogre"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_j3",
@@ -9509,7 +10867,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_j4",
@@ -9524,7 +10883,8 @@
           "Professor Oak",
           "Professor Birch",
           "Professor Rowan"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_j5",
@@ -9539,7 +10899,8 @@
           "Articuno, Zapdos, Moltres",
           "Uxie, Mesprit, Azelf",
           "Cobalion, Terrakion, Virizion"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_j6",
@@ -9554,7 +10915,150 @@
           "Bell Tower",
           "Tin Tower",
           "Crystal Tower"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ010",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "How many gym badges are there in Johto?",
+        "answer": "8",
+        "options": [
+          "8",
+          "6",
+          "10",
+          "16"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ011",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Johto starter: C-Y-N-D-A-Q-U-I-L",
+        "answer": "Cyndaquil",
+        "options": [
+          "Cyndaquil",
+          "Cyndauiql",
+          "Cyndaqiul",
+          "Cyndauqil"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ012",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What type is Cyndaquil?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Water",
+          "Grass",
+          "Electric"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ013",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What is the rival's name in Johto?",
+        "answer": "Silver",
+        "options": [
+          "Silver",
+          "Blue",
+          "Wally",
+          "Hop"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ014",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Togepi is an Egg-type Pokemon.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ015",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Falkner, the first Johto gym leader, uses which type?",
+        "answer": "Flying",
+        "options": [
+          "Flying",
+          "Bug",
+          "Normal",
+          "Rock"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ016",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is Cyndaquil's final evolution?",
+        "answer": "Typhlosion",
+        "options": [
+          "Typhlosion",
+          "Charizard",
+          "Magmortar",
+          "Infernape"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ017",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Johto champion?",
+        "answer": "Lance",
+        "options": [
+          "Lance",
+          "Red",
+          "Steven",
+          "Cynthia"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ018",
+        "region": 2,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "In Pokemon Gold/Silver, how many gym badges total can you collect?",
+        "answer": "16",
+        "options": [
+          "16",
+          "8",
+          "10",
+          "12"
+        ],
+        "age_band": "junior"
       }
     ],
     "3": [
@@ -9571,7 +11075,8 @@
           "Turtwig, Chimchar, Piplup",
           "Chikorita, Cyndaquil, Totodile",
           "Snivy, Tepig, Oshawott"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_h2",
@@ -9586,7 +11091,8 @@
           "Team Rocket and Plasma",
           "Team Flare and Skull",
           "Team Yell and Macro"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_h3",
@@ -9599,7 +11105,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_h4",
@@ -9614,7 +11121,8 @@
           "Kyogre",
           "Rayquaza",
           "Regice"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_h5",
@@ -9629,7 +11137,8 @@
           "Z-Moves",
           "Dynamax",
           "Terastallization"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_h6",
@@ -9637,14 +11146,157 @@
         "category": "pokemon",
         "tier": "ultra",
         "type": "mc",
-        "question": "What is the ancient legend involving Kyogre and Groudon?",
-        "answer": "Primal Reversion",
+        "question": "What special form do Kyogre and Groudon take in the Hoenn remakes?",
+        "answer": "Primal form",
         "options": [
-          "Primal Reversion",
-          "Mega Evolution",
-          "Origin Form",
-          "Delta Episode"
-        ]
+          "Primal form",
+          "Mega form",
+          "Dynamax form",
+          "Tera form"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ019",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Hoenn starter: T-O-R-C-H-I-C",
+        "answer": "Torchic",
+        "options": [
+          "Torchic",
+          "Torchcih",
+          "Torihcc",
+          "Torcihc"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ020",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What type is Torchic?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Water",
+          "Grass",
+          "Fighting"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ021",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Mudkip is what type?",
+        "answer": "Water",
+        "options": [
+          "Water",
+          "Ground",
+          "Fire",
+          "Grass"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ022",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Treecko is what type?",
+        "answer": "Grass",
+        "options": [
+          "Grass",
+          "Water",
+          "Fire",
+          "Dragon"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ023",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Pokemon Contests are a feature of Hoenn.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ024",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is Mudkip's final evolution?",
+        "answer": "Swampert",
+        "options": [
+          "Swampert",
+          "Feraligatr",
+          "Empoleon",
+          "Greninja"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ025",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Pokemon professor of Hoenn?",
+        "answer": "Professor Birch",
+        "options": [
+          "Professor Birch",
+          "Professor Oak",
+          "Professor Elm",
+          "Professor Rowan"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ026",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Hoenn champion?",
+        "answer": "Steven Stone",
+        "options": [
+          "Steven Stone",
+          "Lance",
+          "Cynthia",
+          "Wallace"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ027",
+        "region": 3,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is Rayquaza's signature move?",
+        "answer": "Dragon Ascent",
+        "options": [
+          "Dragon Ascent",
+          "Dragon Claw",
+          "Outrage",
+          "Sky Attack"
+        ],
+        "age_band": "junior"
       }
     ],
     "4": [
@@ -9661,7 +11313,8 @@
           "Snivy, Tepig, Oshawott",
           "Rowlet, Litten, Popplio",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_s2",
@@ -9676,7 +11329,8 @@
           "Palkia",
           "Giratina",
           "Arceus"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_s3",
@@ -9689,7 +11343,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_s4",
@@ -9704,7 +11359,8 @@
           "Shadow Realm",
           "Dark World",
           "Reverse World"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_s5",
@@ -9719,7 +11375,8 @@
           "Dialga, Palkia, Giratina",
           "Articuno, Zapdos, Moltres",
           "Raikou, Entei, Suicune"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_s6",
@@ -9734,7 +11391,150 @@
           "Mt. Silver",
           "Mt. Pyre",
           "Mt. Chimney"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ028",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Sinnoh starter: T-U-R-T-W-I-G",
+        "answer": "Turtwig",
+        "options": [
+          "Turtwig",
+          "Tutrwig",
+          "Turwtig",
+          "Tutriwg"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ029",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Piplup is what type?",
+        "answer": "Water",
+        "options": [
+          "Water",
+          "Ice",
+          "Steel",
+          "Flying"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ030",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "Chimchar is what type?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Fighting",
+          "Dark",
+          "Grass"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ031",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Sinnoh has many snowy mountain areas.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ032",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is Piplup's final evolution?",
+        "answer": "Empoleon",
+        "options": [
+          "Empoleon",
+          "Swampert",
+          "Samurott",
+          "Greninja"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ033",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What is the evil team in Sinnoh called?",
+        "answer": "Team Galactic",
+        "options": [
+          "Team Galactic",
+          "Team Rocket",
+          "Team Magma",
+          "Team Plasma"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ034",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Sinnoh champion?",
+        "answer": "Cynthia",
+        "options": [
+          "Cynthia",
+          "Lance",
+          "Steven",
+          "Diantha"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ035",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the Pokemon professor of Sinnoh?",
+        "answer": "Professor Rowan",
+        "options": [
+          "Professor Rowan",
+          "Professor Birch",
+          "Professor Elm",
+          "Professor Oak"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ036",
+        "region": 4,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What orb item powers up Dialga's Steel and Dragon moves?",
+        "answer": "Adamant Orb",
+        "options": [
+          "Adamant Orb",
+          "Lustrous Orb",
+          "Griseous Orb",
+          "Soul Heart"
+        ],
+        "age_band": "junior"
       }
     ],
     "5": [
@@ -9751,7 +11551,8 @@
           "Chespin, Fennekin, Froakie",
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_u2",
@@ -9766,7 +11567,8 @@
           "N",
           "Lysandre",
           "Cyrus"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_u3",
@@ -9779,7 +11581,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_u4",
@@ -9794,7 +11597,8 @@
           "Fire and Thunder",
           "Past and Future",
           "Land and Sea"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_u5",
@@ -9809,7 +11613,8 @@
           "Zygarde",
           "Rayquaza",
           "Giratina"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_u6",
@@ -9817,14 +11622,157 @@
         "category": "pokemon",
         "tier": "ultra",
         "type": "mc",
-        "question": "What split the original dragon into Reshiram and Zekrom?",
-        "answer": "Twin heroes seeking truth and ideals",
+        "question": "Reshiram stands for truth. What does Zekrom stand for?",
+        "answer": "Ideals",
         "options": [
-          "Twin heroes seeking truth and ideals",
-          "One king",
-          "Three sages",
-          "Four guardians"
-        ]
+          "Ideals",
+          "Justice",
+          "Friendship",
+          "Honor"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ037",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Unova starter: T-E-P-I-G",
+        "answer": "Tepig",
+        "options": [
+          "Tepig",
+          "Tegip",
+          "Teigp",
+          "Tpgie"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ038",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What type is Tepig?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Fighting",
+          "Normal",
+          "Dark"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ039",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "tf",
+        "question": "Unova is the first Pokemon region inspired by a US city.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ040",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Tepig's final evolution is which Pokemon?",
+        "answer": "Emboar",
+        "options": [
+          "Emboar",
+          "Infernape",
+          "Blaziken",
+          "Typhlosion"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ041",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Snivy's final evolution is which Pokemon?",
+        "answer": "Serperior",
+        "options": [
+          "Serperior",
+          "Sceptile",
+          "Decidueye",
+          "Meganium"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ042",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Oshawott's final evolution is which Pokemon?",
+        "answer": "Samurott",
+        "options": [
+          "Samurott",
+          "Empoleon",
+          "Greninja",
+          "Feraligatr"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ043",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What was special about Generation 5's release?",
+        "answer": "All-new Pokemon (no older ones at first)",
+        "options": [
+          "All-new Pokemon (no older ones at first)",
+          "Online battling started",
+          "First mobile game",
+          "First open world"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ044",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "When Kyurem fuses with Reshiram, what form does it become?",
+        "answer": "White Kyurem",
+        "options": [
+          "White Kyurem",
+          "Black Kyurem",
+          "Original Dragon",
+          "Ice Kyurem"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ045",
+        "region": 5,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "When Kyurem fuses with Zekrom, what form does it become?",
+        "answer": "Black Kyurem",
+        "options": [
+          "Black Kyurem",
+          "White Kyurem",
+          "Shadow Kyurem",
+          "Storm Kyurem"
+        ],
+        "age_band": "junior"
       }
     ],
     "6": [
@@ -9841,7 +11789,8 @@
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble",
           "Sprigatito, Fuecoco, Quaxly"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_ka2",
@@ -9856,7 +11805,8 @@
           "Z-Moves",
           "Dynamax",
           "Terastallization"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_ka3",
@@ -9869,7 +11819,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_ka4",
@@ -9884,7 +11835,8 @@
           "Control legendaries",
           "Rule the world",
           "Steal all Pokemon"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_ka5",
@@ -9899,7 +11851,8 @@
           "The Infinity Edge",
           "The Life Orb",
           "The Death Ray"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_ka6",
@@ -9914,7 +11867,152 @@
           "Found eternal life",
           "Made a deal with Yveltal",
           "Born immortal"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ046",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Kalos starter: F-E-N-N-E-K-I-N",
+        "answer": "Fennekin",
+        "options": [
+          "Fennekin",
+          "Fennekni",
+          "Fenkenin",
+          "Fennikne"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ047",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "mc",
+        "question": "What type is Fennekin?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Psychic",
+          "Fairy",
+          "Dark"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ048",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Fennekin's final evolution is which Pokemon?",
+        "answer": "Delphox",
+        "options": [
+          "Delphox",
+          "Pyroar",
+          "Talonflame",
+          "Greninja"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ049",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Froakie's final evolution is which Pokemon?",
+        "answer": "Greninja",
+        "options": [
+          "Greninja",
+          "Politoed",
+          "Empoleon",
+          "Samurott"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ050",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Chespin's final evolution is which Pokemon?",
+        "answer": "Chesnaught",
+        "options": [
+          "Chesnaught",
+          "Serperior",
+          "Sceptile",
+          "Torterra"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ051",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What new type was added in Generation 6?",
+        "answer": "Fairy",
+        "options": [
+          "Fairy",
+          "Dark",
+          "Steel",
+          "Dragon"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ052",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "For how many years did AZ search for his lost Floette?",
+        "answer": "3000 years",
+        "options": [
+          "3000 years",
+          "100 years",
+          "500 years",
+          "10000 years"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ053",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Kalos region is based on which real country?",
+        "answer": "France",
+        "options": [
+          "France",
+          "Italy",
+          "Spain",
+          "Germany"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ054",
+        "region": 6,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What does a Mega Stone allow a Pokemon to do?",
+        "answer": "Mega Evolve",
+        "options": [
+          "Mega Evolve",
+          "Dynamax",
+          "Terastallize",
+          "Z-Move"
+        ],
+        "age_band": "junior"
       }
     ],
     "7": [
@@ -9931,7 +12029,8 @@
           "Grookey, Scorbunny, Sobble",
           "Sprigatito, Fuecoco, Quaxly",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_al2",
@@ -9946,7 +12045,8 @@
           "Contests",
           "Showcases",
           "Battle Facilities"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_al3",
@@ -9959,7 +12059,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_al4",
@@ -9974,7 +12075,8 @@
           "Kanto, Johto, Hoenn, Sinnoh",
           "North, South, East, West",
           "Sun, Moon, Star, Cloud"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_al5",
@@ -9989,7 +12091,8 @@
           "Dark Portal",
           "Shadow Gate",
           "Dimension Rift"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_al6",
@@ -10004,7 +12107,152 @@
           "Arceus",
           "Dialga",
           "Necrozma"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ055",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "rare",
+        "type": "unscramble",
+        "question": "Unscramble this Alola starter: R-O-W-L-E-T",
+        "answer": "Rowlet",
+        "options": [
+          "Rowlet",
+          "Rowtel",
+          "Rowelt",
+          "Rowetl"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ056",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What type is Litten?",
+        "answer": "Fire",
+        "options": [
+          "Fire",
+          "Dark",
+          "Fighting",
+          "Normal"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ057",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Popplio's final evolution is which Pokemon?",
+        "answer": "Primarina",
+        "options": [
+          "Primarina",
+          "Greninja",
+          "Samurott",
+          "Empoleon"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ058",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Instead of regular gyms, Alola uses what?",
+        "answer": "Island Trials",
+        "options": [
+          "Island Trials",
+          "Pokemon Contests",
+          "Pokemon Showcases",
+          "Ranked Battles"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ059",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Alola is based on which real-world place?",
+        "answer": "Hawaii",
+        "options": [
+          "Hawaii",
+          "Caribbean",
+          "Polynesia",
+          "Florida"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ060",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "How many Tapu guardian Pokemon protect Alola's islands?",
+        "answer": "4",
+        "options": [
+          "4",
+          "3",
+          "5",
+          "7"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ061",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Cosmog's Sun-game evolution becomes which legendary?",
+        "answer": "Solgaleo",
+        "options": [
+          "Solgaleo",
+          "Lunala",
+          "Necrozma",
+          "Tapu Koko"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ062",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Cosmog's Moon-game evolution becomes which legendary?",
+        "answer": "Lunala",
+        "options": [
+          "Lunala",
+          "Solgaleo",
+          "Necrozma",
+          "Cresselia"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ063",
+        "region": 7,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Where do Ultra Beasts originally come from?",
+        "answer": "Another dimension",
+        "options": [
+          "Another dimension",
+          "Outer space",
+          "The deep ocean",
+          "Ancient ruins"
+        ],
+        "age_band": "junior"
       }
     ],
     "8": [
@@ -10021,7 +12269,8 @@
           "Sprigatito, Fuecoco, Quaxly",
           "Rowlet, Litten, Popplio",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_g2",
@@ -10036,7 +12285,8 @@
           "Mega Evolution",
           "Z-Moves",
           "Terastallization"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_g3",
@@ -10049,7 +12299,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_g4",
@@ -10064,7 +12315,8 @@
           "Truth and Ideals",
           "Life and Death",
           "Sun and Moon"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_g5",
@@ -10079,7 +12331,8 @@
           "The Great Calamity",
           "The Black Storm",
           "The Dark Eclipse"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_g6",
@@ -10094,7 +12347,152 @@
           "Leon created it",
           "Scientists made it",
           "Kings summoned it"
-        ]
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ064",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "unscramble",
+        "question": "Unscramble this Galar starter: G-R-O-O-K-E-Y",
+        "answer": "Grookey",
+        "options": [
+          "Grookey",
+          "Grooekey",
+          "Grokoey",
+          "Greokoy"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ065",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What type is Sobble?",
+        "answer": "Water",
+        "options": [
+          "Water",
+          "Ice",
+          "Dragon",
+          "Psychic"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ066",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Galar is based on which real country?",
+        "answer": "United Kingdom",
+        "options": [
+          "United Kingdom",
+          "Ireland",
+          "Germany",
+          "Netherlands"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ067",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "Who is the undefeated Galar champion?",
+        "answer": "Leon",
+        "options": [
+          "Leon",
+          "Hop",
+          "Sonia",
+          "Raihan"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ068",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the rarer, more powerful version of Dynamax called?",
+        "answer": "Gigantamax",
+        "options": [
+          "Gigantamax",
+          "Mega-Dynamax",
+          "Ultra Dynamax",
+          "Maximax"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ069",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Who is the player's main rival in Sword and Shield?",
+        "answer": "Hop",
+        "options": [
+          "Hop",
+          "Bede",
+          "Marnie",
+          "Silver"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ070",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which Pokemon ends Galar's Darkest Day threat?",
+        "answer": "Zacian",
+        "options": [
+          "Zacian",
+          "Calyrex",
+          "Eternatus",
+          "Solgaleo"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ071",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Galar's stadium battles use which mechanic?",
+        "answer": "Dynamax",
+        "options": [
+          "Dynamax",
+          "Mega Evolution",
+          "Z-Moves",
+          "Terastallization"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ072",
+        "region": 8,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which DLC for Sword/Shield introduced Calyrex?",
+        "answer": "The Crown Tundra",
+        "options": [
+          "The Crown Tundra",
+          "The Isle of Armor",
+          "Crown Cavern",
+          "Sword Strike"
+        ],
+        "age_band": "junior"
       }
     ],
     "9": [
@@ -10111,7 +12509,8 @@
           "Rowlet, Litten, Popplio",
           "Grookey, Scorbunny, Sobble",
           "Chespin, Fennekin, Froakie"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_p2",
@@ -10126,7 +12525,8 @@
           "Mega Evolution",
           "Z-Moves",
           "Dynamax"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_p3",
@@ -10139,7 +12539,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_p4",
@@ -10147,14 +12548,15 @@
         "category": "pokemon",
         "tier": "super",
         "type": "mc",
-        "question": "What are the 3 storylines in Scarlet and Violet?",
-        "answer": "Victory Road, Starfall Street, Path of Legends",
+        "question": "Pokemon Scarlet and Violet take place in which region?",
+        "answer": "Paldea",
         "options": [
-          "Victory Road, Starfall Street, Path of Legends",
-          "Gym, Plasma, Trials",
-          "Main, Side, True",
-          "Battle, Catch, Explore"
-        ]
+          "Paldea",
+          "Galar",
+          "Kalos",
+          "Alola"
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_p5",
@@ -10169,7 +12571,8 @@
           "Dark Hollow",
           "Zero Gate",
           "The Abyss"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_p6",
@@ -10177,14 +12580,159 @@
         "category": "pokemon",
         "tier": "ultra",
         "type": "mc",
-        "question": "What is the true identity of professors Sada and Turo in Area Zero?",
-        "answer": "AI copies of the real professors",
+        "question": "What special place at the bottom of Paldea's giant crater do you explore?",
+        "answer": "Area Zero",
         "options": [
-          "AI copies of the real professors",
-          "Legendary Pokemon",
-          "Ancient kings",
-          "Team Star leaders"
-        ]
+          "Area Zero",
+          "Distortion World",
+          "Ultra Space",
+          "Mirage Island"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ073",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "unscramble",
+        "question": "Unscramble this Paldea starter: S-P-R-I-G-A-T-I-T-O",
+        "answer": "Sprigatito",
+        "options": [
+          "Sprigatito",
+          "Spritagito",
+          "Sprigaotit",
+          "Spirgatito"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ074",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What type is Sprigatito?",
+        "answer": "Grass",
+        "options": [
+          "Grass",
+          "Fire",
+          "Water",
+          "Fairy"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ075",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "What type is Quaxly?",
+        "answer": "Water",
+        "options": [
+          "Water",
+          "Flying",
+          "Normal",
+          "Fighting"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ076",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Paldea is based on which real country?",
+        "answer": "Spain",
+        "options": [
+          "Spain",
+          "Italy",
+          "Portugal",
+          "France"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ077",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What battle mechanic is new to Scarlet and Violet?",
+        "answer": "Terastallization",
+        "options": [
+          "Terastallization",
+          "Dynamax",
+          "Z-Moves",
+          "Mega Evolution"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ078",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Who is the player's rival/friend in Paldea?",
+        "answer": "Nemona",
+        "options": [
+          "Nemona",
+          "Penny",
+          "Arven",
+          "Iono"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ079",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the Scarlet game's school called?",
+        "answer": "Naranja Academy",
+        "options": [
+          "Naranja Academy",
+          "Uva Academy",
+          "Citrus Academy",
+          "Iberia Academy"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ080",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Who is the secret leader of Team Star?",
+        "answer": "Penny",
+        "options": [
+          "Penny",
+          "Nemona",
+          "Arven",
+          "Mela"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ081",
+        "region": 9,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Koraidon and Miraidon represent what?",
+        "answer": "Past and Future",
+        "options": [
+          "Past and Future",
+          "Land and Sea",
+          "Day and Night",
+          "Truth and Ideals"
+        ],
+        "age_band": "junior"
       }
     ],
     "10": [
@@ -10201,7 +12749,8 @@
           "Individual strength",
           "Family loyalty",
           "National pride"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_pi2",
@@ -10216,7 +12765,8 @@
           "Andres Bonifacio",
           "Emilio Aguinaldo",
           "Lapu-Lapu"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_pi3",
@@ -10229,7 +12779,8 @@
         "options": [
           "True",
           "False"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_pi4",
@@ -10244,7 +12795,8 @@
           "Palawan, Cebu, Davao",
           "Manila, Cebu, Mindanao",
           "North, Central, South"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_pi5",
@@ -10259,7 +12811,8 @@
           "Alibata",
           "Kulitan",
           "Badlit"
-        ]
+        ],
+        "age_band": "junior"
       },
       {
         "id": "ct_pi6",
@@ -10267,14 +12820,157 @@
         "category": "filipino",
         "tier": "ultra",
         "type": "mc",
-        "question": "Why is Lapu-Lapu considered the first Filipino hero?",
-        "answer": "He defeated Magellan at the Battle of Mactan in 1521",
+        "question": "Who defeated Ferdinand Magellan in 1521?",
+        "answer": "Lapu-Lapu",
         "options": [
-          "He defeated Magellan at the Battle of Mactan in 1521",
-          "Wrote the constitution",
-          "Led EDSA revolution",
-          "Founded Manila"
-        ]
+          "Lapu-Lapu",
+          "Jose Rizal",
+          "Andres Bonifacio",
+          "Emilio Aguinaldo"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ082",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "mc",
+        "question": "About how many Pokemon exist as of Generation 9?",
+        "answer": "Over 1000",
+        "options": [
+          "Over 1000",
+          "About 500",
+          "About 250",
+          "About 2000"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ083",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "super",
+        "type": "tf",
+        "question": "There are more than 9 generations of Pokemon games.",
+        "answer": "True",
+        "options": [
+          "True",
+          "False"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ084",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the heaviest Pokemon in Generation 1?",
+        "answer": "Snorlax",
+        "options": [
+          "Snorlax",
+          "Charizard",
+          "Gyarados",
+          "Dragonite"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ085",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "How many Pokemon can a trainer carry on their team at one time?",
+        "answer": "6",
+        "options": [
+          "6",
+          "4",
+          "5",
+          "10"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ086",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "Which Pokemon is widely considered the franchise's mascot?",
+        "answer": "Pikachu",
+        "options": [
+          "Pikachu",
+          "Eevee",
+          "Mewtwo",
+          "Charizard"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ087",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What is the longest Pokemon by length (over 14 meters)?",
+        "answer": "Wailord",
+        "options": [
+          "Wailord",
+          "Onix",
+          "Gyarados",
+          "Steelix"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ088",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "How many starter Pokemon types appear in most regions?",
+        "answer": "3 (Grass, Fire, Water)",
+        "options": [
+          "3 (Grass, Fire, Water)",
+          "2 (Fire, Water)",
+          "4 (incl. Electric)",
+          "5 (incl. Dragon)"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ089",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "mc",
+        "question": "What was the first Pokemon ever designed by Game Freak?",
+        "answer": "Rhydon",
+        "options": [
+          "Rhydon",
+          "Pikachu",
+          "Bulbasaur",
+          "Mew"
+        ],
+        "age_band": "junior"
+      },
+      {
+        "id": "ctuJ090",
+        "region": 10,
+        "category": "pokemon",
+        "tier": "ultra",
+        "type": "unscramble",
+        "question": "Unscramble the Pokemon device: P-O-K-E-D-E-X",
+        "answer": "Pokedex",
+        "options": [
+          "Pokedex",
+          "Pokedxe",
+          "Pokdeex",
+          "Pkoedex"
+        ],
+        "age_band": "junior"
       }
     ]
   },
@@ -10291,7 +12987,8 @@
         "Maya Bird",
         "Kalapati",
         "Tikling"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb02",
@@ -10303,7 +13000,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb03",
@@ -10317,7 +13015,8 @@
         "Tahanan",
         "Magulang",
         "Kaibigan"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb04",
@@ -10331,7 +13030,8 @@
         "Osaka",
         "Kyoto",
         "Hiroshima"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb05",
@@ -10343,7 +13043,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb06",
@@ -10357,7 +13058,8 @@
         "Asia",
         "Europe",
         "Australia"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb07",
@@ -10371,7 +13073,8 @@
         "Venus",
         "Mars",
         "Earth"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb08",
@@ -10383,7 +13086,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb09",
@@ -10397,7 +13101,8 @@
         "6",
         "10",
         "12"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb10",
@@ -10411,7 +13116,8 @@
         "Beauxbatons",
         "Durmstrang",
         "Ilvermorny"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb11",
@@ -10425,7 +13131,8 @@
         "Fox",
         "Owl",
         "Snake"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb12",
@@ -10437,7 +13144,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb13",
@@ -10451,7 +13159,8 @@
         "Fire",
         "Water",
         "Normal"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb14",
@@ -10463,7 +13172,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb15",
@@ -10477,7 +13187,8 @@
         "Blue",
         "Red",
         "Green"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb16",
@@ -10491,7 +13202,8 @@
         "Narnia",
         "Wakanda",
         "Agrabah"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb17",
@@ -10503,7 +13215,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb18",
@@ -10517,7 +13230,8 @@
         "Pizza",
         "Spaghetti",
         "Cookies"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb19",
@@ -10531,7 +13245,8 @@
         "6",
         "7",
         "11"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb20",
@@ -10543,7 +13258,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb21",
@@ -10557,7 +13273,8 @@
         "Brazil",
         "Argentina",
         "Italy"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb22",
@@ -10571,7 +13288,8 @@
         "USA",
         "France",
         "Greece"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb23",
@@ -10583,7 +13301,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb24",
@@ -10597,7 +13316,8 @@
         "Tomato",
         "Onion",
         "Lime"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb25",
@@ -10611,7 +13331,8 @@
         "Good night",
         "Good afternoon",
         "Goodbye"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb26",
@@ -10623,7 +13344,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb27",
@@ -10637,7 +13359,8 @@
         "Fuego",
         "Tierra",
         "Viento"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb28",
@@ -10651,7 +13374,8 @@
         "124",
         "132",
         "148"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb29",
@@ -10663,7 +13387,8 @@
       "options": [
         "True",
         "False"
-      ]
+      ],
+      "age_band": "junior"
     },
     {
       "id": "pb30",
@@ -10677,7 +13402,8 @@
         "53",
         "73",
         "67"
-      ]
+      ],
+      "age_band": "junior"
     }
   ]
 }
