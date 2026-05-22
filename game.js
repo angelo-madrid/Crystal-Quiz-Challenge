@@ -74,6 +74,12 @@ const CATEGORY_LABELS = {
 
 const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣'];
 
+// ── PHASE 1 TEST BUILD GATE ──────────────────────────────────
+// Step 1.6: the engine is being tested on Regions 1-2 only. Bump this when
+// Regions 3+ are validated. Every code path that would advance past this
+// region must first check it and route to showTestBuildComplete() instead.
+const MAX_PLAYABLE_REGION = 2;
+
 // ── REGION DATA ──────────────────────────────────────────────
 const REGIONS = [
   { id:1,  name:'Kanto',    theme:'The Beginning',      emoji:'🌿', badge:'r1', baseCrystals:100, speedMax:50,   pokeball:300,  badgeMin:200 },
@@ -124,10 +130,13 @@ let STATE = {
   answered: false,
   timerInt: null,
   timeLeft: 20,
+  totalTime: 20,                // Phase 1 step 1.5: tracked so TIME/FREEZE can adjust the bar correctly
   gymCrystals: 0,
   gymCorrect: 0,
   abilityUsedThisGym: false,
   pendingAbilityPokemon: null,
+  // 1.5: single-question modifiers set by an ability, consumed on next answer
+  pendingMods: { multiplier: 1, doubleOrNothing: false, retry: false, shield: false },
   // multiplayer
   isHost: false,
   roomCode: '',
@@ -730,6 +739,8 @@ let REGIONAL_CATCH_STATE = {
 };
 
 async function startRegionalCatch(regionId) {
+  // 1.6: defensive — never run a regional catch for an out-of-scope region.
+  if (regionId > MAX_PLAYABLE_REGION) { showTestBuildComplete(); return; }
   // Phase 1 step 1.4: ensure pokemon.json is loaded before rendering the grid.
   await loadPokemon();
 
@@ -1048,7 +1059,35 @@ function showRegionalCatchResult(caught) {
 async function finishRegionalCatch() {
   STATE.save.updated_at = new Date().toISOString();
   await dbSave(STATE.player.id, STATE.save);
+
+  // 1.6: if the just-finished region is the final playable one in this test
+  // build (Region 2 today), surface the celebratory test-build lid instead
+  // of dumping the kid back onto a map of locked regions.
+  const justFinished = REGIONAL_CATCH_STATE && REGIONAL_CATCH_STATE.region;
+  const fullyClearedRegion = justFinished
+    && ((STATE.save.regions || {})[justFinished.id]?.gymsCompleted || []).length >= 5;
+  if (fullyClearedRegion && justFinished.id >= MAX_PLAYABLE_REGION) {
+    showTestBuildComplete();
+    return;
+  }
+
   showMap();
+}
+
+// ── TEST BUILD LID (Phase 1 step 1.6) ─────────────────────────
+// Single chokepoint for "you've reached the edge of the test build".
+// Called from: locked-region clicks on the map, defensive guards in
+// startGym / startRegionalCatch, and finishRegionalCatch when Region 2
+// has just been completed.
+function showTestBuildComplete() {
+  // Clear any timers that might be running so we don't tick over a frozen
+  // screen.
+  if (STATE.timerInt) { clearInterval(STATE.timerInt); STATE.timerInt = null; }
+  if (REGIONAL_CATCH_STATE && REGIONAL_CATCH_STATE.timerInt) {
+    clearInterval(REGIONAL_CATCH_STATE.timerInt);
+    REGIONAL_CATCH_STATE.timerInt = null;
+  }
+  showScreen('screen-test-build-complete');
 }
 
 // ── MAP SCREEN ────────────────────────────────────────────────
@@ -1066,21 +1105,44 @@ function showMap() {
   REGIONS.forEach((region, idx) => {
     const regionSave = (save.regions || {})[region.id] || {};
     const gymsCompleted = (regionSave.gymsCompleted || []).length;
-    const isLocked = idx > 0 && ((save.regions || {})[REGIONS[idx-1].id]?.gymsCompleted || []).length < 5;
+    // 1.6: anything past MAX_PLAYABLE_REGION is a soft lock — clickable but
+    // routes to the test-build-complete screen instead of loading the gym.
+    const isComingSoon = region.id > MAX_PLAYABLE_REGION;
+    const isLocked = !isComingSoon
+      && idx > 0
+      && ((save.regions || {})[REGIONS[idx-1].id]?.gymsCompleted || []).length < 5;
     const isCompleted = gymsCompleted >= 5;
 
     const card = document.createElement('div');
-    card.className = `region-card${isLocked ? ' locked' : ''}${isCompleted ? ' completed' : ''}`;
+    const classes = ['region-card'];
+    if (isComingSoon) classes.push('locked', 'coming-soon');
+    else if (isLocked) classes.push('locked');
+    if (isCompleted) classes.push('completed');
+    card.className = classes.join(' ');
+
+    const statusText = isComingSoon ? '🚧 Coming Soon'
+                     : isCompleted  ? '✅ Complete'
+                     : isLocked     ? '🔒 Locked'
+                     :                '▶ In Progress';
+    const statusIcon = isComingSoon ? '🚧'
+                     : isCompleted  ? '✅'
+                     : isLocked     ? '🔒'
+                     :                '▶';
+
     card.innerHTML = `
       <div class="region-emoji">${region.emoji}</div>
       <div class="region-info">
         <div class="region-name">Region ${region.id}: ${region.name}</div>
         <div class="region-theme">${region.theme}</div>
-        <div class="region-progress">${gymsCompleted}/5 gyms · ${isCompleted ? '✅ Complete' : isLocked ? '🔒 Locked' : '▶ In Progress'}</div>
+        <div class="region-progress">${gymsCompleted}/5 gyms · ${statusText}</div>
       </div>
-      <div class="region-status">${isCompleted ? '✅' : isLocked ? '🔒' : '▶'}</div>
+      <div class="region-status">${statusIcon}</div>
     `;
-    if (!isLocked) {
+    if (isComingSoon) {
+      // Coming-soon cards are clickable but lead to the test-build lid,
+      // not the gym select. Prevents accidental access to unwired content.
+      card.onclick = showTestBuildComplete;
+    } else if (!isLocked) {
       card.onclick = () => showGymSelect(region.id);
     }
     container.appendChild(card);
@@ -1130,6 +1192,8 @@ function showGymSelect(regionId) {
 
 // ── START GYM ─────────────────────────────────────────────────
 async function startGym(regionId, gymId) {
+  // 1.6: defensive — never load a gym from an out-of-scope region.
+  if (regionId > MAX_PLAYABLE_REGION) { showTestBuildComplete(); return; }
   STATE.currentRegion = regionId;
   STATE.currentGym = gymId;
   STATE.currentQ = 0;
@@ -1183,6 +1247,8 @@ async function startGym(regionId, gymId) {
 function loadQuestion() {
   clearInterval(STATE.timerInt);
   STATE.answered = false;
+  // 1.5: clear any ability modifiers left over from the previous question.
+  STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
 
   const q = STATE.currentQData[STATE.currentQ];
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
@@ -1230,28 +1296,39 @@ function loadQuestion() {
 }
 
 // ── TIMER ─────────────────────────────────────────────────────
+// Phase 1 step 1.5: timer state lives on STATE so abilities can mutate it.
+//   STATE.totalTime  — denominator for the bar % (TIME ability bumps both)
+//   STATE.timeLeft   — counts down 0.1s per tick (TIME ability bumps it)
+//   STATE.timerInt   — interval handle (null when paused by FREEZE)
 function startTimer(totalTime, tier) {
+  STATE.totalTime = totalTime;
+  STATE.timeLeft  = totalTime;
+  resumeTimer();
+}
+
+function resumeTimer() {
+  if (STATE.timerInt) { clearInterval(STATE.timerInt); STATE.timerInt = null; }
   const bar = document.getElementById('timer-bar');
   const txt = document.getElementById('timer-text');
-  STATE.timeLeft = totalTime;
-
-  bar.style.width = '100%';
-  bar.className = 'timer-bar';
+  if (!bar || !txt) return;
+  const initPct = Math.max(0, Math.min(100, (STATE.timeLeft / STATE.totalTime) * 100));
+  bar.style.width = initPct + '%';
+  bar.style.opacity = '';
+  bar.className = initPct < 25 ? 'timer-bar danger'
+                : initPct < 50 ? 'timer-bar warning'
+                :                'timer-bar';
 
   STATE.timerInt = setInterval(() => {
     STATE.timeLeft = Math.max(0, STATE.timeLeft - 0.1);
-    const pct = (STATE.timeLeft / totalTime) * 100;
-    bar.style.width = pct + '%';
+    const pct = (STATE.timeLeft / STATE.totalTime) * 100;
+    bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
     txt.textContent = Math.ceil(STATE.timeLeft);
-
-    if (pct < 25) {
-      bar.className = 'timer-bar danger';
-    } else if (pct < 50) {
-      bar.className = 'timer-bar warning';
-    }
-
+    if (pct < 25)      bar.className = 'timer-bar danger';
+    else if (pct < 50) bar.className = 'timer-bar warning';
+    else               bar.className = 'timer-bar';
     if (STATE.timeLeft <= 0) {
       clearInterval(STATE.timerInt);
+      STATE.timerInt = null;
       if (!STATE.answered) timeUp();
     }
   }, 100);
@@ -1260,14 +1337,29 @@ function startTimer(totalTime, tier) {
 // ── CHECK ANSWER ──────────────────────────────────────────────
 function checkAnswer(idx) {
   if (STATE.answered) return;
-  STATE.answered = true;
-  clearInterval(STATE.timerInt);
 
   const q = STATE.currentQData[STATE.currentQ];
   const chosen = STATE.currentChoices[idx];
   const correct = q.answer;
   const correctIdx = STATE.currentChoices.indexOf(correct);
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
+
+  // 1.5: RETRY modifier — if wrong and a retry is pending, consume it and
+  // let the player try again. Timer keeps running. The wrong button stays
+  // disabled so they can't pick the same one twice.
+  if (chosen !== correct && STATE.pendingMods.retry) {
+    STATE.pendingMods.retry = false;
+    const btn = document.getElementById(`ans${idx}`);
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.3'; btn.classList.add('wrong'); }
+    const fb = document.getElementById('feedback-bar');
+    fb.textContent = `🔁 Not quite — pick another! (1 retry consumed)`;
+    fb.className = 'feedback-bar';
+    return; // not answered yet
+  }
+
+  STATE.answered = true;
+  clearInterval(STATE.timerInt);
+  STATE.timerInt = null;
 
   // Reveal answers
   for (let i = 0; i < 4; i++) {
@@ -1278,11 +1370,20 @@ function checkAnswer(idx) {
   }
 
   const fb = document.getElementById('feedback-bar');
+  const mods = STATE.pendingMods;
   if (chosen === correct) {
-    // Calculate crystals
+    // Base crystals
     const base = region.baseCrystals;
     const speedBonus = Math.round((STATE.timeLeft / (TIER_TIME[q.tier] + FORMAT_TIME_MOD[q.type] + AGE_TIME_MOD[STATE.player?.ageGroup])) * region.speedMax);
-    const earned = base + speedBonus;
+    let earned = base + speedBonus;
+
+    // 1.5: apply DOUBLE_OR_NOTHING (×2 on correct) then MULTIPLY (×value)
+    const modParts = [];
+    if (mods.doubleOrNothing) { earned *= 2; modParts.push('×2 Double'); }
+    if (mods.multiplier && mods.multiplier !== 1) {
+      earned = Math.round(earned * mods.multiplier);
+      modParts.push(`×${mods.multiplier} Multiply`);
+    }
 
     STATE.gymCrystals += earned;
     STATE.gymCorrect++;
@@ -1291,12 +1392,20 @@ function checkAnswer(idx) {
 
     document.getElementById('quiz-crystals').textContent = STATE.save.total_crystals.toLocaleString();
 
-    fb.textContent = `✅ Correct! +${earned} 🔮`;
+    fb.textContent = modParts.length
+      ? `✅ Correct! +${earned} 🔮  (${modParts.join(' + ')})`
+      : `✅ Correct! +${earned} 🔮`;
     fb.className = 'feedback-bar correct';
   } else {
-    fb.textContent = `❌ Wrong! Answer: ${correct}`;
+    // 1.5: DOUBLE_OR_NOTHING wrong = 0 crystals (which is the default anyway).
+    // SHIELD: noted in the feedback but no scoring change today (no wrong penalties exist).
+    const note = mods.shield ? ' 🛡️ Shielded' : '';
+    fb.textContent = `❌ Wrong! Answer: ${correct}${note}`;
     fb.className = 'feedback-bar wrong';
   }
+
+  // Consume single-question mods
+  STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
 
   // Auto advance after 2s
   setTimeout(() => advanceQuestion(), 2000);
@@ -1436,18 +1545,30 @@ function renderPokemonTeam() {
 }
 
 // ── POKEMON ABILITY ───────────────────────────────────────────
+// Phase 1 step 1.5: generic dispatcher for all 10 mechanics. Each caught
+// Pokemon carries abilityEffect = { mechanic, value, description } from
+// pokemon.json. The dispatcher reads .mechanic and routes to one of the
+// applyAbility_* helpers below. Using an ability consumes the Pokemon
+// (removes it from STATE.save.pokemon_team) and is rate-limited to ONE
+// per gym via STATE.abilityUsedThisGym.
+
 function activateAbility(pokemonIdx) {
   if (STATE.abilityUsedThisGym) {
     alert('⚠️ You can only use one Pokemon ability per gym!');
     return;
   }
-  if (!STATE.answered === false) return; // only before answering
+  // 1.5: fixed the original `!STATE.answered === false` double-negative.
+  if (STATE.answered) {
+    alert('⚠️ Too late — you already answered this question.');
+    return;
+  }
 
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
+  if (!pokemon) return;
   STATE.pendingAbilityPokemon = { pokemon, idx: pokemonIdx };
 
-  document.getElementById('modal-poke-emoji').textContent = pokemon.emoji;
-  document.getElementById('modal-poke-name').textContent = pokemon.name;
+  document.getElementById('modal-poke-emoji').textContent  = pokemon.emoji;
+  document.getElementById('modal-poke-name').textContent   = pokemon.name;
   document.getElementById('modal-ability-name').textContent = pokemon.ability;
   document.getElementById('modal-ability-desc').textContent = getAbilityDesc(pokemon);
 
@@ -1460,41 +1581,199 @@ function closeModal() {
   STATE.pendingAbilityPokemon = null;
 }
 
-function useAbility(pokemonIdx) {
+// Multiplier-value convention in pokemon.json: integers <= 10 mean N×;
+// integers >= 11 are encoded as value*10 for fractional multipliers
+// (12 → 1.2, 25 → 2.5, 33 → 3.3, etc.).
+function normalizeMultiplier(v) {
+  const n = Number(v) || 1;
+  if (n >= 11) return n / 10;
+  return n;
+}
+
+async function useAbility(pokemonIdx) {
   closeModal();
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
-  STATE.abilityUsedThisGym = true;
+  if (!pokemon) return;
 
-  // Apply ability effect
-  switch(pokemon.id) {
-    case 'pikachu': // 50/50 — remove 2 wrong answers
-      const q = STATE.currentQData[STATE.currentQ];
-      const correctIdx = STATE.currentChoices.indexOf(q.answer);
-      let removed = 0;
-      for (let i = 0; i < 4 && removed < 2; i++) {
-        if (i !== correctIdx) {
-          document.getElementById(`ans${i}`).style.opacity = '0.15';
-          document.getElementById(`ans${i}`).disabled = true;
-          removed++;
-        }
-      }
-      break;
-    case 'charmander': // +5 seconds
-      STATE.timeLeft += 5;
-      break;
-    case 'squirtle': // skip
-      clearInterval(STATE.timerInt);
-      advanceQuestion();
-      break;
-    case 'snorlax': // freeze timer
-      clearInterval(STATE.timerInt);
-      break;
-    // Add more abilities in Phase 2
+  const eff = pokemon.abilityEffect || {};
+  const mechanic = String(eff.mechanic || '').toUpperCase();
+  const value    = Number(eff.value) || 0;
+
+  let resultMsg = '';
+  try {
+    switch (mechanic) {
+      case 'TIME':              resultMsg = applyAbilityTime(value); break;
+      case 'ELIMINATE':         resultMsg = applyAbilityEliminate(value); break;
+      case 'SKIP':              resultMsg = applyAbilitySkip(); break;
+      case 'MULTIPLY':          resultMsg = applyAbilityMultiply(value); break;
+      case 'STEAL':             resultMsg = await applyAbilitySteal(value); break;
+      case 'FREEZE':            resultMsg = applyAbilityFreeze(value); break;
+      case 'REVEAL':            resultMsg = applyAbilityReveal(); break;
+      case 'RETRY':             resultMsg = applyAbilityRetry(); break;
+      case 'SHIELD':            resultMsg = applyAbilityShield(); break;
+      case 'DOUBLE_OR_NOTHING': resultMsg = applyAbilityDoN(value); break;
+      default:                  resultMsg = `Unknown ability mechanic: ${mechanic || '(none)'}`;
+    }
+  } catch (e) {
+    console.error('useAbility error:', e);
+    resultMsg = `Ability error: ${e.message}`;
   }
 
-  // Remove pokemon from team
+  STATE.abilityUsedThisGym = true;
+
+  // Consume the Pokemon
   STATE.save.pokemon_team.splice(pokemonIdx, 1);
   renderPokemonTeam();
+
+  // Show what happened in the feedback bar (SKIP advances the question
+  // before this fires, so the bar may already be reset — that's fine).
+  const fb = document.getElementById('feedback-bar');
+  if (fb && resultMsg) {
+    fb.textContent = `${pokemon.emoji} ${pokemon.ability}: ${resultMsg}`;
+    fb.className = 'feedback-bar';
+  }
+}
+
+// ── ABILITY HELPERS (one per mechanic) ────────────────────────
+
+// TIME — add seconds to the live timer. We bump both timeLeft and totalTime
+// so the bar percentage stays sane.
+function applyAbilityTime(seconds) {
+  STATE.timeLeft  += seconds;
+  STATE.totalTime += seconds;
+  // Visual nudge: re-evaluate the bar at the new fraction
+  const bar = document.getElementById('timer-bar');
+  if (bar) bar.style.width = Math.min(100, (STATE.timeLeft / STATE.totalTime) * 100) + '%';
+  return `+${seconds}s timer (now ${Math.ceil(STATE.timeLeft)}s left)`;
+}
+
+// ELIMINATE — grey out N wrong options. Will never remove the correct one.
+function applyAbilityEliminate(count) {
+  const q = STATE.currentQData[STATE.currentQ];
+  const correctIdx = STATE.currentChoices.indexOf(q.answer);
+  // Don't strip every wrong option — leave at least one wrong visible so the
+  // pick isn't trivially the only un-greyed button when count >= choices-1.
+  const maxRemovable = Math.max(0, STATE.currentChoices.length - 2);
+  const target = Math.min(count, maxRemovable);
+  let removed = 0;
+  for (let i = 0; i < 4 && removed < target; i++) {
+    const btn = document.getElementById(`ans${i}`);
+    if (!btn) continue;
+    if (i !== correctIdx && !btn.disabled && btn.style.display !== 'none') {
+      btn.style.opacity = '0.15';
+      btn.disabled = true;
+      removed++;
+    }
+  }
+  return `Eliminated ${removed} wrong option${removed === 1 ? '' : 's'}`;
+}
+
+// SKIP — abandon the question with no scoring, advance immediately.
+function applyAbilitySkip() {
+  clearInterval(STATE.timerInt);
+  STATE.timerInt = null;
+  STATE.answered = true; // suppress timeUp
+  // Visually disable answer buttons so it's clear the player can't click.
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`ans${i}`);
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.3'; }
+  }
+  setTimeout(() => advanceQuestion(), 800);
+  return 'Skipping question — no penalty';
+}
+
+// MULTIPLY — set a multiplier consumed by the next correct answer.
+function applyAbilityMultiply(rawValue) {
+  const mult = normalizeMultiplier(rawValue);
+  STATE.pendingMods.multiplier = mult;
+  return `Next correct answer × ${mult}`;
+}
+
+// STEAL — take crystals from the current room leader. Solo no-op.
+async function applyAbilitySteal(value) {
+  const code = STATE.roomCode || (typeof HOST !== 'undefined' && HOST.roomCode) || '';
+  if (!code) return 'No room — solo play, no one to steal from';
+
+  const room = await dbReadRoom(code);
+  if (!room) return 'Room not found';
+
+  const myId = STATE.player && STATE.player.id;
+  const roomIds = (room.players || []).map(p => p.id).filter(id => id && id !== myId);
+  if (roomIds.length === 0) return 'No other players in this room';
+
+  const allSaves = await dbLoadAllPlayers();
+  const others = allSaves.filter(s => roomIds.includes(s.player_id));
+  if (others.length === 0) return 'No saved data for room players yet';
+
+  others.sort((a, b) => (b.total_crystals || 0) - (a.total_crystals || 0));
+  const leader = others[0];
+  const available = Math.max(0, leader.total_crystals || 0);
+  const amount = Math.min(value, available);
+  if (amount <= 0) return `${leader.player_name || 'Leader'} has no crystals to steal`;
+
+  leader.total_crystals = available - amount;
+  STATE.save.total_crystals = (STATE.save.total_crystals || 0) + amount;
+  await dbSave(leader.player_id, leader);
+  await dbSave(STATE.player.id, STATE.save);
+
+  const crystEl = document.getElementById('quiz-crystals');
+  if (crystEl) crystEl.textContent = STATE.save.total_crystals.toLocaleString();
+  return `Stole ${amount} 🔮 from ${leader.player_name || 'leader'}`;
+}
+
+// FREEZE — pause the timer interval for N seconds, then resume from the
+// frozen value. The bar fades to half-opacity while paused.
+function applyAbilityFreeze(seconds) {
+  if (!STATE.timerInt) return 'Timer is not running';
+  clearInterval(STATE.timerInt);
+  STATE.timerInt = null;
+  const bar = document.getElementById('timer-bar');
+  if (bar) bar.style.opacity = '0.5';
+
+  setTimeout(() => {
+    if (STATE.answered) return;  // user answered during the freeze; nothing to resume
+    if (bar) bar.style.opacity = '';
+    resumeTimer();
+  }, Math.max(0, seconds) * 1000);
+
+  return `Timer frozen for ${seconds}s`;
+}
+
+// REVEAL — show a hint. We surface the category (the question text already
+// shows the question; revealing category narrows the topic).
+function applyAbilityReveal() {
+  const q = STATE.currentQData[STATE.currentQ];
+  if (!q) return 'No active question to reveal';
+  const cat = CATEGORY_LABELS[q.category] || q.category;
+  const tier = TIER_LABELS[q.tier] || q.tier;
+  return `Hint — Category: ${cat}, Tier: ${tier}`;
+}
+
+// RETRY — flag the next wrong pick as recoverable. Handled in checkAnswer().
+function applyAbilityRetry() {
+  STATE.pendingMods.retry = true;
+  return 'One retry on this question — wrong picks won\'t end the round';
+}
+
+// SHIELD — flag the next wrong answer as protected (no crystal loss). The
+// current scoring rules don't deduct on wrong, so this is informational
+// today; the modifier is still set so future wrong-penalty rules pick it up.
+function applyAbilityShield() {
+  STATE.pendingMods.shield = true;
+  return 'Shield up — wrong answer won\'t cost crystals';
+}
+
+// DOUBLE_OR_NOTHING — modifier consumed by next answer. Correct = ×2 (or
+// ×value/10 for values >= 11). Wrong = 0 crystals (no change from default).
+function applyAbilityDoN(rawValue) {
+  // For starters: dratini value=2 -> 2×; others vary. Normalize like MULTIPLY.
+  const mult = normalizeMultiplier(rawValue || 2);
+  // We use both flags: DoN suppresses any normal earning AND multiplies.
+  // The actual ×mult logic in checkAnswer treats doubleOrNothing as ×2 baseline,
+  // and the MULTIPLY mod stacks on top — so wire mult through MULTIPLY too.
+  STATE.pendingMods.doubleOrNothing = true;
+  STATE.pendingMods.multiplier = mult / 2;  // doubled then × this = × mult overall
+  return `Risk: × ${mult} if correct, 0 if wrong`;
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────

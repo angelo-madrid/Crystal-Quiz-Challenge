@@ -1,10 +1,10 @@
 # Crystal Quiz Challenge
-Version: 0.2.0
+Version: 0.3.0
 Last updated: 2026-05-22
 
-> **Phase Zero complete** — library restructured, age-split, tuned, expanded
-> to 729 questions per age file; 110-Pokemon library built; all content
-> validated (PHASE ZERO VALID). Added multi-machine git workflow.
+> **Phase 1 complete** — engine wired to age-split question banks, random
+> per-kid draw, pokemon.json with all 10 ability mechanics, Regions 1-2
+> playable slice, graceful end after Region 2.
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -71,6 +71,30 @@ peso credits for real Pokemon cards.
 - Phase 2: unlock Regions 3-10 + UAT
 - Phase 3: polish (prize screen, animations, sound) + UAT
 - Phase 4: live dress rehearsal
+
+## Phase 3 Backlog
+Items deferred out of Phase 1 — pick up in Phase 3 (or earlier if they
+block UAT).
+
+- **Pause must freeze each player's local timer.** PRE-EXISTING issue,
+  medium severity. No host-broadcast shared timer exists; each player
+  runs a local `STATE.timerInt`. When the host pauses, the overlay shows
+  but the local timer keeps ticking underneath and can hit 0, firing
+  `timeUp()` and costing the kid the question. Fix: on pause, suspend
+  each player's local timer; on resume, continue with remaining time —
+  ideally driven by the host's pause state via room sync.
+
+- **TIME ability inflates speed bonus.** Introduced in 1.5, low severity.
+  Using a TIME Pokemon adds seconds, which makes the speed-bonus math
+  pay ~20-50% more crystals than intended. Decide in Phase 3: cap the
+  bonus or keep as an intentional reward for spending a Pokemon.
+
+- **Prize screen — PRIORITY.** Build the end-game prize screen: podium,
+  crystal-to-peso conversion (100 crystals = 1 peso), and unused-Pokemon
+  level bonus (`baseValue × level_multiplier`). Needed to pay out real
+  prizes.
+
+- **Animations, sound, leaderboard polish.**
 
 ## Versioning Rule
 Increment a file's version + date in FILES.md on every change. Bump
