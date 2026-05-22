@@ -3503,7 +3503,8 @@ async function initHostDashboard() {
 
 // State scoped to the new dashboard layout
 const HOST_UI = {
-  activeRoomCode: null,        // most-recently-active non-archived room
+  activeRoomCode: null,        // most-recently-active non-archived non-GAME_OVER room
+  activeRoomCodes: [],         // every truly-active room code (used by the banner to validate HOST.roomCode)
   archivedExpanded: false,     // Column 1 archived rooms section
   archivedAccountsExpanded: false,
   searchTerm: '',
@@ -3519,16 +3520,23 @@ async function renderHostDashboard() {
   await renderCol1Rooms();
   await Promise.all([renderCol2Accounts(), renderCol3Controls()]);
 
-  // Persistent banner — shows the most-recent active room code.
-  // If Papa opened ?host=true&room=CODE we use that; otherwise we fall
-  // back to whichever room renderCol1Rooms picked (most-recently-updated
-  // non-archived). If neither exists we hide the banner entirely.
+  // Persistent banner — shows ONLY when an active (non-archived,
+  // non-GAME_OVER) room exists. If Papa opened ?host=true&room=CODE
+  // we honour that code only when the room is still active; otherwise
+  // we fall back to renderCol1Rooms's most-recent active candidate.
+  // No active room → banner fully hidden (display: none, no empty space).
   const bannerEl   = document.getElementById('host-persistent-banner');
   const bannerCode = document.getElementById('hpb-code');
-  const code = HOST.roomCode || HOST_UI.activeRoomCode || null;
+  const activeSet  = HOST_UI.activeRoomCodes || [];
+  const scopedOk   = HOST.roomCode && activeSet.includes(HOST.roomCode);
+  const code = scopedOk ? HOST.roomCode : (HOST_UI.activeRoomCode || null);
   if (bannerEl && bannerCode) {
-    bannerCode.textContent = code || '----';
-    bannerEl.style.display = code ? 'flex' : 'none';
+    if (code) {
+      bannerCode.textContent = code;
+      bannerEl.style.display = 'flex';
+    } else {
+      bannerEl.style.display = 'none';
+    }
   }
 }
 
@@ -3558,13 +3566,13 @@ async function renderCol1Rooms() {
   document.getElementById('col1-waiting-list').innerHTML  = renderList(waiting,  'waiting');
   document.getElementById('col1-archived-list').innerHTML = renderList(archived, 'archived');
 
-  // Track the active room — most-recently-updated, non-archived.
-  const candidates = norm.filter(r => !r.archived);
-  if (candidates.length) {
-    HOST_UI.activeRoomCode = candidates[0].code;   // already sorted desc by updated_at
-  } else {
-    HOST_UI.activeRoomCode = null;
-  }
+  // Track the active room set — non-archived AND not finished (GAME_OVER
+  // rooms are read-only / archived in spirit and must NOT light up the
+  // banner). dbListRooms returns rows ordered by updated_at desc so the
+  // first candidate is the most-recently-active.
+  const candidates = norm.filter(r => !r.archived && r.data.phase !== 'GAME_OVER');
+  HOST_UI.activeRoomCode  = candidates.length ? candidates[0].code : null;
+  HOST_UI.activeRoomCodes = candidates.map(c => c.code);
 }
 
 function col1RoomCard(r, type) {
