@@ -4126,8 +4126,17 @@ async function renderRoomDetail() {
     }).join('');
   }
 
-  // Action button labels
-  document.getElementById('rd-pause-btn').textContent = room.isPaused ? '▶️ Resume Room' : '⏸️ Pause Room';
+  // Action buttons — phase-driven visibility.
+  //   lobby phase  → [🚀 Start Game]  [🗄️ Archive]  [🏁 End Game]
+  //   any other    → [⏸️ Pause / ▶️ Resume]  [🗄️ Archive]  [🏁 End Game]
+  const startBtn = document.getElementById('rd-start-btn');
+  const pauseBtn = document.getElementById('rd-pause-btn');
+  const isLobby  = room.phase === 'lobby';
+  if (startBtn) startBtn.style.display = isLobby ? '' : 'none';
+  if (pauseBtn) {
+    pauseBtn.style.display = isLobby ? 'none' : '';
+    pauseBtn.textContent = room.isPaused ? '▶️ Resume Room' : '⏸️ Pause Room';
+  }
   document.getElementById('rd-archive-btn').textContent = room.archived ? '📤 Unarchive' : '🗄️ Archive';
 }
 
@@ -4143,8 +4152,47 @@ async function rdTogglePause() {
   renderRoomDetail();
   renderHostDashboard();
 }
-function rdCopyCode() {
-  if (HOST_UI.detailRoomCode) landingCopyCode(HOST_UI.detailRoomCode);
+// Start the room's game from the Room Detail Overlay. Mirrors the
+// hostStartGame() transition (lobby → PREGAME_CATCH) but scoped to
+// the overlay's room — does NOT switch the host's view, so Papa
+// stays on the three-column dashboard.
+async function rdStartGame() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  if (room.phase !== 'lobby') {
+    showToast('⚠️ Game already started');
+    return;
+  }
+  // Strip out any legacy host-viewer entries the way hostStartGame does.
+  const realPlayers = (room.players || []).filter(p =>
+    p.id !== 'HOST_VIEWER' && p.id !== 'host' && !p.isHost
+  );
+  if (realPlayers.length === 0) {
+    showToast('⚠️ At least 1 player must join before starting');
+    return;
+  }
+  room.phase         = 'PREGAME_CATCH';
+  room.players       = realPlayers;
+  room.currentRegion = 1;
+  room.currentGym    = 1;
+  room.isPaused      = false;
+  room.startedAt     = new Date().toISOString();
+  room.updated_at    = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  // Keep HOST.* in sync if it points at this room so Column 3 reflects
+  // the new phase on the next render.
+  if (HOST.roomCode === code) {
+    HOST.currentPhase  = 'PREGAME_CATCH';
+    HOST.players       = realPlayers;
+    HOST.currentRegion = 1;
+    HOST.currentGym    = 1;
+    HOST.isPaused      = false;
+  }
+  showToast(`🚀 ${code} — game started`);
+  renderRoomDetail();
+  renderHostDashboard();
 }
 async function rdArchive() {
   const code = HOST_UI.detailRoomCode;

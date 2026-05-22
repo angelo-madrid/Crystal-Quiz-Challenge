@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.4.2
+Version: 0.4.3
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -208,8 +208,14 @@ top; below it the viewport splits into three equal columns:
   `View →` button opens the **Room Detail Overlay** modal — a centered
   ~70vw card with player list (sorted by presence → crystals desc),
   game progress (R1..R10 pills), Pokemon Available (catch phases
-  only), and actions (Pause/Resume, Copy Code, Archive/Unarchive, End
-  Game).
+  only), and **phase-driven actions**: when `room.phase === 'lobby'`
+  the action row is `[🚀 Start Game] [🗄️ Archive] [🏁 End Game]`;
+  otherwise it's `[⏸️ Pause / ▶️ Resume] [🗄️ Archive] [🏁 End Game]`.
+  Start Game writes `phase = 'PREGAME_CATCH'` for that specific room
+  (mirrors `hostStartGame` but does NOT switch the host's view —
+  Papa stays on the three-column dashboard). Copy Code is intentionally
+  absent here because the persistent banner already exposes a copy
+  button.
 
 - **💎 CRYSTALS** — search bar (filters by name or ID, real-time);
   Active Accounts (pending redemptions float top, then sorted by
