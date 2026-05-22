@@ -160,9 +160,84 @@ function newSave(player) {
     badges_earned: 0,
     total_correct: 0,
     fastest_answer: null,
+    // UAT bug-fix 1.7-fix-1: track every question ID the player has seen
+    // across their save. Ordered: oldest first → newest last. Used for
+    // draw-without-replacement; on bucket exhaustion we reuse the least-
+    // recently-seen one (then re-mark it as most-recent).
+    seen_question_ids: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
+}
+
+// ── QUESTION DRAW HELPERS (UAT bug-fix 1.7) ───────────────────
+// Single source of truth for "give me a question from this pool" — used
+// by gym draws, pre-game catches, and regional catches. Tracks seen IDs
+// in STATE.save.seen_question_ids so the same question never repeats
+// within a save until that bucket is fully exhausted.
+function _ensureSeenArr() {
+  if (!STATE.save) return [];
+  if (!Array.isArray(STATE.save.seen_question_ids)) STATE.save.seen_question_ids = [];
+  return STATE.save.seen_question_ids;
+}
+function markQuestionSeen(qid) {
+  if (!qid || !STATE.save) return;
+  const arr = _ensureSeenArr();
+  const idx = arr.indexOf(qid);
+  if (idx >= 0) arr.splice(idx, 1);    // move to most-recent on reuse
+  arr.push(qid);
+}
+function pickQuestion(pool) {
+  if (!pool || pool.length === 0) {
+    return { picked: null, exhausted: false, bucketEmpty: true };
+  }
+  const seen = new Set(_ensureSeenArr());
+  const unseen = pool.filter(q => !seen.has(q.id));
+  if (unseen.length > 0) {
+    const picked = unseen[Math.floor(Math.random() * unseen.length)];
+    return { picked: maybeScrambleUnscramble(picked), exhausted: false, bucketEmpty: false };
+  }
+  // Exhausted: pick the least-recently-seen entry from the seen list that
+  // also lives in the pool. Lower index in seen_question_ids = older.
+  const seenIds = _ensureSeenArr();
+  const sorted = pool.slice().sort((a, b) => {
+    const ai = seenIds.indexOf(a.id);
+    const bi = seenIds.indexOf(b.id);
+    return ai - bi;
+  });
+  return { picked: maybeScrambleUnscramble(sorted[0]), exhausted: true, bucketEmpty: false };
+}
+
+// UAT bug-fix 1.7-fix-2: unscramble questions in the JSON ship with
+// the answer's letters already in correct order (e.g. "G-R-A-C-I-A-S"
+// already spells GRACIAS). Shuffle the letters at draw time so the
+// prompt is actually scrambled. Multiple-choice options stay untouched.
+function maybeScrambleUnscramble(q) {
+  if (!q || q.type !== 'unscramble') return q;
+  // Capture the dashed-letters block in the question text. At least 3
+  // letters required (regex matches the second '-LETTER' onwards).
+  const re = /[A-Z](?:-[A-Z]){2,}/;
+  const m = q.question.match(re);
+  if (!m) return q;
+  const letters = m[0].split('-');
+  if (letters.length < 2) return q;
+  const original = letters.join('');
+  let shuffled = letters.slice();
+  // Fisher-Yates a few times until we land on something different from
+  // the original spelling (handles duplicate-letter words like MAGIKARP).
+  for (let attempt = 0; attempt < 20; attempt++) {
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    if (shuffled.join('') !== original) break;
+  }
+  // Last resort if every shuffle happened to equal the original (only
+  // possible on degenerate inputs like "A-A"): rotate by 1.
+  if (shuffled.join('') === original && letters.length >= 2) {
+    shuffled = letters.slice(1).concat(letters[0]);
+  }
+  return Object.assign({}, q, { question: q.question.replace(m[0], shuffled.join('-')) });
 }
 
 // ── PARTICLES ────────────────────────────────────────────────
@@ -513,13 +588,14 @@ async function attemptCatch() {
     </div>
   `;
 
-  // Pick a random question from pokeball_bank, avoiding ones already shown
-  // this session. usedQuestions now tracks question IDs (was indices).
-  const usedIds = new Set(PREGAME_STATE.usedQuestions);
-  const available = pbBank.filter(q => !usedIds.has(q.id));
-  const pool = available.length > 0 ? available : pbBank;
-  const picked = pool[Math.floor(Math.random() * pool.length)];
-  PREGAME_STATE.usedQuestions.push(picked.id);
+  // UAT bug-fix 1.7-fix-1: pickQuestion enforces save-wide draw-without-
+  // replacement (subsumes the old per-session usedQuestions tracker) and
+  // (fix-2) scrambles unscramble prompts.
+  const { picked, exhausted } = pickQuestion(pbBank);
+  if (!picked) { alert('Failed to pick a pokeball question.'); return; }
+  if (exhausted) console.warn('[attemptCatch] pokeball_bank exhausted — reusing oldest');
+  markQuestionSeen(picked.id);
+  PREGAME_STATE.usedQuestions.push(picked.id);   // kept for backward-compat readers
   PREGAME_STATE.currentQuestion = picked;
 
   // Shuffle choices
@@ -923,13 +999,16 @@ async function attemptRegionalCatch() {
   s.pokeballs    -= 1;
   s.ballsThrown  += 1;
 
-  // Pick a random unused (this-visit) question. Falls back to the full pool
-  // if every question has already been shown this visit.
-  const usedIds   = new Set(s.usedQuestions);
-  const available = pool.filter(q => !usedIds.has(q.id));
-  const choices   = available.length > 0 ? available : pool;
-  const picked    = choices[Math.floor(Math.random() * choices.length)];
-  s.usedQuestions.push(picked.id);
+  // UAT bug-fix 1.7-fix-1: pickQuestion enforces save-wide draw-without-
+  // replacement; (fix-2) scrambles unscramble prompts.
+  const { picked, exhausted } = pickQuestion(pool);
+  if (!picked) {
+    alert(`No catch questions for region ${s.region.id}.`);
+    return;
+  }
+  if (exhausted) console.warn(`[attemptRegionalCatch] catch_bank[${s.region.id}] exhausted — reusing oldest`);
+  markQuestionSeen(picked.id);
+  s.usedQuestions.push(picked.id);   // kept for backward-compat readers
   s.currentQuestion = picked;
 
   // Shuffle answer options (and handle T/F which has only 2)
@@ -1222,14 +1301,21 @@ async function startGym(regionId, gymId) {
     return;
   }
 
+  // UAT bug-fix 1.7-fix-1: draw without replacement through pickQuestion.
+  // It also applies the unscramble shuffle (fix-2) at the same time.
   const drawn = [];
   for (const slot of blueprint.slots) {
     const pool = qData.gym_bank?.[slot.category]?.[slot.tier];
-    if (!pool || pool.length === 0) {
+    const { picked, bucketEmpty, exhausted } = pickQuestion(pool);
+    if (bucketEmpty || !picked) {
       alert(`Empty question bank for ${slot.category} / ${slot.tier}.`);
       return;
     }
-    drawn.push(pool[Math.floor(Math.random() * pool.length)]);
+    if (exhausted) {
+      console.warn(`[startGym] bucket exhausted: ${slot.category}/${slot.tier} — reusing least-recently-seen`);
+    }
+    markQuestionSeen(picked.id);
+    drawn.push(picked);
   }
 
   STATE.currentQData = drawn;
