@@ -1806,3 +1806,163 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .presence-connected     { color: #22c55e; font-weight: 800; }
 .presence-reconnecting  { color: #f97316; font-weight: 800; }
 .presence-absent        { color: rgba(255,255,255,0.45); font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   CRYSTAL WALLET (player-facing dashboard)
+   ═══════════════════════════════════════════════ */
+.wallet-balance-card {
+  margin: 0 20px 16px;
+  padding: 22px 18px;
+  background: linear-gradient(135deg, rgba(255,203,5,0.18), rgba(123,94,167,0.18));
+  border: 2px solid var(--gold);
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 0 32px rgba(255,203,5,0.18);
+}
+.wallet-label { font-size: 0.78rem; letter-spacing: 2px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
+.wallet-balance { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 900; color: var(--gold); margin: 4px 0; text-shadow: 0 0 16px rgba(255,203,5,0.5); }
+.wallet-peso { font-size: 0.95rem; font-weight: 800; color: var(--crystal); }
+
+.wallet-redeem-section { padding: 0 20px 14px; }
+.wallet-pending-banner {
+  padding: 12px 14px;
+  background: rgba(249,115,22,0.15);
+  border: 1px dashed #f97316;
+  border-radius: 12px;
+  color: #f97316;
+  font-weight: 800;
+  font-size: 0.88rem;
+  text-align: center;
+}
+.wallet-redeem-form {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.wallet-form-row { margin-bottom: 12px; }
+.wallet-form-row label { display:block; font-size: 0.78rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+.wallet-form-row input { width: 100%; }
+.wallet-form-actions { display: flex; gap: 10px; }
+.wallet-form-actions .btn-primary,
+.wallet-form-actions .btn-secondary { flex: 1; padding: 11px; font-size: 0.92rem; }
+.wallet-toast {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(34,197,94,0.18);
+  border: 1px solid #22c55e;
+  border-radius: 10px;
+  color: #22c55e;
+  font-weight: 800;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.wallet-section-label { padding: 8px 20px 6px; font-size: 0.82rem; letter-spacing: 1.5px; color: var(--gold); font-weight: 900; text-transform: uppercase; }
+.wallet-ledger { padding: 0 16px 28px; display: flex; flex-direction: column; gap: 8px; }
+.wallet-empty {
+  background: var(--card);
+  border: 1px dashed var(--card-border);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+  opacity: 0.6;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ledger-row {
+  display: flex;
+  gap: 12px;
+  padding: 11px 12px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+.ledger-row.status-pending  { border-color: rgba(249,115,22,0.45); }
+.ledger-row.status-declined { opacity: 0.6; border-style: dashed; }
+.ledger-row.status-modified { border-color: rgba(167,139,250,0.6); }
+.ledger-icon { font-size: 1.2rem; flex-shrink: 0; align-self: center; }
+.ledger-body { flex: 1; min-width: 0; }
+.ledger-top  { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ledger-type { font-weight: 800; font-size: 0.92rem; }
+.ledger-amount { font-family: var(--font-mono); font-weight: 900; font-size: 0.95rem; }
+.amt-credit { color: #22c55e; }
+.amt-debit  { color: #ef4444; }
+.ledger-meta { display: flex; gap: 6px; font-size: 0.75rem; opacity: 0.7; margin-top: 3px; }
+.ledger-note { font-size: 0.78rem; opacity: 0.7; margin-top: 4px; font-style: italic; }
+
+/* Clickable wallet entry on the map */
+.stats-btn {
+  background: rgba(255,203,5,0.10);
+  border: 1px solid rgba(255,203,5,0.3);
+  color: var(--gold);
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 0.88rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.stats-btn:hover { background: rgba(255,203,5,0.20); transform: translateY(-1px); }
+
+/* ═══════════════════════════════════════════════
+   HOST: CRYSTAL REQUESTS panel
+   ═══════════════════════════════════════════════ */
+#host-crystal-requests-section,
+#host-add-crystals-section {
+  padding: 0 20px;
+  margin-top: 18px;
+}
+.host-request-badge {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 8px;
+  margin-left: 6px;
+  background: var(--red);
+  color: white;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+}
+.host-crystal-requests {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.host-request-card {
+  background: var(--card);
+  border: 1px solid rgba(249,115,22,0.4);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.hrq-top { display: flex; justify-content: space-between; align-items: center; }
+.hrq-player { font-weight: 900; font-size: 0.95rem; }
+.hrq-pid    { font-family: var(--font-mono); font-size: 0.75rem; opacity: 0.6; }
+.hrq-amount { font-family: var(--font-mono); font-weight: 900; font-size: 1.15rem; color: var(--red); margin: 6px 0 2px; }
+.hrq-peso   { font-size: 0.75rem; color: var(--crystal); margin-left: 6px; }
+.hrq-meta   { display: flex; gap: 6px; font-size: 0.75rem; opacity: 0.7; margin-bottom: 8px; }
+.hrq-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.hrq-actions button { flex: 1 1 auto; padding: 8px 10px; font-size: 0.82rem; }
+.hrq-actions .btn-danger { padding: 10px; }
+.hrq-modify-form {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--card-border);
+}
+.hrq-modify-row label { display:block; font-size: 0.74rem; font-weight: 800; letter-spacing: 1px; color: var(--gold); text-transform: uppercase; margin-bottom: 6px; }
+.hrq-modify-row input { width: 100%; margin-bottom: 10px; }
+
+/* ═══════════════════════════════════════════════
+   HOST: ADD-CRYSTALS form
+   ═══════════════════════════════════════════════ */
+.host-add-crystals-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 14px;
+}
+.host-add-crystals-card .field-group { margin-bottom: 12px; }
+.host-add-preview { margin-top: 6px; font-size: 0.82rem; opacity: 0.75; }

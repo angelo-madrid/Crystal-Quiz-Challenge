@@ -47,6 +47,112 @@ async function dbReadRoom(roomId) {
   return data.data;
 }
 
+// ═══════════════════════════════════════════════════════════
+// CRYSTAL LEDGER (banking layer — see MIGRATIONS.md)
+// ═══════════════════════════════════════════════════════════
+// Canonical balance rule: player_saves.data.total_crystals is
+// authoritative. Mutations to it happen ONLY through approveOrCredit()
+// below — which writes a matching crystal_ledger row first, then
+// bumps the balance. Pending and declined ledger entries never touch
+// the balance.
+
+// Insert a new ledger entry. Returns the inserted row.
+async function dbLedgerInsert(entry) {
+  const { data, error } = await sb.from('crystal_ledger')
+    .insert(entry).select().single();
+  if (error) { console.error('Ledger insert error:', JSON.stringify(error)); return null; }
+  return data;
+}
+
+// Update an existing ledger entry (typically host approves/declines).
+async function dbLedgerUpdate(id, patch) {
+  const { data, error } = await sb.from('crystal_ledger')
+    .update(patch).eq('id', id).select().single();
+  if (error) { console.error('Ledger update error:', JSON.stringify(error)); return null; }
+  return data;
+}
+
+// List a single player's entries, newest first.
+async function dbLedgerForPlayer(playerId, limit = 50) {
+  const { data, error } = await sb.from('crystal_ledger')
+    .select('*').eq('player_id', playerId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) { console.error('Ledger fetch error:', JSON.stringify(error)); return []; }
+  return data || [];
+}
+
+// List every pending redemption request across all players (host view).
+async function dbLedgerPending() {
+  const { data, error } = await sb.from('crystal_ledger')
+    .select('*').eq('status', 'pending')
+    .order('created_at', { ascending: true });   // oldest pending first
+  if (error) { console.error('Ledger pending fetch error:', JSON.stringify(error)); return []; }
+  return data || [];
+}
+
+// True iff the player has at least one pending redeem_request.
+async function dbHasPendingRedemption(playerId) {
+  const { data, error } = await sb.from('crystal_ledger')
+    .select('id').eq('player_id', playerId)
+    .eq('type', 'redeem_request').eq('status', 'pending').limit(1);
+  if (error) { console.error('Pending check error:', JSON.stringify(error)); return false; }
+  return Array.isArray(data) && data.length > 0;
+}
+
+// Look up a player's save by id (for host's add-crystals form preview).
+async function dbLookupPlayer(playerId) {
+  const { data, error } = await sb.from('player_saves')
+    .select('data').eq('player_id', playerId).single();
+  if (error || !data) return null;
+  return data.data;
+}
+
+// Mutate the canonical balance. Reads save, applies delta, writes back.
+// Returns the new total or null on failure. NOT atomic at the DB level —
+// concurrent writers to the same save can race; for a 5-kid game this is
+// acceptable. The ledger is the audit trail of record.
+async function dbBumpCrystals(playerId, delta) {
+  const save = await dbLoad(playerId);
+  if (!save) { console.warn('Save not found for bump:', playerId); return null; }
+  save.total_crystals = Math.max(0, (save.total_crystals || 0) + delta);
+  save.updated_at = new Date().toISOString();
+  await dbSave(playerId, save);
+  // If this is the local player, keep STATE.save in sync.
+  if (STATE.player && STATE.player.id === playerId) {
+    STATE.save = save;
+  }
+  return save.total_crystals;
+}
+
+// Write a ledger entry AND bump the balance in one go (for entries that
+// are immediately approved: earn/bonus/adjustment, or for host
+// approve/modify of a pending redemption). For declined entries, only
+// the ledger row updates — no balance change.
+//
+// opts = { playerId, type, amount, room_code, note, status }
+// Where status defaults to 'approved'. amount sign convention:
+// positive = credit, negative = debit.
+async function recordLedgerAndBump(opts) {
+  const entry = {
+    player_id:  opts.playerId,
+    room_code:  opts.room_code || null,
+    type:       opts.type,
+    amount:     opts.amount,
+    status:     opts.status || 'approved',
+    note:       opts.note || null,
+    resolved_at: (opts.status && opts.status !== 'approved' && opts.status !== 'modified')
+                  ? null
+                  : new Date().toISOString(),
+  };
+  const row = await dbLedgerInsert(entry);
+  if (!row) return null;
+  if (entry.status === 'approved' || entry.status === 'modified') {
+    await dbBumpCrystals(opts.playerId, opts.amount);
+  }
+  return row;
+}
+
 // Phase B: list every room (active and archived) for the host landing
 // screen. Read-only — never mutates a room. Returns rows ordered by
 // recency desc, each row { id, data, updated_at }.
@@ -949,7 +1055,7 @@ function renderRegionalCatch() {
   `;
 }
 
-function buyRegionalPokeball() {
+async function buyRegionalPokeball() {
   const s = REGIONAL_CATCH_STATE;
   const region = s.region;
   const cost = region.pokeball;
@@ -957,6 +1063,17 @@ function buyRegionalPokeball() {
   if ((STATE.save.total_crystals || 0) < cost) { alert(`Need ${cost} 🔮.`); return; }
   STATE.save.total_crystals -= cost;
   s.pokeballs += 1;
+  // Crystal-banking audit: 'adjustment' ledger entry so the ledger sum
+  // continues to mirror the canonical balance.
+  if (STATE.player && STATE.player.id) {
+    await dbLedgerInsert({
+      player_id: STATE.player.id,
+      room_code: STATE.roomCode || null,
+      type: 'adjustment', amount: -cost, status: 'approved',
+      note: `Bought Pokeball in ${region.name}`,
+      resolved_at: new Date().toISOString(),
+    });
+  }
   renderRegionalCatch();
 }
 
@@ -1266,6 +1383,142 @@ function showGymSelect(regionId) {
   }
 
   showScreen('screen-gym-select');
+}
+
+// ═══════════════════════════════════════════════════════════
+// CRYSTAL WALLET — player-facing banking dashboard
+// ═══════════════════════════════════════════════════════════
+async function openWallet() {
+  if (!STATE.player) { showScreen('screen-join'); return; }
+  showScreen('screen-crystal-dashboard');
+  await renderWallet();
+}
+
+async function renderWallet() {
+  const player = STATE.player;
+  if (!player) return;
+  // Refresh authoritative balance from Supabase before showing — covers
+  // host-side bonuses that happened between the last local update and now.
+  const fresh = await dbLoad(player.id);
+  if (fresh) STATE.save = fresh;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const peso = (balance / 100).toFixed(2);
+
+  document.getElementById('wallet-title').textContent = `💎 ${player.name}'s Crystal Wallet`;
+  document.getElementById('wallet-balance').textContent = `${balance.toLocaleString()} 🔮`;
+  document.getElementById('wallet-peso').textContent = peso;
+
+  // Redeem button — disabled while a request is already pending.
+  const redeemSection = document.getElementById('wallet-redeem-section');
+  const hasPending = await dbHasPendingRedemption(player.id);
+  redeemSection.innerHTML = hasPending
+    ? `<div class="wallet-pending-banner">⏳ Redemption request pending — Papa will review it soon.</div>`
+    : `<button class="btn-primary" id="wallet-redeem-toggle" onclick="walletShowRedeemForm()">🎁 Redeem Crystals</button>`;
+
+  // Ledger rows
+  const rows = await dbLedgerForPlayer(player.id, 50);
+  const ledgerEl = document.getElementById('wallet-ledger');
+  if (!rows.length) {
+    ledgerEl.innerHTML = '<div class="wallet-empty">No activity yet. Earn crystals by clearing gyms!</div>';
+    return;
+  }
+  ledgerEl.innerHTML = rows.map(walletRenderLedgerRow).join('');
+}
+
+function walletShowRedeemForm() {
+  const player = STATE.player;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const max = balance;
+  const section = document.getElementById('wallet-redeem-section');
+  section.innerHTML = `
+    <div class="wallet-redeem-form">
+      <div class="wallet-form-row">
+        <label>Amount to redeem (max ${max.toLocaleString()})</label>
+        <input type="number" id="wallet-redeem-amount" min="1" max="${max}" placeholder="e.g. 500">
+      </div>
+      <div class="wallet-form-row">
+        <label>Note (optional)</label>
+        <input type="text" id="wallet-redeem-note" maxlength="80" placeholder="e.g. end of day payout">
+      </div>
+      <div class="err" id="wallet-redeem-err"></div>
+      <div class="wallet-form-actions">
+        <button class="btn-primary" onclick="walletSubmitRedeem()">Submit Redemption Request</button>
+        <button class="btn-secondary" onclick="renderWallet()">Cancel</button>
+      </div>
+    </div>`;
+}
+
+async function walletSubmitRedeem() {
+  const player = STATE.player;
+  const err = document.getElementById('wallet-redeem-err');
+  const amount = parseInt(document.getElementById('wallet-redeem-amount').value, 10);
+  const note   = document.getElementById('wallet-redeem-note').value.trim();
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  if (!amount || amount <= 0) { if(err) err.textContent = '⚠️ Enter an amount > 0'; return; }
+  if (amount > balance)       { if(err) err.textContent = `⚠️ You only have ${balance.toLocaleString()} crystals`; return; }
+  // One pending at a time (defense in depth — the button is also disabled UI-side).
+  const already = await dbHasPendingRedemption(player.id);
+  if (already) { await renderWallet(); return; }
+
+  await dbLedgerInsert({
+    player_id:  player.id,
+    room_code:  STATE.roomCode || null,
+    type:       'redeem_request',
+    amount:     -Math.abs(amount),
+    status:     'pending',
+    note:       note || null,
+    resolved_at: null,
+  });
+  // Confirmation banner — re-render replaces the form with the pending notice.
+  await renderWallet();
+  const sec = document.getElementById('wallet-redeem-section');
+  if (sec) sec.insertAdjacentHTML('beforeend',
+    `<div class="wallet-toast">✅ Request sent! Papa will approve your redemption.</div>`);
+  setTimeout(() => {
+    const t = document.querySelector('.wallet-toast'); if (t) t.remove();
+  }, 3500);
+}
+
+function walletRenderLedgerRow(row) {
+  const icon = { approved: '✅', pending: '⏳', declined: '❌', modified: '✏️' }[row.status] || '·';
+  const sign = row.amount > 0 ? '+' : (row.amount < 0 ? '−' : '');
+  const abs = Math.abs(row.amount).toLocaleString();
+  const amtClass = row.amount > 0 ? 'amt-credit' : (row.amount < 0 ? 'amt-debit' : '');
+  const typeLabel = {
+    'earn':           'Gym clear',
+    'bonus':          'Papa bonus',
+    'redeem_request': 'Redemption',
+    'adjustment':     'Adjustment',
+  }[row.type] || row.type;
+  const room = row.room_code ? `Room ${row.room_code}` : '—';
+  const when = walletRelTime(row.created_at);
+  const noteHTML = row.note ? `<div class="ledger-note">${escapeHTML(row.note)}</div>` : '';
+  return `
+    <div class="ledger-row status-${row.status}">
+      <div class="ledger-icon">${icon}</div>
+      <div class="ledger-body">
+        <div class="ledger-top">
+          <span class="ledger-type">${typeLabel}</span>
+          <span class="ledger-amount ${amtClass}">${sign}${abs} 🔮</span>
+        </div>
+        <div class="ledger-meta">
+          <span>${room}</span>
+          <span class="meta-sep">·</span>
+          <span>${when}</span>
+        </div>
+        ${noteHTML}
+      </div>
+    </div>`;
+}
+
+function walletRelTime(iso) {
+  if (!iso) return '—';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (isNaN(ms) || ms < 0) return '—';
+  if (ms < 60_000)         return 'just now';
+  if (ms < 3_600_000)      return `${Math.floor(ms/60_000)} min ago`;
+  if (ms < 86_400_000)     return `${Math.floor(ms/3_600_000)} hr ago`;
+  return `${Math.floor(ms/86_400_000)} days ago`;
 }
 
 // ── GYM REVIEW (read-only) ────────────────────────────────────
@@ -1682,6 +1935,23 @@ async function endGym() {
   // Auto-save to Supabase
   await dbSave(STATE.player.id, STATE.save);
 
+  // Crystal-banking: every gym attempt that earned > 0 crystals writes a
+  // single 'earn' ledger row, status=approved. The per-question balance
+  // updates in checkAnswer already mutated STATE.save.total_crystals, so
+  // we record the ledger entry WITHOUT re-bumping the balance to avoid
+  // double-counting. The ledger is the audit trail of record.
+  if (STATE.gymCrystals > 0 && STATE.player && STATE.player.id) {
+    await dbLedgerInsert({
+      player_id:  STATE.player.id,
+      room_code:  STATE.roomCode || null,
+      type:       'earn',
+      amount:     STATE.gymCrystals,
+      status:     'approved',
+      note:       `${region.name} Gym ${STATE.currentGym}${passed ? ' — passed' : ''}`,
+      resolved_at: new Date().toISOString(),
+    });
+  }
+
   // Show complete screen
   const icon = document.getElementById('complete-icon');
   const title = document.getElementById('complete-title');
@@ -1934,6 +2204,21 @@ async function applyAbilitySteal(value) {
   STATE.save.total_crystals = (STATE.save.total_crystals || 0) + amount;
   await dbSave(leader.player_id, leader);
   await dbSave(STATE.player.id, STATE.save);
+
+  // Crystal-banking audit: pair of 'adjustment' ledger entries so the
+  // ledger sum stays equal to the canonical balance for both sides.
+  await dbLedgerInsert({
+    player_id: leader.player_id, room_code: code,
+    type: 'adjustment', amount: -amount, status: 'approved',
+    note: `Stolen by ${STATE.player.name || 'player'} (Pokemon ability)`,
+    resolved_at: new Date().toISOString(),
+  });
+  await dbLedgerInsert({
+    player_id: STATE.player.id, room_code: code,
+    type: 'adjustment', amount: +amount, status: 'approved',
+    note: `Stole ${amount} from ${leader.player_name || 'leader'}`,
+    resolved_at: new Date().toISOString(),
+  });
 
   const crystEl = document.getElementById('quiz-crystals');
   if (crystEl) crystEl.textContent = STATE.save.total_crystals.toLocaleString();
@@ -3116,6 +3401,169 @@ async function hostDoPoll() {
 
   const showPoke = ['PREGAME_CATCH','REGION_CATCH'].includes(HOST.currentPhase);
   if (showPoke) renderHostPokemonPool();
+
+  // Crystal-banking: refresh the pending-requests panel on every host poll.
+  await renderHostCrystalRequests();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HOST CRYSTAL-BANKING PANELS
+// ═══════════════════════════════════════════════════════════
+async function renderHostCrystalRequests() {
+  const list = document.getElementById('host-crystal-requests');
+  const badge = document.getElementById('host-request-badge');
+  if (!list || !badge) return;
+
+  const pending = await dbLedgerPending();
+  badge.textContent = pending.length;
+  badge.style.display = pending.length > 0 ? 'inline-block' : 'none';
+
+  if (!pending.length) {
+    list.innerHTML = '<div class="host-landing-empty">No pending requests.</div>';
+    return;
+  }
+
+  // Index saves by player_id so we can show names cheaply.
+  const nameById = {};
+  (HOST.players || []).forEach(s => { if (s && s.player_id) nameById[s.player_id] = s; });
+
+  list.innerHTML = pending.map(r => {
+    const who = nameById[r.player_id];
+    const playerLabel = who
+      ? `${who.player_emoji || '👤'} ${who.player_name || r.player_id}`
+      : r.player_id;
+    const abs = Math.abs(r.amount);
+    const peso = (abs / 100).toFixed(2);
+    const when = walletRelTime(r.created_at);
+    const noteHTML = r.note ? `<div class="ledger-note">Note: ${escapeHTML(r.note)}</div>` : '';
+    return `
+      <div class="host-request-card" id="hreq-${escapeAttr(r.id)}">
+        <div class="hrq-top">
+          <span class="hrq-player">${playerLabel}</span>
+          <span class="hrq-pid">${escapeHTML(r.player_id)}</span>
+        </div>
+        <div class="hrq-amount">−${abs.toLocaleString()} 🔮  <span class="hrq-peso">≈ ₱${peso}</span></div>
+        <div class="hrq-meta">
+          <span>Room ${escapeHTML(r.room_code || '—')}</span>
+          <span class="meta-sep">·</span>
+          <span>${when}</span>
+        </div>
+        ${noteHTML}
+        <div class="hrq-actions">
+          <button class="btn-primary" onclick="hostApproveRequest('${escapeAttr(r.id)}', ${abs})">✅ Approve</button>
+          <button class="btn-secondary" onclick="hostShowModifyRequest('${escapeAttr(r.id)}', ${abs})">✏️ Modify</button>
+          <button class="btn-danger" onclick="hostDeclineRequest('${escapeAttr(r.id)}')">❌ Decline</button>
+        </div>
+        <div id="hreq-modify-${escapeAttr(r.id)}" style="display:none" class="hrq-modify-form"></div>
+      </div>`;
+  }).join('');
+}
+
+async function hostApproveRequest(entryId, originalAmount) {
+  // The entry's amount is stored negative (redemption = debit). On approve
+  // we keep the same amount, flip status to 'approved', and bump balance.
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'approved',
+    resolved_at: new Date().toISOString(),
+  });
+  if (!row) { alert('Could not approve.'); return; }
+  await dbBumpCrystals(row.player_id, row.amount);     // amount is negative
+  showToast(`✅ Approved ${Math.abs(row.amount).toLocaleString()} 🔮 redemption`);
+  await renderHostCrystalRequests();
+}
+
+function hostShowModifyRequest(entryId, originalAmount) {
+  const el = document.getElementById('hreq-modify-' + entryId);
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="hrq-modify-row">
+      <label>Revised amount (positive)</label>
+      <input type="number" id="hreq-mod-${escapeAttr(entryId)}" min="1" value="${originalAmount}">
+    </div>
+    <button class="btn-primary" onclick="hostConfirmModifyRequest('${escapeAttr(entryId)}')">Confirm Modify</button>
+    <button class="btn-secondary" onclick="document.getElementById('hreq-modify-${escapeAttr(entryId)}').style.display='none'">Cancel</button>
+  `;
+}
+
+async function hostConfirmModifyRequest(entryId) {
+  const inp = document.getElementById('hreq-mod-' + entryId);
+  const newAmt = parseInt(inp?.value, 10);
+  if (!newAmt || newAmt <= 0) { alert('Enter a positive amount.'); return; }
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'modified',
+    amount: -Math.abs(newAmt),
+    resolved_at: new Date().toISOString(),
+  });
+  if (!row) { alert('Could not modify.'); return; }
+  await dbBumpCrystals(row.player_id, row.amount);
+  showToast(`✏️ Modified to ${newAmt.toLocaleString()} 🔮`);
+  await renderHostCrystalRequests();
+}
+
+async function hostDeclineRequest(entryId) {
+  const row = await dbLedgerUpdate(entryId, {
+    status: 'declined',
+    resolved_at: new Date().toISOString(),
+  });
+  if (!row) { alert('Could not decline.'); return; }
+  // No balance change on decline.
+  showToast('❌ Request declined');
+  await renderHostCrystalRequests();
+}
+
+// ── HOST: ADD-CRYSTALS BONUS FORM ────────────────────────────
+let _hostAddLookupTimer = null;
+async function hostAddCrystalsLookup() {
+  if (_hostAddLookupTimer) clearTimeout(_hostAddLookupTimer);
+  _hostAddLookupTimer = setTimeout(async () => {
+    const pid = document.getElementById('host-add-pid').value.trim();
+    const preview = document.getElementById('host-add-preview');
+    if (!pid) { preview.textContent = 'Enter a player ID to look up their name.'; return; }
+    const save = await dbLookupPlayer(pid);
+    if (!save) {
+      preview.textContent = '⚠️ No player found with that ID.';
+      preview.style.color = 'var(--red)';
+      return;
+    }
+    preview.style.color = '';
+    preview.innerHTML = `✓ ${save.player_emoji || '👤'} <b>${escapeHTML(save.player_name || pid)}</b> · balance ${(save.total_crystals||0).toLocaleString()} 🔮`;
+  }, 250);
+}
+
+async function hostAddCrystals() {
+  const err = document.getElementById('host-add-err');
+  const pid = document.getElementById('host-add-pid').value.trim();
+  const amt = parseInt(document.getElementById('host-add-amount').value, 10);
+  const note = document.getElementById('host-add-note').value.trim();
+  if (!pid)        { err.textContent = '⚠️ Player ID required'; return; }
+  if (!amt || amt <= 0) { err.textContent = '⚠️ Enter a positive amount'; return; }
+  if (!note)       { err.textContent = '⚠️ Note is required'; return; }
+  err.textContent = '';
+
+  const save = await dbLookupPlayer(pid);
+  if (!save) { err.textContent = '⚠️ No player with that ID'; return; }
+
+  // Atomic-ish: write the approved ledger row, then bump the balance.
+  await dbLedgerInsert({
+    player_id: pid,
+    room_code: HOST.roomCode || null,
+    type:      'bonus',
+    amount:    Math.abs(amt),
+    status:    'approved',
+    note:      note,
+    resolved_at: new Date().toISOString(),
+  });
+  await dbBumpCrystals(pid, Math.abs(amt));
+
+  showToast(`✅ ${amt.toLocaleString()} 🔮 added to ${save.player_name || pid}`);
+  // Clear form
+  document.getElementById('host-add-pid').value = '';
+  document.getElementById('host-add-amount').value = '';
+  document.getElementById('host-add-note').value = '';
+  document.getElementById('host-add-preview').textContent = 'Enter a player ID to look up their name.';
+  // Refresh the pending list in case this was a follow-up after an approve.
+  await renderHostCrystalRequests();
 }
 
 // ── PHASE A: PLAYER PRESENCE HEARTBEAT ────────────────────────

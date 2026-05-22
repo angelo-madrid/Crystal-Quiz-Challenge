@@ -87,7 +87,7 @@
     <div class="screen-header">
       <h2 id="map-player-name">Maria's Journey</h2>
       <div class="player-stats-bar">
-        <span>🔮 <span id="map-crystals">0</span></span>
+        <button class="stats-btn" onclick="openWallet()" title="Open Crystal Wallet">🔮 <span id="map-crystals">0</span> 💎</button>
         <span>🏅 <span id="map-badges">0</span> badges</span>
         <span>🐾 <span id="map-pokemon-count">0</span> pokemon</span>
       </div>
@@ -239,6 +239,31 @@
     </div>
     <div class="catch-content" id="catch-content">
       <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- CRYSTAL WALLET (banking layer) — accessible from the map by tapping
+       the crystals stat. Read-only ledger + redemption-request form. -->
+  <div id="screen-crystal-dashboard" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-map')">← Map</button>
+      <h2 id="wallet-title">💎 Crystal Wallet</h2>
+    </div>
+    <div class="wallet-balance-card">
+      <div class="wallet-label">Balance</div>
+      <div class="wallet-balance" id="wallet-balance">0</div>
+      <div class="wallet-peso">≈ ₱<span id="wallet-peso">0.00</span></div>
+    </div>
+
+    <div class="wallet-redeem-section" id="wallet-redeem-section">
+      <button class="btn-primary" id="wallet-redeem-toggle" onclick="walletShowRedeemForm()">
+        🎁 Redeem Crystals
+      </button>
+    </div>
+
+    <div class="wallet-section-label">📜 Ledger</div>
+    <div class="wallet-ledger" id="wallet-ledger">
+      <div class="wallet-empty">Loading…</div>
     </div>
   </div>
 
@@ -594,6 +619,40 @@
       <div class="host-section-label">🐾 POKEMON AVAILABILITY</div>
       <div class="host-pokemon-pool" id="host-pokemon-pool">
         <!-- Rendered by JS -->
+      </div>
+    </div>
+
+    <!-- Crystal-banking: pending redemption requests across all players -->
+    <div id="host-crystal-requests-section">
+      <div class="host-section-label">
+        💎 CRYSTAL REQUESTS
+        <span class="host-request-badge" id="host-request-badge">0</span>
+      </div>
+      <div class="host-crystal-requests" id="host-crystal-requests">
+        <div class="host-landing-empty">No pending requests.</div>
+      </div>
+    </div>
+
+    <!-- Crystal-banking: host-initiated bonus credit -->
+    <div id="host-add-crystals-section">
+      <div class="host-section-label">💎 ADD CRYSTALS (Host bonus)</div>
+      <div class="host-add-crystals-card">
+        <div class="field-group">
+          <label>Player ID</label>
+          <input type="text" id="host-add-pid" placeholder="e.g. MA-1234"
+            oninput="hostAddCrystalsLookup()">
+          <div class="host-add-preview" id="host-add-preview">Enter a player ID to look up their name.</div>
+        </div>
+        <div class="field-group">
+          <label>Amount (positive only)</label>
+          <input type="number" id="host-add-amount" min="1" placeholder="e.g. 500">
+        </div>
+        <div class="field-group">
+          <label>Note (required)</label>
+          <input type="text" id="host-add-note" maxlength="80" placeholder="e.g. tiebreaker bonus">
+        </div>
+        <div class="err" id="host-add-err"></div>
+        <button class="btn-primary" onclick="hostAddCrystals()">💎 Credit Player</button>
       </div>
     </div>
 

@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.3.3
+Version: 0.4.0
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -101,6 +101,41 @@ restores them silently:
   set, each player upserts a `last_seen` ISO timestamp into their save.
   The host dashboard reads this to render 🟢 Connected (<20s), ⏳
   Reconnecting (<60s), or ⚪ Not yet rejoined.
+
+## Crystal Banking (ledger + redemption)
+**Storage** — `crystal_ledger` table in Supabase (see `MIGRATIONS.md`).
+Every crystal movement records one row: `type ∈ {earn, bonus, redeem_request,
+adjustment}`, `amount` (signed: + credit, − debit), `status ∈ {approved,
+pending, declined, modified}`, optional `room_code` and `note`. The
+canonical balance lives on `player_saves.data.total_crystals` and is
+mutated **only** when an entry reaches `approved` or `modified`. Pending
+and declined entries never move the balance, so the ledger reconstructs
+the balance:
+```
+balance(player) = SUM(amount WHERE player_id=… AND status IN ('approved','modified'))
+```
+
+**Player wallet** — `screen-crystal-dashboard`, opened by tapping the
+🔮 stat on the map. Shows current balance + peso conversion (100 🔮 = ₱1),
+a Redeem Crystals form, and a newest-first ledger of every row. One open
+redemption request at a time (the button is replaced by a pending banner
+until the host resolves it).
+
+**Host panels** (added to `screen-host`):
+- **Crystal Requests** — every pending redemption across all players,
+  with **Approve** / **Modify** (revise amount) / **Decline** buttons.
+  Approve and Modify flip the ledger row's status and bump the canonical
+  balance; Decline only flips the status. Refreshed on every host poll
+  (~2.5 s) with a badge count.
+- **Add Crystals (Host bonus)** — manual credit form: Player ID with live
+  name lookup, positive amount, required note. Writes a `bonus` row at
+  `status='approved'` and credits the balance immediately.
+
+**Game wiring** — every in-game balance change writes a matching ledger
+row so the audit is complete:
+- `endGym` → one `earn` row per gym (total `gymCrystals`, room-scoped).
+- STEAL ability → paired `adjustment` rows (leader −X, stealer +X).
+- `buyRegionalPokeball` → `adjustment` row (−cost).
 
 ## Host Dashboard (`?host=true`)
 Opening `?host=true` with no `?room=` lands on `screen-host-landing`, a
