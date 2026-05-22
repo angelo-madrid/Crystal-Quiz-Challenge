@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.3.1
+Version: 0.3.2
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -11,7 +11,13 @@ Last updated: 2026-05-22
 > room-code rejoin fix (returning players restore their save via
 > localStorage match, mid-game strangers rejected); Host Dashboard game
 > manager (active games list, archive system, persistent room-code
-> banner, presence column).
+> banner, presence column); new mascot image (Pikachu vs Gengar battle
+> scene).
+>
+> **Session 2026-05-22 shipped:** UAT bug-fixes (no-repeat question
+> draws + runtime unscramble shuffle), completed-gym Review Mode,
+> room-code rejoin + presence heartbeat, Host Dashboard game manager
+> with archive, mascot image refresh. All committed and pushed.
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -169,6 +175,21 @@ block UAT).
   prizes.
 
 - **Animations, sound, leaderboard polish.**
+
+- **Known minor inconsistencies (cosmetic / a11y).** Discovered during
+  the 2026-05-22 verification pass; none block gameplay:
+  - In-file `"version"` strings drift behind the manifest:
+    `questions-junior.json` and `questions-senior.json` say "3.0"
+    internally but the manifest tracks them at 3.3 (4 edits past
+    initial). `pokemon.json` says "1.0" internally but the manifest
+    has it at 1.1 (Groudon → legendary + 5 ability renames). FILES.md
+    is authoritative; the JSON header strings just need a sync.
+  - The two `<img src="gengar.png">` tags still carry `alt="Gengar"`
+    even though the new mascot is a Pikachu vs Gengar battle scene.
+    Small a11y fix.
+  - New mascot PNG is 1.42 MB (1024×1024). A 512×512 export would
+    cut the home-screen payload roughly in half with no visible
+    difference at the 130 px display size.
 
 ## Versioning Rule
 Increment a file's version + date in FILES.md on every change. Bump
