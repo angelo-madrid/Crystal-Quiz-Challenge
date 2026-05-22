@@ -1,10 +1,17 @@
 # Crystal Quiz Challenge
-Version: 0.3.0
+Version: 0.3.1
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
 > per-kid draw, pokemon.json with all 10 ability mechanics, Regions 1-2
 > playable slice, graceful end after Region 2.
+>
+> **Post-Phase-1 UAT additions (still v0.3.x, before Phase 2 begins):**
+> completed-gym Review Mode (read-only, blocks crystal re-farming);
+> room-code rejoin fix (returning players restore their save via
+> localStorage match, mid-game strangers rejected); Host Dashboard game
+> manager (active games list, archive system, persistent room-code
+> banner, presence column).
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -44,6 +51,73 @@ peso credits for real Pokemon cards.
 - Each kid sees a UNIQUE random question (no copying)
 - Questions age-appropriate per band
 - Pokemon race rule: once caught, greyed out for others
+
+## Completed-Gym Review Mode
+Once a kid passes a gym, that gym becomes read-only — they cannot re-play
+it for crystals. Tapping a completed gym (🏅 on the gym-select card) opens
+`screen-gym-review`, which renders, per question: the question text, the
+correct answer, the kid's actual pick (✅ correct / ❌ wrong / ⏱ timeout),
+plus a stats banner (passed?, crystals earned, X / 10 correct). No timer,
+no abilities, no submit — purely a recap.
+
+Persistence: `STATE.save.regions[r].gymResults[g]` is written at the end
+of every gym attempt, holding the 10 questions, the kid's chosen answer
+per question, and the correctness flag. The data is additive — old saves
+without this field render a graceful fallback panel and are still blocked
+from replay by the `startGym` guard.
+
+Defensive guard: `startGym` short-circuits to `openGymReview` BEFORE
+resetting any STATE counters or creating a timer if the gym is already
+in `gymsCompleted`. Closes the crystal re-farming loophole.
+
+## Room-Code Rejoin
+Players' saves (crystals, Pokemon team, gymsCompleted, gymResults,
+seen-question set) persist durably in Supabase via `player_saves`. If a
+kid's tab crashes mid-game and they reopen `?room=CODE`, the game
+restores them silently:
+
+- **Auto-rejoin via URL**: `tryAutoRejoinFromURL(code)` fires on window
+  load. If `localStorage.cqc_player_id` is on the room's roster, the
+  kid skips the join form and lands in the right screen for the
+  current phase.
+- **Manual rejoin via form**: `playerJoin` checks the same localStorage
+  match and routes to `reconnectExistingPlayer` instead of overwriting
+  with a fresh save.
+- **Mid-game strangers are rejected**: a brand-new name with no
+  localStorage and no roster entry gets "Game already started — only
+  returning players can rejoin". The roster is locked after start.
+- **Lobby joining is unchanged**: fresh kids can still join a room in
+  `phase: 'lobby'` and create a new save.
+- **Presence heartbeat**: every 15 seconds while `STATE.roomCode` is
+  set, each player upserts a `last_seen` ISO timestamp into their save.
+  The host dashboard reads this to render 🟢 Connected (<20s), ⏳
+  Reconnecting (<60s), or ⚪ Not yet rejoined.
+
+## Host Dashboard (`?host=true`)
+Opening `?host=true` with no `?room=` lands on `screen-host-landing`, a
+game manager that lists every room (active and archived). Opening with
+`?host=true&room=CODE` jumps straight to the room (lobby or dashboard).
+
+- **+ Create New Game** at the top — opens an inline code-entry form,
+  writes a fresh `lobby` room with `archived=false`.
+- **Active Games** (non-archived, recency-sorted, capped at 15). Each
+  card shows the room code in a large gold-bordered box (the visual
+  anchor for a kid to read off), a Copy button, a status pill
+  (⏳ Waiting / 🟢 In progress / ⏸️ Paused), player count, relative
+  time, plus `[Resume]` and `[Archive]` actions.
+- **Archive system** — every room carries a boolean `archived` flag
+  (default false). Archive flips it true; Unarchive flips it false. No
+  row is ever deleted. Toast "Archived ✓" fades for 2.2s; no confirm
+  dialog. Finished games (`phase == 'GAME_OVER'`) are auto-archived
+  via `hostNextPhase` and render with `[View Results]` instead of
+  Resume — no prominent code reuse. Manually archived non-finished
+  games keep their room code prominent + `[Resume]` + `[Unarchive]`.
+- **Persistent room-code banner** inside `screen-host`, pinned above
+  the header: `📢 Room: <CODE> — Players rejoin with this code` with a
+  Copy button. Non-dismissible so Papa can read it aloud while kids
+  trickle back over a minute or two.
+- **Presence column** on each player card derived from the heartbeat
+  field above.
 
 ## Question System
 - Source content: a 590-question v2.0 library (pokeball 30, catch 60, gym
