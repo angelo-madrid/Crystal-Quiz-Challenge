@@ -176,6 +176,31 @@ async function dbLedgerPending() {
   return data || [];
 }
 
+// Ledger invariant — sum every approved/modified row for a player and
+// compare against the canonical balance on player_saves.data.total_crystals.
+// Logs a console.warn on divergence so we can spot drift during UAT.
+// Returns the ledger-derived sum (or null on failure).
+async function balanceFromLedger(playerId) {
+  if (!playerId) return null;
+  try {
+    const { data, error } = await sb.from('crystal_ledger')
+      .select('amount, status')
+      .eq('player_id', playerId)
+      .in('status', ['approved', 'modified']);
+    if (error) { console.error('balanceFromLedger fetch error:', JSON.stringify(error)); return null; }
+    const ledgerSum = (data || []).reduce((s, r) => s + (r.amount || 0), 0);
+    const save = await dbLoad(playerId);
+    const savedBalance = (save && save.total_crystals) || 0;
+    if (ledgerSum !== savedBalance) {
+      console.warn(`[LEDGER DRIFT] player ${playerId}: ledger=${ledgerSum}, save=${savedBalance}`);
+    }
+    return ledgerSum;
+  } catch (e) {
+    console.warn('balanceFromLedger threw:', e);
+    return null;
+  }
+}
+
 // True iff the player has at least one pending redeem_request.
 async function dbHasPendingRedemption(playerId) {
   const { data, error } = await sb.from('crystal_ledger')
@@ -300,11 +325,12 @@ const MEDALS = ['🥇','🥈','🥉','4️⃣','5️⃣','6️⃣','7️⃣','8�
 // "X/5 players joined" counter, and the playerJoin "Room is full" guard.
 const MAX_PLAYERS = 5;
 
-// ── PHASE 1 TEST BUILD GATE ──────────────────────────────────
-// Step 1.6: the engine is being tested on Regions 1-2 only. Bump this when
-// Regions 3+ are validated. Every code path that would advance past this
-// region must first check it and route to showTestBuildComplete() instead.
-const MAX_PLAYABLE_REGION = 2;
+// ── PHASE 2: all 10 regions unlocked ─────────────────────────
+// The Phase-1 test-build lid is gone — Regions 1-10 are all playable.
+// We keep the constant at 10 so any defensive guard that checks
+// "regionId > MAX_PLAYABLE_REGION" still short-circuits cleanly past
+// the last region (e.g. catch-pool exhaustion fallbacks).
+const MAX_PLAYABLE_REGION = 10;
 
 // ── REGION DATA ──────────────────────────────────────────────
 const REGIONS = [
@@ -1419,6 +1445,7 @@ async function pdcSendBroadcast() {
 
   if (txtEl) txtEl.value = '';
   showToast('📢 Message sent!');
+  balanceFromLedger(player.id);
   await renderPlayerDashboard();
 }
 
@@ -1882,8 +1909,13 @@ let REGIONAL_CATCH_STATE = {
 };
 
 async function startRegionalCatch(regionId) {
-  // 1.6: defensive — never run a regional catch for an out-of-scope region.
-  if (regionId > MAX_PLAYABLE_REGION) { showTestBuildComplete(); return; }
+  // Defensive — Regions go 1..10. Anything past the lid is a logic bug,
+  // not a soft lock; bail with a warning and route back to the map.
+  if (regionId > MAX_PLAYABLE_REGION) {
+    console.warn(`[startRegionalCatch] regionId ${regionId} out of range`);
+    showMap();
+    return;
+  }
   // Phase 1 step 1.4: ensure pokemon.json is loaded before rendering the grid.
   await loadPokemon();
 
@@ -2043,6 +2075,7 @@ async function buyRegionalPokeball() {
       note: `Bought Pokeball in ${region.name}`,
       resolved_at: new Date().toISOString(),
     });
+    balanceFromLedger(STATE.player.id);
   }
   renderRegionalCatch();
 }
@@ -2222,28 +2255,37 @@ async function finishRegionalCatch() {
   STATE.save.updated_at = new Date().toISOString();
   await dbSave(STATE.player.id, STATE.save);
 
-  // 1.6: if the just-finished region is the final playable one in this test
-  // build (Region 2 today), surface the celebratory test-build lid instead
-  // of dumping the kid back onto a map of locked regions.
+  // Phase 2: all 10 regions are playable. If the player just cleared the
+  // final region's last gym, flip the room to GAME_OVER (which auto-
+  // archives via the host's hostNextPhase wiring) and route to the prize
+  // screen / map for now. No more test-build lid.
   const justFinished = REGIONAL_CATCH_STATE && REGIONAL_CATCH_STATE.region;
   const fullyClearedRegion = justFinished
     && ((STATE.save.regions || {})[justFinished.id]?.gymsCompleted || []).length >= 5;
   if (fullyClearedRegion && justFinished.id >= MAX_PLAYABLE_REGION) {
-    showTestBuildComplete();
+    // Mark the room GAME_OVER so the host dashboard buckets it as Finished.
+    const code = STATE.roomCode;
+    if (code) {
+      const room = await dbReadRoom(code);
+      if (room && room.phase !== 'GAME_OVER') {
+        room.phase = 'GAME_OVER';
+        room.archived = true;
+        room.updated_at = new Date().toISOString();
+        await dbWriteRoom(code, room);
+      }
+    }
+    showFinalCompleteScreen();
     return;
   }
 
   showMap();
 }
 
-// ── TEST BUILD LID (Phase 1 step 1.6) ─────────────────────────
-// Single chokepoint for "you've reached the edge of the test build".
-// Called from: locked-region clicks on the map, defensive guards in
-// startGym / startRegionalCatch, and finishRegionalCatch when Region 2
-// has just been completed.
-function showTestBuildComplete() {
-  // Clear any timers that might be running so we don't tick over a frozen
-  // screen.
+// ── FINAL COMPLETE (Region 10 cleared) ────────────────────────
+// Routed to from finishRegionalCatch when the kid clears Region 10's
+// final gym. Used to be the Phase-1 test-build lid; Phase 2 repurposes
+// it as the legitimate end-of-game screen.
+function showFinalCompleteScreen() {
   if (STATE.timerInt) { clearInterval(STATE.timerInt); STATE.timerInt = null; }
   if (REGIONAL_CATCH_STATE && REGIONAL_CATCH_STATE.timerInt) {
     clearInterval(REGIONAL_CATCH_STATE.timerInt);
@@ -2251,6 +2293,8 @@ function showTestBuildComplete() {
   }
   showScreen('screen-test-build-complete');
 }
+// Legacy alias so any pre-Phase-2 call sites keep working.
+function showTestBuildComplete() { return showFinalCompleteScreen(); }
 
 // ── MAP SCREEN ────────────────────────────────────────────────
 function showMap() {
@@ -2267,27 +2311,24 @@ function showMap() {
   REGIONS.forEach((region, idx) => {
     const regionSave = (save.regions || {})[region.id] || {};
     const gymsCompleted = (regionSave.gymsCompleted || []).length;
-    // 1.6: anything past MAX_PLAYABLE_REGION is a soft lock — clickable but
-    // routes to the test-build-complete screen instead of loading the gym.
-    const isComingSoon = region.id > MAX_PLAYABLE_REGION;
-    const isLocked = !isComingSoon
-      && idx > 0
+    // Phase 2: all 10 regions are unlocked. The only soft-lock left is
+    // sequential progression — Region N is locked until Region N-1 is
+    // fully cleared (all 5 gyms). The test-build "coming soon" tier is
+    // gone.
+    const isLocked = idx > 0
       && ((save.regions || {})[REGIONS[idx-1].id]?.gymsCompleted || []).length < 5;
     const isCompleted = gymsCompleted >= 5;
 
     const card = document.createElement('div');
     const classes = ['region-card'];
-    if (isComingSoon) classes.push('locked', 'coming-soon');
-    else if (isLocked) classes.push('locked');
+    if (isLocked) classes.push('locked');
     if (isCompleted) classes.push('completed');
     card.className = classes.join(' ');
 
-    const statusText = isComingSoon ? '🚧 Coming Soon'
-                     : isCompleted  ? '✅ Complete'
+    const statusText = isCompleted  ? '✅ Complete'
                      : isLocked     ? '🔒 Locked'
                      :                '▶ In Progress';
-    const statusIcon = isComingSoon ? '🚧'
-                     : isCompleted  ? '✅'
+    const statusIcon = isCompleted  ? '✅'
                      : isLocked     ? '🔒'
                      :                '▶';
 
@@ -2300,11 +2341,7 @@ function showMap() {
       </div>
       <div class="region-status">${statusIcon}</div>
     `;
-    if (isComingSoon) {
-      // Coming-soon cards are clickable but lead to the test-build lid,
-      // not the gym select. Prevents accidental access to unwired content.
-      card.onclick = showTestBuildComplete;
-    } else if (!isLocked) {
+    if (!isLocked) {
       card.onclick = () => showGymSelect(region.id);
     }
     container.appendChild(card);
@@ -2593,8 +2630,12 @@ function renderGymReview(regionId, gymNum, results) {
 
 // ── START GYM ─────────────────────────────────────────────────
 async function startGym(regionId, gymId) {
-  // 1.6: defensive — never load a gym from an out-of-scope region.
-  if (regionId > MAX_PLAYABLE_REGION) { showTestBuildComplete(); return; }
+  // Defensive — Regions go 1..10. Anything past the lid is a logic bug.
+  if (regionId > MAX_PLAYABLE_REGION) {
+    console.warn(`[startGym] regionId ${regionId} out of range`);
+    showMap();
+    return;
+  }
   // Review feature: completed gyms are READ-ONLY. Any code path that
   // reaches startGym for a gym already in gymsCompleted gets redirected
   // to the review screen instead of running the timer/scoring loop.
@@ -2709,6 +2750,11 @@ function loadQuestion() {
   let totalTime = baseTime + formatMod + ageMod;
 
   STATE.timeLeft = totalTime;
+  // Lock the canonical question time limit. The TIME ability mutates
+  // STATE.timeLeft + STATE.totalTime to give the player a safety buffer,
+  // but the speed-bonus denominator in checkAnswer reads originalTimeLimit
+  // — so TIME can only buy seconds, never inflate crystal earnings.
+  STATE.originalTimeLimit = totalTime;
   startTimer(totalTime, q.tier);
 }
 
@@ -2792,18 +2838,24 @@ function checkAnswer(idx) {
   const fb = document.getElementById('feedback-bar');
   const mods = STATE.pendingMods;
   if (chosen === correct) {
-    // Base crystals
+    // Base crystals — speed bonus is capped to STATE.originalTimeLimit so
+    // the TIME ability buys safety only, never inflates earnings.
     const base = region.baseCrystals;
-    const speedBonus = Math.round((STATE.timeLeft / (TIER_TIME[q.tier] + FORMAT_TIME_MOD[q.type] + AGE_TIME_MOD[STATE.player?.ageGroup])) * region.speedMax);
-    let earned = base + speedBonus;
+    const denom = STATE.originalTimeLimit
+      || (TIER_TIME[q.tier] + FORMAT_TIME_MOD[q.type] + AGE_TIME_MOD[STATE.player?.ageGroup]);
+    // Clamp timeLeft to the original limit — if TIME ability pushed timeLeft
+    // beyond the original window, the surplus does not earn extra bonus.
+    const effectiveTimeLeft = Math.min(STATE.timeLeft, denom);
+    const speedBonus = Math.round((effectiveTimeLeft / denom) * region.speedMax);
+    const baseEarned = base + speedBonus;
+    let earned = baseEarned;
 
     // 1.5: apply DOUBLE_OR_NOTHING (×2 on correct) then MULTIPLY (×value)
     const modParts = [];
-    if (mods.doubleOrNothing) { earned *= 2; modParts.push('×2 Double'); }
-    if (mods.multiplier && mods.multiplier !== 1) {
-      earned = Math.round(earned * mods.multiplier);
-      modParts.push(`×${mods.multiplier} Multiply`);
-    }
+    const usedDoN = !!mods.doubleOrNothing;
+    const usedMult = mods.multiplier && mods.multiplier !== 1;
+    if (usedDoN)  { earned *= 2; modParts.push('×2 Double'); }
+    if (usedMult) { earned = Math.round(earned * mods.multiplier); modParts.push(`×${mods.multiplier} Multiply`); }
 
     STATE.gymCrystals += earned;
     STATE.gymCorrect++;
@@ -2816,12 +2868,56 @@ function checkAnswer(idx) {
       ? `✅ Correct! +${earned} 🔮  (${modParts.join(' + ')})`
       : `✅ Correct! +${earned} 🔮`;
     fb.className = 'feedback-bar correct';
+
+    // Crystal-banking audit: write 'adjustment' ledger rows for the
+    // EXTRA crystals contributed by modifier abilities (on top of the
+    // base earn row that endGym writes for the full gym total). This
+    // gives players a per-ability history without double-counting —
+    // amount here is the delta the modifier added, not the full earned.
+    if (STATE.player && STATE.player.id && (usedDoN || usedMult)) {
+      const code = STATE.roomCode || null;
+      // Reconstruct the deltas in the same order the multipliers stack.
+      let runningBase = baseEarned;
+      if (usedDoN) {
+        const donDelta = runningBase;  // doubled = added one full base
+        runningBase *= 2;
+        dbLedgerInsert({
+          player_id: STATE.player.id, room_code: code,
+          type: 'adjustment', amount: +donDelta, status: 'approved',
+          note: `DOUBLE_OR_NOTHING — won`,
+          resolved_at: new Date().toISOString(),
+        }).then(() => balanceFromLedger(STATE.player.id));
+      }
+      if (usedMult) {
+        const after = Math.round(runningBase * mods.multiplier);
+        const multDelta = after - runningBase;
+        if (multDelta !== 0) {
+          dbLedgerInsert({
+            player_id: STATE.player.id, room_code: code,
+            type: 'adjustment', amount: +multDelta, status: 'approved',
+            note: `MULTIPLY ability used`,
+            resolved_at: new Date().toISOString(),
+          }).then(() => balanceFromLedger(STATE.player.id));
+        }
+      }
+    }
   } else {
     // 1.5: DOUBLE_OR_NOTHING wrong = 0 crystals (which is the default anyway).
     // SHIELD: noted in the feedback but no scoring change today (no wrong penalties exist).
     const note = mods.shield ? ' 🛡️ Shielded' : '';
     fb.textContent = `❌ Wrong! Answer: ${correct}${note}`;
     fb.className = 'feedback-bar wrong';
+    // DOUBLE_OR_NOTHING — even a "lose" outcome writes an audit row so
+    // the ledger reflects the risked attempt. amount=0 keeps the canonical
+    // balance unchanged. Only fired when the player explicitly used DoN.
+    if (mods.doubleOrNothing && STATE.player && STATE.player.id) {
+      dbLedgerInsert({
+        player_id: STATE.player.id, room_code: STATE.roomCode || null,
+        type: 'adjustment', amount: 0, status: 'approved',
+        note: `DOUBLE_OR_NOTHING — lost`,
+        resolved_at: new Date().toISOString(),
+      }).then(() => balanceFromLedger(STATE.player.id));
+    }
   }
 
   // Consume single-question mods
@@ -2832,6 +2928,11 @@ function checkAnswer(idx) {
 }
 
 function timeUp() {
+  // Defensive guard — if the host paused the room between the interval
+  // firing and this function running, don't penalize the player. The
+  // pause poll (checkPauseState) clears STATE.timerInt and restarts on
+  // resume, but a lone tick can still slip through; swallow it.
+  if (STATE.paused) return;
   STATE.answered = true;
   // Review feature: timed-out questions log as null (no pick).
   STATE.gymAnswerLog[STATE.currentQ] = null;
@@ -2928,6 +3029,7 @@ async function endGym() {
       note:       `Gym ${STATE.currentGym} ${verdict} · ${region.name}`,
       resolved_at: new Date().toISOString(),
     });
+    balanceFromLedger(STATE.player.id);
   }
 
   // Show complete screen
@@ -3104,7 +3206,10 @@ async function useAbility(pokemonIdx) {
 // ── ABILITY HELPERS (one per mechanic) ────────────────────────
 
 // TIME — add seconds to the live timer. We bump both timeLeft and totalTime
-// so the bar percentage stays sane.
+// (totalTime drives the visible bar percentage) but DO NOT touch
+// STATE.originalTimeLimit — that's the canonical denominator the speed
+// bonus reads in checkAnswer, so TIME ability only buys safety, never
+// extra crystals.
 function applyAbilityTime(seconds) {
   STATE.timeLeft  += seconds;
   STATE.totalTime += seconds;
@@ -3197,6 +3302,10 @@ async function applyAbilitySteal(value) {
     note: `Stole ${amount} from ${leader.player_name || 'leader'}`,
     resolved_at: new Date().toISOString(),
   });
+
+  // Invariant check on both sides.
+  balanceFromLedger(leader.player_id);
+  balanceFromLedger(STATE.player.id);
 
   const crystEl = document.getElementById('quiz-crystals');
   if (crystEl) crystEl.textContent = STATE.save.total_crystals.toLocaleString();
@@ -5417,6 +5526,35 @@ async function checkPauseState() {
   const overlay = document.getElementById('pause-overlay');
   if (overlay && !HOST.isHost) {
     overlay.style.display = room.isPaused ? 'flex' : 'none';
+  }
+
+  // Pause / resume — freeze the player's local quiz timer so the kid
+  // doesn't lose a question while the host has the room paused.
+  if (!HOST.isHost) {
+    if (room.isPaused && !STATE.paused) {
+      // Transitioning into paused state. Snapshot remaining time and
+      // stop the interval so it can't fire timeUp() mid-pause.
+      STATE.paused = true;
+      if (STATE.timerInt) {
+        STATE.pausedTimeRemaining = STATE.timeLeft;
+        clearInterval(STATE.timerInt);
+        STATE.timerInt = null;
+        // Freeze the displayed countdown number at the snapshot value.
+        const txt = document.getElementById('timer-text');
+        if (txt) txt.textContent = Math.ceil(STATE.pausedTimeRemaining);
+      }
+    } else if (!room.isPaused && STATE.paused) {
+      // Transitioning out of paused state. Restore from the snapshot
+      // and continue counting down from there. Only restart if the
+      // player is still mid-question (interval was cleared by us).
+      STATE.paused = false;
+      const remaining = STATE.pausedTimeRemaining;
+      STATE.pausedTimeRemaining = null;
+      if (remaining != null && !STATE.answered && !STATE.timerInt) {
+        STATE.timeLeft = remaining;
+        resumeTimer();
+      }
+    }
   }
 
   // Broadcast banner — show host announcement until the player dismisses

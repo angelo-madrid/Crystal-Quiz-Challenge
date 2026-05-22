@@ -490,23 +490,23 @@
     <div id="review-content"><!-- rendered by JS --></div>
   </div>
 
-  <!-- TEST BUILD COMPLETE — temporary lid for the engine test (Phase 1 step 1.6) -->
+  <!-- FINAL COMPLETE — shown when the player clears Region 10. -->
   <div id="screen-test-build-complete" class="screen">
     <div class="complete-hero">
-      <div class="complete-badge-icon">🎉</div>
-      <h2>Test Build Complete!</h2>
-      <div class="result-msg passed">You've cleared the engine test (Regions 1 &amp; 2)</div>
+      <div class="complete-badge-icon">🏆</div>
+      <h2>Game Complete!</h2>
+      <div class="result-msg passed">You cleared all 10 regions!</div>
     </div>
-    <div class="complete-stats">
+    <div class="complete-stats" id="final-complete-stats">
       <div style="text-align:center;padding:20px;line-height:1.55;font-weight:700">
-        Regions 3 through 10 are still being polished.<br>
-        <span style="color:var(--gold)">More regions coming soon!</span><br><br>
-        💾 Your crystals, badges, and Pokemon are saved.<br>
-        When the full build is ready you can pick up right where you left off.
+        🎉 You're a Crystal Quiz Champion!<br>
+        <span style="color:var(--gold)">All 10 regions defeated.</span><br><br>
+        💎 Trade your crystals for Pokemon cards with Papa!<br>
+        📊 Your full journey is saved on the dashboard.
       </div>
     </div>
     <div class="complete-buttons">
-      <button class="btn-primary" onclick="showMap()">🗺️ Back to Map</button>
+      <button class="btn-primary" onclick="openPlayerDashboard()">🏠 Dashboard</button>
       <button class="btn-secondary" onclick="showScreen('screen-leaderboard'); loadLeaderboard();">
         🏆 See Leaderboard
       </button>
@@ -624,7 +624,7 @@
   <!-- WAITING LOBBY — all players see this after joining -->
   <div id="screen-waiting-lobby" class="screen">
     <div class="waiting-lobby-hero">
-      <div class="gengar-wrap" style="margin-bottom:8px"><img src="gengar.png" class="gengar-img" alt="Gengar" style="width:80px;height:80px"></div>
+      <div class="gengar-wrap" style="margin-bottom:8px"><img src="gengar.png" class="gengar-img" alt="Pikachu vs Gengar battle scene" style="width:80px;height:80px"></div>
       <div class="wl-room-code-label">Room Code</div>
       <div class="wl-room-code" id="wl-room-code">----</div>
       <div class="wl-status" id="wl-status">

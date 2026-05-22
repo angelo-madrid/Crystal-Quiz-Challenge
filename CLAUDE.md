@@ -2,47 +2,26 @@
 Version: 0.5.0
 Last updated: 2026-05-23
 
-> **Phase 1 complete** — engine wired to age-split question banks, random
-> per-kid draw, pokemon.json with all 10 ability mechanics, Regions 1-2
-> playable slice, graceful end after Region 2.
+> **Phase 1 + Phase 2 complete** — engine wired to age-split question
+> banks, random per-kid draw, full Pokemon library with all 10 ability
+> mechanics, **all 10 regions playable** (test-build lid removed),
+> Region 10 clear triggers GAME_OVER and auto-archives the room.
 >
-> **Multiplayer-only game** — there is no solo / offline play. The only
-> player entry point is "Join a Room" with a host-created room code.
-> `?host=true` lands the host on the dashboard. `?room=CODE` auto-rejoin
+> **Multiplayer-only game** — there is no solo / offline play. Players
+> enter via screen-home (Create Account / Log In), land on the
+> three-column player dashboard, then Join a Room. `?host=true` lands
+> the host on the three-column dashboard. `?room=CODE` auto-rejoin
 > for returning players still works exactly as before.
 >
-> **Post-Phase-1 UAT additions (still v0.3.x, before Phase 2 begins):**
-> completed-gym Review Mode (read-only, blocks crystal re-farming);
-> room-code rejoin fix (returning players restore their save via
-> localStorage match, mid-game strangers rejected); Host Dashboard game
-> manager (active games list, archive system, persistent room-code
-> banner, presence column); new mascot image (Pikachu vs Gengar battle
-> scene); solo / offline play paths removed (home screen → only "Join
-> a Room"; `continueJourney` and `createPlayer` stubbed to redirect to
-> the join screen so no save can be created or restored outside a
-> Supabase room).
->
-> **Session 2026-05-22 (evening) shipped:** player identity system
-> (screen-register, screen-login, screen-player-dashboard,
-> screen-account-gate), crystal banking layer (crystal_ledger, wallet
-> screen, redeem flow), host Add Crystals panel, ledger wiring for
-> game earnings. Supabase migrations run. All committed and pushed.
->
-> **Session 2026-05-22 (late evening) shipped:** Host Dashboard
-> rewritten as a three-column landscape layout for laptop use.
-> Column 1 (ROOMS): Create New Game + LIVE/WAITING/ARCHIVED room
-> lists with View → opening a Room Detail Overlay (player list
-> sorted presence-then-crystals, game progress, Pokemon Available
-> in catch phases, Pause/Archive/EndGame actions). Column 2
-> (CRYSTALS): search bar, Active Accounts (pending redemptions
-> float top, then sorted by balance desc) with Approve/Modify/
-> Decline + View Ledger modal + Archive, Archived Accounts,
-> Award Bonus Crystals form. Column 3 (CONTROLS): Game Flow
-> (Advance/Pause/EndGame), Room Access (Lock toggle + Force
-> Save All), Broadcast input + 4 presets, Danger Zone (Reset
-> Room). Player side: `room.locked` blocks fresh joiners (returning
-> players still reconnect), `room.announcement` shows a dismissible
-> broadcast banner on every player screen.
+> **Sessions 2026-05-22 (evening): Host Dashboard
+> redesigned as 3-column layout (rooms, crystals, controls, room
+> detail overlay, start game, broadcast presets, danger zone);
+> Player Dashboard redesigned as 3-column layout (game rooms with
+> abandon flow, crystal wallet with ledger, my journey with personal
+> bests + Pokemon team + broadcast); entry flows corrected for both
+> host and player; ledger sync for ability + purchase paths; pause
+> timer freeze fix; TIME ability speed bonus cap; Regions 3-10
+> unlocked; cosmetic fixes. All committed and pushed.**
 
 ## What This Is
 Multiplayer Pokemon-themed educational quiz game for a Pokemon card
@@ -381,45 +360,28 @@ on the three-column dashboard**. There is no separate landing /
 
 ## Phase 3 Backlog
 
-### NEXT SESSION — HIGH PRIORITY (run as one combined prompt)
+### REMAINING PHASE 3 ITEMS
 
-- **Host Crystal Requests panel** — show all pending `redeem_request`
-  entries across all players; Approve / Modify / Decline actions;
-  auto-refresh every 15 s.
+- **Prize screen / GAME_OVER podium** — crystal-to-peso conversion
+  summary, unused-Pokemon level bonus. Needed to display final
+  results to kids after Region 10 clear (today they land on a
+  generic "Game Complete" screen).
 
-- **Ledger sync fix** — audit all crystal mutation paths (gym clear,
-  gym fail, STEAL, MULTIPLY, DOUBLE_OR_NOTHING, Pokeball purchase) and
-  ensure every one writes a `crystal_ledger` entry. Add a
-  `balanceFromLedger()` invariant helper.
-
-- **Per-player ledger on Host Dashboard** — tap player card → modal
-  showing full ledger history with amounts, types, rooms, notes, dates.
-
-- **Player sort order on Host Dashboard** — Connected → Reconnecting →
-  Offline, sorted by crystals descending within each group.
-
-- **Pause must freeze player's local timer (pre-existing bug)** — on
-  pause broadcast, record `STATE.pausedTimeRemaining`, clear interval,
-  freeze display. On resume, restart from frozen value. Guard
-  `timeUp()` against firing while paused.
-
-- **TIME ability speed bonus cap** — use `STATE.originalTimeLimit`
-  (set at question load, never updated by TIME ability) as the
-  speed-bonus denominator.
-
-- **Phase 2 — Unlock Regions 3-10** — remove lock + graceful-end-at-2
-  logic; verify question banks for all 10 regions; `GAME_OVER` after
-  Region 10.
-
-- **Cosmetic fixes** — `alt` text on `gengar.png` → "Pikachu vs Gengar
-  battle scene"; sync JSON version strings (questions files → 3.3,
-  pokemon.json → 1.1); optimize `gengar.png` to 512×512.
+- **Animations, sound, leaderboard polish.**
 
 ### PHASE 4 CHECKLIST (before live event)
-- Morning of convention: delete all test rows from `player_saves`,
-  `rooms`, `crystal_ledger` in Supabase.
-- Full dress rehearsal with real kids.
-- Tag `v1.0.0`.
+
+- **Morning of convention**: delete all test rows from `player_saves`,
+  `rooms`, `crystal_ledger` in Supabase using the
+  `player_identity_clean_slate` migration as template.
+
+- **Optimize `gengar.png`**: export at 512×512 to reduce from
+  1.42 MB to ~350 KB. No visible difference at 130px display
+  size. Do before dress rehearsal.
+
+- **Full dress rehearsal with real kids.**
+
+- **Tag `v1.0.0`.**
 
 ## Versioning Rule
 Increment a file's version + date in FILES.md on every change. Bump
