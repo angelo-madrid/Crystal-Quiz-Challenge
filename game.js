@@ -89,24 +89,33 @@ const REGIONS = [
 ];
 
 // ── STARTER POKEMON ──────────────────────────────────────────
-const STARTER_POKEMON = [
-  { id:'pikachu',   name:'Pikachu',   emoji:'⚡', type:'Electric',      ability:'Thunderbolt', abilityDesc:'Eliminates 2 wrong answers',          region:0 },
-  { id:'charmander',name:'Charmander',emoji:'🔥', type:'Fire',          ability:'Ember',       abilityDesc:'Adds +5 seconds to your timer',        region:0 },
-  { id:'squirtle',  name:'Squirtle',  emoji:'💧', type:'Water',         ability:'Water Gun',   abilityDesc:'Skip question — no penalty',           region:0 },
-  { id:'bulbasaur', name:'Bulbasaur', emoji:'🌿', type:'Grass/Poison',  ability:'Vine Whip',   abilityDesc:'Reveals category of next question',    region:0 },
-  { id:'eevee',     name:'Eevee',     emoji:'🌙', type:'Normal',        ability:'Adapt',       abilityDesc:'Change your answer once after picking', region:0 },
-  { id:'gengar',    name:'Gengar',    emoji:'👻', type:'Ghost/Poison',  ability:'Shadow Ball', abilityDesc:'Steal 150 🔮 from the leader if correct',region:0},
-  { id:'snorlax',   name:'Snorlax',   emoji:'💤', type:'Normal',        ability:'Rest',        abilityDesc:'Freeze timer — no speed bonus though',  region:0 },
-  { id:'alakazam',  name:'Alakazam',  emoji:'🔮', type:'Psychic',       ability:'Psychic',     abilityDesc:'Confirm if your answer is correct first',region:0},
-  { id:'dratini',   name:'Dratini',   emoji:'🐉', type:'Dragon',        ability:'Dragon Rage', abilityDesc:'Double crystals if correct — 0 if wrong',region:0},
-  { id:'jigglypuff',name:'Jigglypuff',emoji:'🎵', type:'Normal/Fairy',  ability:'Sing',        abilityDesc:'All players lose 5s from their timer',  region:0 }
-];
+// Phase 1 step 1.4: starter data lives in pokemon.json under .starters.
+// Access via STATE.pokemon?.starters after loadPokemon() has run.
+// Schema per entry:
+//   { id, name, emoji, type, rarity, ability, abilityEffect:{mechanic,value,description}, baseValue }
+function getStartersList() {
+  return (STATE.pokemon && STATE.pokemon.starters) || [];
+}
+function getRegionalList(regionId) {
+  return (STATE.pokemon && STATE.pokemon.regional && STATE.pokemon.regional[String(regionId)]) || [];
+}
+function findStarter(id) {
+  return getStartersList().find(p => p.id === id) || null;
+}
+function findRegional(regionId, id) {
+  return getRegionalList(regionId).find(p => p.id === id) || null;
+}
+function getAbilityDesc(p) {
+  // Prefer new schema; fall back to legacy abilityDesc for any old saves still around.
+  return p?.abilityEffect?.description || p?.abilityDesc || '';
+}
 
 // ── GAME STATE ────────────────────────────────────────────────
 let STATE = {
   player: null,      // { id, name, emoji, ageGroup }
   save: null,        // full save data from Supabase
-  questions: null,   // loaded from questions.json
+  questions: null,   // loaded from questions-{junior|senior}.json
+  pokemon: null,     // loaded from pokemon.json (starters + regional)
   currentRegion: 1,
   currentGym: 1,
   currentQ: 0,
@@ -282,53 +291,82 @@ async function continueJourney() {
   showMap();
 }
 
+// ── LOAD POKEMON ──────────────────────────────────────────────
+// Phase 1 step 1.4: 10 starters + 100 regional Pokemon (10 per region).
+async function loadPokemon() {
+  if (STATE.pokemon) return STATE.pokemon;
+  try {
+    const res = await fetch('pokemon.json');
+    STATE.pokemon = await res.json();
+    const nStart = (STATE.pokemon.starters || []).length;
+    const nReg   = Object.values(STATE.pokemon.regional || {})
+                       .reduce((n, list) => n + list.length, 0);
+    console.log(`[loadPokemon] loaded ${nStart} starters + ${nReg} regional`);
+    return STATE.pokemon;
+  } catch (e) {
+    console.error('Failed to load pokemon.json:', e);
+    return null;
+  }
+}
+
+// ── CATCH RACE-RULE HELPERS ───────────────────────────────────
+// Combine my-own-team (always present) with room.pokemonCaught (multiplayer
+// only — empty in solo). A Pokemon is unavailable if it appears in EITHER set.
+function getCaughtPokemonIds() {
+  const fromMe   = new Set((STATE.save && STATE.save.pokemon_team || []).map(p => p.id));
+  const fromRoom = new Set(Object.keys((HOST && HOST.pokemonCaught) || {}));
+  return new Set([...fromMe, ...fromRoom]);
+}
+function getCaughtByMap() {
+  return (HOST && HOST.pokemonCaught) || {};
+}
+async function recordCatchInRoom(pokemon) {
+  // No-op in solo mode (no room code set).
+  const code = (STATE.roomCode) || (HOST && HOST.roomCode) || '';
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) return;
+    if (!room.pokemonCaught) room.pokemonCaught = {};
+    if (room.pokemonCaught[pokemon.id]) return; // someone got there first; respect first-write
+    room.pokemonCaught[pokemon.id] = (STATE.player && STATE.player.name) || 'Unknown';
+    await dbWriteRoom(code, room);
+    // Keep local mirror in sync so the next render greys it out for me too.
+    if (HOST) {
+      if (!HOST.pokemonCaught) HOST.pokemonCaught = {};
+      HOST.pokemonCaught[pokemon.id] = room.pokemonCaught[pokemon.id];
+    }
+  } catch (e) {
+    console.error('recordCatchInRoom failed:', e);
+  }
+}
+
 // ── LOAD QUESTIONS ────────────────────────────────────────────
+// Phase 1 step 1: routes to the age-appropriate question bank based on
+// STATE.player.ageGroup ('junior' | 'senior'). Defaults to senior if
+// somehow unset (safer for older content). Downstream consumers of the
+// returned JSON still expect the OLD v2.0 shape and will be migrated in
+// the next Phase 1 step.
 async function loadQuestions() {
   if (STATE.questions) return STATE.questions;
+  const ageGroup = STATE.player?.ageGroup === 'junior' ? 'junior' : 'senior';
+  const fileName = `questions-${ageGroup}.json`;
   try {
-    const res = await fetch('questions.json');
+    const res = await fetch(fileName);
     STATE.questions = await res.json();
+    console.log(`[loadQuestions] loaded ${fileName} for ageGroup=${ageGroup}`);
     return STATE.questions;
   } catch(e) {
-    console.error('Failed to load questions:', e);
+    console.error(`Failed to load ${fileName}:`, e);
     return null;
   }
 }
 
 
 // ── PRE-GAME POKEMON CATCH ────────────────────────────────────
-const PREGAME_QUESTIONS = [
-  { q:"What type is Pikachu?", a:"Electric", opts:["Electric","Fire","Water","Normal"] },
-  { q:"What is the name of Harry Potter's school?", a:"Hogwarts", opts:["Hogwarts","Beauxbatons","Durmstrang","Ilvermorny"] },
-  { q:"What is the capital city of Japan?", a:"Tokyo", opts:["Tokyo","Osaka","Kyoto","Hiroshima"] },
-  { q:"True or False: Pasta originally comes from Italy.", a:"True", opts:["True","False","Maybe","Sometimes"] },
-  { q:"What does 'Salamat' mean in English?", a:"Thank you", opts:["Thank you","Sorry","Hello","Goodbye"] },
-  { q:"What is the national flower of the Philippines?", a:"Sampaguita", opts:["Sampaguita","Rose","Sunflower","Orchid"] },
-  { q:"What color is Elphaba's skin in Wicked?", a:"Green", opts:["Green","Blue","Purple","Grey"] },
-  { q:"How many members are in BTS?", a:"7", opts:["7","5","6","8"] },
-  { q:"What is the main ingredient in guacamole?", a:"Avocado", opts:["Avocado","Tomato","Onion","Lime"] },
-  { q:"What planet is closest to the Sun?", a:"Mercury", opts:["Mercury","Venus","Mars","Earth"] },
-  { q:"How many legs does a spider have?", a:"8", opts:["8","6","10","12"] },
-  { q:"What does 'Buenos días' mean in English?", a:"Good morning", opts:["Good morning","Good night","Goodbye","Good evening"] },
-  { q:"What is 12 × 12?", a:"144", opts:["144","124","132","148"] },
-  { q:"What is the name of Annie's dog?", a:"Sandy", opts:["Sandy","Buddy","Max","Spot"] },
-  { q:"Who plays Buddy the Elf in the movie?", a:"Will Ferrell", opts:["Will Ferrell","Jim Carrey","Adam Sandler","Jack Black"] },
-  { q:"True or False: The Moon produces its own light.", a:"False", opts:["False","True","Sometimes","Only at night"] },
-  { q:"What is the largest ocean in the world?", a:"Pacific Ocean", opts:["Pacific Ocean","Atlantic Ocean","Indian Ocean","Arctic Ocean"] },
-  { q:"What is the Filipino word for 'house'?", a:"Bahay", opts:["Bahay","Kalsada","Tubig","Langit"] },
-  { q:"What is 100 ÷ 4?", a:"25", opts:["25","20","30","40"] },
-  { q:"What does Magikarp evolve into?", a:"Gyarados", opts:["Gyarados","Lapras","Dragonair","Vaporeon"] },
-  { q:"What is the name of Simba's father in The Lion King?", a:"Mufasa", opts:["Mufasa","Scar","Rafiki","Zazu"] },
-  { q:"True or False: BTS is from South Korea.", a:"True", opts:["True","False","Japan","China"] },
-  { q:"What is the national animal of the Philippines?", a:"Carabao", opts:["Carabao","Eagle","Tarsier","Tamaraw"] },
-  { q:"What is the Spanish word for 'water'?", a:"Agua", opts:["Agua","Fuego","Tierra","Aire"] },
-  { q:"How many continents are there on Earth?", a:"7", opts:["7","5","6","8"] },
-  { q:"In The BFG what does BFG stand for?", a:"Big Friendly Giant", opts:["Big Friendly Giant","Big Funny Giraffe","Bold Flying Giant","Brave Friendly Goblin"] },
-  { q:"What is the powerhouse of the cell?", a:"Mitochondria", opts:["Mitochondria","Nucleus","Ribosome","Cell Wall"] },
-  { q:"What is 5 × 8?", a:"40", opts:["40","35","45","48"] },
-  { q:"True or False: Lionel Messi is from Argentina.", a:"True", opts:["True","False","Brazil","Spain"] },
-  { q:"What is the first Pokemon in the Pokedex?", a:"Bulbasaur", opts:["Bulbasaur","Caterpie","Charmander","Squirtle"] }
-];
+// Phase 1 step 1.3: pre-game catch questions are now drawn from
+// pokeball_bank inside questions-{junior|senior}.json. The old hardcoded
+// PREGAME_QUESTIONS array has been removed.
 
 let PREGAME_STATE = {
   pokeballs: 3,
@@ -342,7 +380,10 @@ let PREGAME_STATE = {
   caughtPokemon: []
 };
 
-function startPreGameCatch() {
+async function startPreGameCatch() {
+  // Phase 1 step 1.4: load pokemon library (10 starters) once before rendering.
+  await loadPokemon();
+
   PREGAME_STATE = {
     pokeballs: STATE.save.pokeballs || 3,
     selectedPokemon: null,
@@ -368,20 +409,34 @@ function startPreGameCatch() {
 
 function renderStarterGrid() {
   const container = document.getElementById('starter-grid');
-  const alreadyCaught = PREGAME_STATE.caughtPokemon.map(p => p.id);
+  const starters = getStartersList();
 
-  container.innerHTML = STARTER_POKEMON.map(p => {
-    const isCaught = alreadyCaught.includes(p.id);
+  if (starters.length === 0) {
+    container.innerHTML = `<div class="loading-msg">Loading Pokemon library…</div>`;
+    return;
+  }
+
+  // Phase 1 step 1.4 race rule: greyed out if I already have it OR if any
+  // player in the room has caught it (room.pokemonCaught).
+  const caughtIds = getCaughtPokemonIds();
+  const caughtBy  = getCaughtByMap();
+
+  container.innerHTML = starters.map(p => {
+    const isCaught = caughtIds.has(p.id);
+    const catcher  = caughtBy[p.id];
+    const tag      = isCaught
+      ? (catcher ? `✅ Caught by ${catcher}` : '✅ Already on your team')
+      : '';
     return `
-      <div class="starter-card${isCaught ? ' caught' : ''}" 
+      <div class="starter-card${isCaught ? ' caught' : ''}"
            id="sc-${p.id}"
            onclick="${isCaught ? '' : `selectStarterPokemon('${p.id}')`}">
         <div class="sc-emoji">${p.emoji}</div>
         <div class="sc-name">${p.name}</div>
         <div class="sc-type">${p.type}</div>
         <div class="sc-ability">⚡ ${p.ability}</div>
-        <div class="sc-desc">${p.abilityDesc}</div>
-        ${isCaught ? '<div class="sc-caught">✅ Already caught!</div>' : ''}
+        <div class="sc-desc">${getAbilityDesc(p)}</div>
+        ${tag ? `<div class="sc-caught">${tag}</div>` : ''}
       </div>
     `;
   }).join('');
@@ -394,7 +449,7 @@ function selectStarterPokemon(pokeId) {
   const card = document.getElementById(`sc-${pokeId}`);
   if (card) card.classList.add('selected');
 
-  PREGAME_STATE.selectedPokemon = STARTER_POKEMON.find(p => p.id === pokeId);
+  PREGAME_STATE.selectedPokemon = findStarter(pokeId);
 
   // Show throw button
   const btn = document.getElementById('btn-attempt-catch');
@@ -418,10 +473,18 @@ function updatePokeballDisplay() {
   }
 }
 
-function attemptCatch() {
+async function attemptCatch() {
   if (!PREGAME_STATE.selectedPokemon) return;
   if (PREGAME_STATE.pokeballs <= 0) {
     alert('No Pokeballs left!');
+    return;
+  }
+
+  // Phase 1 step 1.3: draw from pokeball_bank in the age file.
+  const qData = await loadQuestions();
+  const pbBank = qData && Array.isArray(qData.pokeball_bank) ? qData.pokeball_bank : [];
+  if (pbBank.length === 0) {
+    alert('Failed to load pokeball question pool.');
     return;
   }
 
@@ -436,26 +499,28 @@ function attemptCatch() {
     <div class="psd-emoji">${poke.emoji}</div>
     <div class="psd-info">
       <div class="psd-name">${poke.name}</div>
-      <div class="psd-ability">⚡ ${poke.ability} — ${poke.abilityDesc}</div>
+      <div class="psd-ability">⚡ ${poke.ability} — ${getAbilityDesc(poke)}</div>
       <div class="psd-hint">✨ Answer correctly to catch!</div>
     </div>
   `;
 
-  // Pick a random unused question
-  const available = PREGAME_QUESTIONS.filter((_, i) => !PREGAME_STATE.usedQuestions.includes(i));
-  const idx = Math.floor(Math.random() * available.length);
-  const originalIdx = PREGAME_QUESTIONS.indexOf(available[idx]);
-  PREGAME_STATE.usedQuestions.push(originalIdx);
-  PREGAME_STATE.currentQuestion = available[idx];
+  // Pick a random question from pokeball_bank, avoiding ones already shown
+  // this session. usedQuestions now tracks question IDs (was indices).
+  const usedIds = new Set(PREGAME_STATE.usedQuestions);
+  const available = pbBank.filter(q => !usedIds.has(q.id));
+  const pool = available.length > 0 ? available : pbBank;
+  const picked = pool[Math.floor(Math.random() * pool.length)];
+  PREGAME_STATE.usedQuestions.push(picked.id);
+  PREGAME_STATE.currentQuestion = picked;
 
   // Shuffle choices
-  const choices = [...PREGAME_STATE.currentQuestion.opts].sort(() => Math.random() - 0.5);
+  const choices = [...picked.options].sort(() => Math.random() - 0.5);
   PREGAME_STATE.currentChoices = choices;
   PREGAME_STATE.answered = false;
 
   // Render question
   document.getElementById('pregame-q-category').textContent = '✨ Holo Question — Answer to Catch!';
-  document.getElementById('pregame-q-text').textContent = PREGAME_STATE.currentQuestion.q;
+  document.getElementById('pregame-q-text').textContent = picked.question;
 
   const colors = ['#e21b3c','#1368ce','#d89e00','#26890c'];
   for (let i = 0; i < 4; i++) {
@@ -512,7 +577,7 @@ function checkCatchAnswer(idx) {
   clearInterval(PREGAME_STATE.timerInt);
 
   const chosen = PREGAME_STATE.currentChoices[idx];
-  const correct = PREGAME_STATE.currentQuestion.a;
+  const correct = PREGAME_STATE.currentQuestion.answer;
   const correctIdx = PREGAME_STATE.currentChoices.indexOf(correct);
 
   for (let i = 0; i < 4; i++) {
@@ -528,7 +593,7 @@ function checkCatchAnswer(idx) {
 
 function pregameTimeUp() {
   PREGAME_STATE.answered = true;
-  const correctIdx = PREGAME_STATE.currentChoices.indexOf(PREGAME_STATE.currentQuestion.a);
+  const correctIdx = PREGAME_STATE.currentChoices.indexOf(PREGAME_STATE.currentQuestion.answer);
   for (let i = 0; i < 4; i++) {
     const btn = document.getElementById(`pans${i}`);
     btn.disabled = true;
@@ -545,7 +610,9 @@ function showCatchResult(caught) {
   const doneBtn = document.getElementById('btn-done-catching');
 
   if (caught) {
-    // Add to team — MAX 1 POKEMON, waive remaining pokeballs
+    // Add to team — MAX 1 POKEMON, waive remaining pokeballs.
+    // We spread the full pokemon.json record (preserves rarity, baseValue,
+    // abilityEffect, type) and add the runtime fields level + caughtAt.
     const newPokemon = { ...poke, level: 1, caughtAt: 'pregame' };
     PREGAME_STATE.caughtPokemon.push(newPokemon);
     STATE.save.pokemon_team = PREGAME_STATE.caughtPokemon;
@@ -553,13 +620,17 @@ function showCatchResult(caught) {
     PREGAME_STATE.pokeballs = 0;
     STATE.save.pokeballs = 0;
 
+    // Phase 1 step 1.4: race rule — broadcast this catch to the room so
+    // other players see this Pokemon as taken. No-op in solo play.
+    recordCatchInRoom(newPokemon);
+
     resultEl.innerHTML = `
       <div class="catch-result-emoji">🎉</div>
       <h3>${poke.emoji} ${poke.name} was caught!</h3>
       <p class="catch-result-msg">
         <b>${poke.name}</b> joins your team!<br>
         Ability: <span style="color:var(--crystal)">⚡ ${poke.ability}</span><br>
-        <em>${poke.abilityDesc}</em>
+        <em>${getAbilityDesc(poke)}</em>
       </p>
       <p class="catch-result-msg" style="margin-top:10px;color:var(--gold);font-weight:800">
         ✅ You can only catch 1 Pokemon at the start.<br>Remaining Pokeballs waived!
@@ -631,6 +702,350 @@ function catchAgain() {
 
 async function finishPreGame() {
   // Save progress to Supabase
+  STATE.save.updated_at = new Date().toISOString();
+  await dbSave(STATE.player.id, STATE.save);
+  showMap();
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// REGIONAL POKEMON CATCH  (Phase 1 step 1.3)
+// Triggered from endGym() after a region's 5th gym is passed for the first
+// time. The kid can buy up to 3 Pokeballs (region.pokeball cost each), and
+// each ball draws ONE random question from catch_bank[regionId]. A correct
+// answer catches a stub region Pokemon; a wrong answer (or timeout) consumes
+// the ball with no catch. Up to 3 catches per region.
+// ─────────────────────────────────────────────────────────────────────────
+
+let REGIONAL_CATCH_STATE = {
+  region:          null,
+  pokeballs:       0,         // balls bought, not yet thrown
+  ballsThrown:     0,         // total balls used (cap: 3 per region visit)
+  caughtPokemon:   [],        // pokemon caught this visit
+  usedQuestions:   [],        // question IDs already drawn this visit
+  currentQuestion: null,
+  currentChoices:  [],
+  answered:        false,
+  timerInt:        null,
+  timeLeft:        15,
+};
+
+async function startRegionalCatch(regionId) {
+  // Phase 1 step 1.4: ensure pokemon.json is loaded before rendering the grid.
+  await loadPokemon();
+
+  const region = REGIONS.find(r => r.id === regionId);
+  REGIONAL_CATCH_STATE = {
+    region,
+    pokeballs:        0,
+    ballsThrown:      0,
+    selectedPokemon:  null,   // 1.4: must be picked before throwing
+    caughtPokemon:    [],
+    usedQuestions:    [],
+    currentQuestion:  null,
+    currentChoices:   [],
+    answered:         false,
+    timerInt:         null,
+    timeLeft:         15,
+  };
+  renderRegionalCatch();
+  showScreen('screen-catch');
+}
+
+function selectRegionalPokemon(pokeId) {
+  const s = REGIONAL_CATCH_STATE;
+  const poke = findRegional(s.region.id, pokeId);
+  if (!poke) return;
+  // Race rule: cannot pick a Pokemon already caught by anyone.
+  const caughtIds = getCaughtPokemonIds();
+  if (caughtIds.has(pokeId)) return;
+  s.selectedPokemon = poke;
+  // Update visuals in place — don't re-render (would wipe question UI if mid-throw).
+  document.querySelectorAll('#catch-content .starter-card').forEach(c => c.classList.remove('selected'));
+  const card = document.getElementById(`rsc-${pokeId}`);
+  if (card) card.classList.add('selected');
+  // Update Throw button label/state
+  const throwBtn = document.getElementById('rc-btn-throw');
+  if (throwBtn) {
+    const canThrow = s.pokeballs > 0 && s.selectedPokemon;
+    throwBtn.disabled = !canThrow;
+    throwBtn.style.opacity = canThrow ? '' : '0.4';
+    throwBtn.textContent = canThrow
+      ? `⚡ Throw Pokeball at ${poke.emoji} ${poke.name}!`
+      : `⚡ ${s.pokeballs <= 0 ? 'Buy a Pokeball first' : 'Throw Pokeball!'}`;
+  }
+}
+
+function renderRegionalCatch() {
+  const s      = REGIONAL_CATCH_STATE;
+  const region = s.region;
+  const cost   = region.pokeball;
+  const have   = STATE.save.total_crystals || 0;
+  const canBuy = s.ballsThrown + s.pokeballs < 3 && have >= cost;
+  const canThrow = s.pokeballs > 0 && s.selectedPokemon;
+  const caughtNames = s.caughtPokemon.length > 0
+    ? s.caughtPokemon.map(p => `${p.emoji} ${p.name}`).join(', ')
+    : '—';
+
+  // Phase 1 step 1.4: 10 catchable region Pokemon with race-rule greyout.
+  const regionPokemon = getRegionalList(region.id);
+  const caughtIds = getCaughtPokemonIds();
+  const caughtBy  = getCaughtByMap();
+  const rarityBadge = { common:'⚪', rare:'💎', super:'🌟', legendary:'👑' };
+
+  const gridHTML = regionPokemon.length === 0
+    ? `<div class="loading-msg" style="padding:20px;text-align:center;opacity:0.7">Loading region Pokemon…</div>`
+    : regionPokemon.map(p => {
+        const isCaught   = caughtIds.has(p.id);
+        const isSelected = s.selectedPokemon && s.selectedPokemon.id === p.id;
+        const catcher    = caughtBy[p.id];
+        const tag = isCaught
+          ? (catcher ? `✅ Caught by ${catcher}` : '✅ On your team')
+          : `${rarityBadge[p.rarity] || ''} ${p.rarity}`;
+        return `
+          <div class="starter-card${isCaught ? ' caught' : ''}${isSelected ? ' selected' : ''}"
+               id="rsc-${p.id}"
+               onclick="${isCaught ? '' : `selectRegionalPokemon('${p.id}')`}">
+            <div class="sc-emoji">${p.emoji}</div>
+            <div class="sc-name">${p.name}</div>
+            <div class="sc-type">${p.type}</div>
+            <div class="sc-ability">⚡ ${p.ability}</div>
+            <div class="sc-desc">${getAbilityDesc(p)}</div>
+            <div class="sc-caught">${tag}</div>
+          </div>
+        `;
+      }).join('');
+
+  document.getElementById('catch-content').innerHTML = `
+    <div class="catch-hero" style="text-align:center;padding:20px">
+      <div style="font-size:3rem">${region.emoji}</div>
+      <h3 style="margin:6px 0">${region.name} Region Cleared!</h3>
+      <p style="opacity:0.8">Pick a Pokemon, buy a Pokeball, then answer to catch it.<br>
+      Up to <b>3 balls</b> per region · 1 ball = 1 question = 1 attempt · wrong answer wastes the ball.</p>
+    </div>
+
+    <div class="catch-status" style="padding:10px 20px;font-weight:800">
+      🔴 Ready: <span style="color:var(--gold)">${s.pokeballs}</span> ·
+      🎯 Used: <span style="color:var(--gold)">${s.ballsThrown}/3</span> ·
+      🐾 Caught: ${caughtNames}<br>
+      🔮 Crystals: <span style="color:var(--gold)">${have.toLocaleString()}</span>
+    </div>
+
+    <div class="panel-label" style="padding:14px 20px 6px">🐾 ${region.name.toUpperCase()} POKEMON — pick one to throw at</div>
+    <div class="starter-grid" id="regional-pokemon-grid" style="padding:0 14px">
+      ${gridHTML}
+    </div>
+
+    <div id="regional-catch-actions" style="padding:14px 20px 0;display:flex;flex-direction:column;gap:10px">
+      <button class="btn-primary" ${canBuy ? '' : 'disabled style="opacity:0.4"'} onclick="buyRegionalPokeball()">
+        🔴 Buy Pokeball (${cost.toLocaleString()} 🔮)
+      </button>
+      <button class="btn-primary" id="rc-btn-throw"
+              ${canThrow ? '' : 'disabled style="opacity:0.4"'}
+              onclick="attemptRegionalCatch()">
+        ${canThrow
+          ? `⚡ Throw Pokeball at ${s.selectedPokemon.emoji} ${s.selectedPokemon.name}!`
+          : (s.pokeballs <= 0 ? '⚡ Buy a Pokeball first' : '⚡ Pick a Pokemon first')}
+      </button>
+      <button class="btn-secondary" onclick="finishRegionalCatch()">
+        ✅ Done — Continue to Map
+      </button>
+    </div>
+
+    <div id="regional-catch-question" style="display:none;padding:14px 20px">
+      <div class="timer-container">
+        <div class="timer-bar-wrap"><div class="timer-bar" id="rc-timer-bar"></div></div>
+        <div class="timer-text" id="rc-timer-text">15</div>
+      </div>
+      <div class="question-card">
+        <div class="q-category" id="rc-q-category">💎 Rare Question</div>
+        <div class="q-text" id="rc-q-text">Loading...</div>
+      </div>
+      <div class="answers-grid">
+        <button class="ans-btn" id="rc-ans0" onclick="checkRegionalCatchAnswer(0)"><span class="ans-icon">▲</span><span class="ans-txt" id="rc-ans0-txt"></span></button>
+        <button class="ans-btn" id="rc-ans1" onclick="checkRegionalCatchAnswer(1)"><span class="ans-icon">◆</span><span class="ans-txt" id="rc-ans1-txt"></span></button>
+        <button class="ans-btn" id="rc-ans2" onclick="checkRegionalCatchAnswer(2)"><span class="ans-icon">●</span><span class="ans-txt" id="rc-ans2-txt"></span></button>
+        <button class="ans-btn" id="rc-ans3" onclick="checkRegionalCatchAnswer(3)"><span class="ans-icon">■</span><span class="ans-txt" id="rc-ans3-txt"></span></button>
+      </div>
+      <div class="feedback-bar" id="rc-feedback"></div>
+    </div>
+  `;
+}
+
+function buyRegionalPokeball() {
+  const s = REGIONAL_CATCH_STATE;
+  const region = s.region;
+  const cost = region.pokeball;
+  if (s.ballsThrown + s.pokeballs >= 3) { alert('Max 3 Pokeballs per region.'); return; }
+  if ((STATE.save.total_crystals || 0) < cost) { alert(`Need ${cost} 🔮.`); return; }
+  STATE.save.total_crystals -= cost;
+  s.pokeballs += 1;
+  renderRegionalCatch();
+}
+
+async function attemptRegionalCatch() {
+  const s = REGIONAL_CATCH_STATE;
+  if (s.pokeballs <= 0) return;
+  // Phase 1 step 1.4: must have selected a target Pokemon first.
+  if (!s.selectedPokemon) {
+    alert('Pick a Pokemon to throw at first.');
+    return;
+  }
+  // Race-rule re-check at throw time (another player may have caught it
+  // while you were deciding).
+  const caughtIds = getCaughtPokemonIds();
+  if (caughtIds.has(s.selectedPokemon.id)) {
+    alert(`${s.selectedPokemon.name} was just caught by someone else!`);
+    s.selectedPokemon = null;
+    renderRegionalCatch();
+    return;
+  }
+
+  // Phase 1 step 1.3: draw from catch_bank[regionId] in the age file.
+  const qData = await loadQuestions();
+  const pool = qData && qData.catch_bank ? (qData.catch_bank[String(s.region.id)] || []) : [];
+  if (pool.length === 0) {
+    alert(`No catch questions for region ${s.region.id}.`);
+    return;
+  }
+
+  // Consume one ball up front (correct-or-wrong, it's used either way).
+  s.pokeballs    -= 1;
+  s.ballsThrown  += 1;
+
+  // Pick a random unused (this-visit) question. Falls back to the full pool
+  // if every question has already been shown this visit.
+  const usedIds   = new Set(s.usedQuestions);
+  const available = pool.filter(q => !usedIds.has(q.id));
+  const choices   = available.length > 0 ? available : pool;
+  const picked    = choices[Math.floor(Math.random() * choices.length)];
+  s.usedQuestions.push(picked.id);
+  s.currentQuestion = picked;
+
+  // Shuffle answer options (and handle T/F which has only 2)
+  const shuffled = [...picked.options].sort(() => Math.random() - 0.5);
+  s.currentChoices = shuffled;
+  s.answered = false;
+
+  // Show question UI, hide buy/throw buttons
+  document.getElementById('regional-catch-actions').style.display = 'none';
+  document.getElementById('regional-catch-question').style.display = 'block';
+
+  // Tier badge in the category bar
+  const tierLabel = TIER_LABELS[picked.tier] || picked.tier;
+  document.getElementById('rc-q-category').textContent = `${tierLabel} · ${CATEGORY_LABELS[picked.category] || picked.category}`;
+  document.getElementById('rc-q-text').textContent = picked.question;
+
+  const colors = ['#e21b3c','#1368ce','#d89e00','#26890c'];
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`rc-ans${i}`);
+    const txt = document.getElementById(`rc-ans${i}-txt`);
+    if (i < shuffled.length) {
+      txt.textContent = shuffled[i];
+      btn.style.display = '';
+    } else {
+      btn.style.display = 'none';   // hide unused slot for T/F
+    }
+    btn.style.background = colors[i];
+    btn.style.opacity = '';
+    btn.classList.remove('correct','wrong');
+    btn.disabled = false;
+  }
+
+  const fb = document.getElementById('rc-feedback');
+  fb.textContent = '';
+  fb.className = 'feedback-bar';
+
+  // Start timer using the question's own tier (Rare default = 15s)
+  const ageMod   = AGE_TIME_MOD[STATE.player?.ageGroup] || 0;
+  const fmtMod   = FORMAT_TIME_MOD[picked.type] || 0;
+  const totalTime = (TIER_TIME[picked.tier] || 15) + fmtMod + ageMod;
+  startRegionalCatchTimer(totalTime);
+}
+
+function startRegionalCatchTimer(totalTime) {
+  clearInterval(REGIONAL_CATCH_STATE.timerInt);
+  REGIONAL_CATCH_STATE.timeLeft = totalTime;
+  const bar = document.getElementById('rc-timer-bar');
+  const txt = document.getElementById('rc-timer-text');
+  bar.style.width = '100%';
+  bar.className = 'timer-bar';
+  REGIONAL_CATCH_STATE.timerInt = setInterval(() => {
+    REGIONAL_CATCH_STATE.timeLeft = Math.max(0, REGIONAL_CATCH_STATE.timeLeft - 0.1);
+    const pct = (REGIONAL_CATCH_STATE.timeLeft / totalTime) * 100;
+    bar.style.width = pct + '%';
+    txt.textContent = Math.ceil(REGIONAL_CATCH_STATE.timeLeft);
+    if (pct < 25) bar.className = 'timer-bar danger';
+    else if (pct < 50) bar.className = 'timer-bar warning';
+    if (REGIONAL_CATCH_STATE.timeLeft <= 0) {
+      clearInterval(REGIONAL_CATCH_STATE.timerInt);
+      if (!REGIONAL_CATCH_STATE.answered) regionalCatchTimeUp();
+    }
+  }, 100);
+}
+
+function checkRegionalCatchAnswer(idx) {
+  const s = REGIONAL_CATCH_STATE;
+  if (s.answered) return;
+  s.answered = true;
+  clearInterval(s.timerInt);
+  const chosen = s.currentChoices[idx];
+  const correct = s.currentQuestion.answer;
+  const correctIdx = s.currentChoices.indexOf(correct);
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`rc-ans${i}`);
+    if (btn.style.display === 'none') continue;
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+  setTimeout(() => showRegionalCatchResult(chosen === correct), 1300);
+}
+
+function regionalCatchTimeUp() {
+  const s = REGIONAL_CATCH_STATE;
+  s.answered = true;
+  const correctIdx = s.currentChoices.indexOf(s.currentQuestion.answer);
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`rc-ans${i}`);
+    if (btn.style.display === 'none') continue;
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+  setTimeout(() => showRegionalCatchResult(false), 1300);
+}
+
+function showRegionalCatchResult(caught) {
+  const s = REGIONAL_CATCH_STATE;
+  const fb = document.getElementById('rc-feedback');
+  const target = s.selectedPokemon;
+  if (caught && target) {
+    // Phase 1 step 1.4: award the REAL Pokemon from pokemon.json (spread
+    // preserves name/type/rarity/ability/abilityEffect/baseValue). Add
+    // level + caughtAt for runtime tracking.
+    const newPokemon = { ...target, level: 1, caughtAt: `region${s.region.id}` };
+    s.caughtPokemon.push(newPokemon);
+    if (!STATE.save.pokemon_team) STATE.save.pokemon_team = [];
+    STATE.save.pokemon_team.push(newPokemon);
+    // Race rule: tell the room this Pokemon is now taken.
+    recordCatchInRoom(newPokemon);
+    fb.textContent = `🎉 ${target.emoji} ${target.name} caught! (${target.rarity})`;
+    fb.className = 'feedback-bar correct';
+  } else {
+    fb.textContent = target
+      ? `💨 ${target.emoji} ${target.name} broke free! Ball wasted.`
+      : `💨 It broke free! Ball wasted.`;
+    fb.className = 'feedback-bar wrong';
+  }
+  // Clear selection so the player must pick again for the next ball.
+  s.selectedPokemon = null;
+  setTimeout(() => {
+    document.getElementById('regional-catch-question').style.display = 'none';
+    renderRegionalCatch();
+  }, 1500);
+}
+
+async function finishRegionalCatch() {
   STATE.save.updated_at = new Date().toISOString();
   await dbSave(STATE.player.id, STATE.save);
   showMap();
@@ -729,19 +1144,31 @@ async function startGym(regionId, gymId) {
     return;
   }
 
-  const regionData = qData.regions.find(r => r.id === regionId);
-  if (!regionData) {
-    alert(`No questions found for Region ${regionId} yet. Coming in Phase 2!`);
+  // Phase 1 step 2: build this gym's 10 questions from the blueprint + bank.
+  // Each blueprint defines 10 slots (category + tier). For each slot we
+  // draw ONE random question from gym_bank[category][tier]. Each browser
+  // instance draws independently, so two kids on the same gym at the same
+  // time see different question sets. Fresh draw on every call to startGym,
+  // so restarting a gym reshuffles.
+  const blueprint = (qData.gym_blueprints || []).find(
+    b => b.region === regionId && b.gym === gymId
+  );
+  if (!blueprint) {
+    alert(`No blueprint found for Region ${regionId} Gym ${gymId}.`);
     return;
   }
 
-  const gymData = regionData.gyms.find(g => g.id === gymId);
-  if (!gymData) {
-    alert(`Gym ${gymId} questions coming soon!`);
-    return;
+  const drawn = [];
+  for (const slot of blueprint.slots) {
+    const pool = qData.gym_bank?.[slot.category]?.[slot.tier];
+    if (!pool || pool.length === 0) {
+      alert(`Empty question bank for ${slot.category} / ${slot.tier}.`);
+      return;
+    }
+    drawn.push(pool[Math.floor(Math.random() * pool.length)]);
   }
 
-  STATE.currentQData = [...gymData.questions];
+  STATE.currentQData = drawn;
   const region = REGIONS.find(r => r.id === regionId);
 
   document.getElementById('quiz-region-gym').textContent = `${region.emoji} ${region.name} · Gym ${gymId}`;
@@ -955,11 +1382,19 @@ async function endGym() {
   // Pokemon offer placeholder (Phase 2)
   offerEl.style.display = 'none';
 
-  // Next gym button
+  // Next gym button (Phase 1 step 1.3): on gym 5, if the whole region is
+  // now complete, offer Regional Pokemon Catch instead of hiding the button.
+  const regionComplete = (regionSave.gymsCompleted || []).length >= 5;
   if (STATE.currentGym < 5) {
     nextBtn.style.display = 'block';
-    nextBtn.textContent = `Next Gym ▶`;
+    nextBtn.textContent   = `Next Gym ▶`;
+    nextBtn.onclick       = goNextGym;
+  } else if (regionComplete) {
+    nextBtn.style.display = 'block';
+    nextBtn.textContent   = `🎯 Catch ${region.name} Pokemon`;
+    nextBtn.onclick       = () => startRegionalCatch(STATE.currentRegion);
   } else {
+    // Failed gym 5 — nothing to advance to; user must redo via the map.
     nextBtn.style.display = 'none';
   }
 
@@ -994,7 +1429,7 @@ function renderPokemonTeam() {
         <button class="poke-ability-btn" onclick="activateAbility(${idx})">
           ${p.emoji} ${p.ability}
         </button>
-        <div class="poke-ability-desc">${p.abilityDesc}</div>
+        <div class="poke-ability-desc">${getAbilityDesc(p)}</div>
       </div>
     `;
   }).join('');
@@ -1014,7 +1449,7 @@ function activateAbility(pokemonIdx) {
   document.getElementById('modal-poke-emoji').textContent = pokemon.emoji;
   document.getElementById('modal-poke-name').textContent = pokemon.name;
   document.getElementById('modal-ability-name').textContent = pokemon.ability;
-  document.getElementById('modal-ability-desc').textContent = pokemon.abilityDesc;
+  document.getElementById('modal-ability-desc').textContent = getAbilityDesc(pokemon);
 
   document.getElementById('modal-confirm-btn').onclick = () => useAbility(pokemonIdx);
   document.getElementById('modal-ability').style.display = 'flex';
@@ -1665,11 +2100,27 @@ function renderHostLeaderboard() {
   }).join('');
 }
 
-function renderHostPokemonPool() {
+async function renderHostPokemonPool() {
+  // Phase 1 step 1.4: starters come from pokemon.json. During pre-game
+  // catch we show the 10 starters; during a regional catch we show the
+  // active region's 10 Pokemon. Load on demand.
+  await loadPokemon();
   const container = document.getElementById('host-pokemon-pool');
   const caughtMap = HOST.pokemonCaught || {};
 
-  container.innerHTML = STARTER_POKEMON.map(p => {
+  let pool;
+  if (HOST.currentPhase === 'REGION_CATCH' && HOST.currentRegion) {
+    pool = getRegionalList(HOST.currentRegion);
+  } else {
+    pool = getStartersList();
+  }
+
+  if (pool.length === 0) {
+    container.innerHTML = `<div class="loading-msg" style="opacity:0.7">Loading Pokemon pool…</div>`;
+    return;
+  }
+
+  container.innerHTML = pool.map(p => {
     const catcher = caughtMap[p.id];
     return `
       <div class="host-poke-pill ${catcher ? 'caught' : 'available'}">
@@ -1781,7 +2232,8 @@ async function hostDoPoll() {
 }
 
 // ── PLAYER: RESPOND TO HOST COMMANDS ─────────────────────────
-// Players poll for pause state
+// Players poll for pause state AND (Phase 1 step 1.4) for race-rule
+// updates to room.pokemonCaught while on catch screens.
 async function checkPauseState() {
   if (!HOST.roomCode && !STATE.roomCode) return;
   const code = HOST.roomCode || STATE.roomCode;
@@ -1791,6 +2243,25 @@ async function checkPauseState() {
   const overlay = document.getElementById('pause-overlay');
   if (overlay && !HOST.isHost) {
     overlay.style.display = room.isPaused ? 'flex' : 'none';
+  }
+
+  // 1.4: refresh local mirror of pokemonCaught so catch grids grey out
+  // Pokemon that other players caught in the last few seconds.
+  const remoteCaught = room.pokemonCaught || {};
+  const localCaught  = HOST.pokemonCaught  || {};
+  const changed = JSON.stringify(remoteCaught) !== JSON.stringify(localCaught);
+  HOST.pokemonCaught = remoteCaught;
+  if (changed) {
+    const cur = document.querySelector('.screen.active')?.id;
+    if (cur === 'screen-pregame-catch') {
+      // Only re-render the chooser grid if it's currently visible.
+      const choose = document.getElementById('pregame-step-choose');
+      if (choose && choose.style.display !== 'none') renderStarterGrid();
+    } else if (cur === 'screen-catch') {
+      // Only refresh the Pokemon grid; skip if a question is mid-attempt.
+      const qPanel = document.getElementById('regional-catch-question');
+      if (!qPanel || qPanel.style.display !== 'block') renderRegionalCatch();
+    }
   }
 }
 
@@ -1817,10 +2288,11 @@ window.addEventListener('load', () => {
     btn.onclick = () => { showScreen('screen-leaderboard'); loadLeaderboard(); };
   });
 
-  // Poll for pause state every 3s when in a game
+  // Poll for pause state every 3s when in a game; same poll also refreshes
+  // room.pokemonCaught for the race rule (1.4) on catch screens.
   setInterval(() => {
     const cur = document.querySelector('.screen.active')?.id;
-    if (['screen-quiz','screen-pregame-catch','screen-gym-complete'].includes(cur)) {
+    if (['screen-quiz','screen-pregame-catch','screen-gym-complete','screen-catch'].includes(cur)) {
       checkPauseState();
     }
   }, 3000);
