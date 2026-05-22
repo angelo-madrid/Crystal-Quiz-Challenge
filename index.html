@@ -28,7 +28,7 @@
     </div>
 
     <div class="home-buttons">
-      <button class="btn-multiplayer big" onclick="showScreen('screen-join')">🎮 Join a Room</button>
+      <button class="btn-multiplayer big" onclick="homeJoinARoom()">🎮 Join a Room</button>
     </div>
 
     <div class="home-nav">
@@ -41,44 +41,147 @@
   </div>
 
   <!-- LOGIN / NEW PLAYER SCREEN -->
-  <div id="screen-login" class="screen">
+  <!-- ACCOUNT GATE — shown after "Join a Room" tap when no localStorage -->
+  <div id="screen-account-gate" class="screen">
     <div class="screen-header">
       <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
-      <h2>👤 Create Your Trainer</h2>
+      <h2>👋 Welcome, Trainer</h2>
+    </div>
+    <div class="gate-card">
+      <p class="gate-intro">You need an account before joining a room. Each kid has a permanent
+        6-character Trainer ID they keep across all games.</p>
+      <button class="btn-primary big" onclick="showScreen('screen-register')">
+        ✨ I'm New — Create Account
+      </button>
+      <button class="btn-secondary big" onclick="showScreen('screen-login')">
+        🔑 I Have an Account — Log In
+      </button>
+    </div>
+  </div>
+
+  <!-- REGISTER — 4-step wizard + welcome confirmation -->
+  <div id="screen-register" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-account-gate')">← Back</button>
+      <h2>✨ Create Account</h2>
+    </div>
+    <div class="login-card">
+      <div class="register-progress" id="register-progress">Step 1 of 4</div>
+
+      <!-- Step 1 — Name -->
+      <div class="register-step" id="reg-step-1">
+        <div class="field-group">
+          <label>What's your name?</label>
+          <input type="text" id="reg-name" placeholder="e.g. Maria" maxlength="32">
+        </div>
+        <div class="err" id="reg-err-1"></div>
+        <button class="btn-primary" onclick="registerNext(1)">Next ▶</button>
+      </div>
+
+      <!-- Step 2 — Age -->
+      <div class="register-step" id="reg-step-2" style="display:none">
+        <div class="field-group">
+          <label>How old are you? (9–13)</label>
+          <input type="number" id="reg-age" min="9" max="13" placeholder="9 to 13">
+        </div>
+        <div class="err" id="reg-err-2"></div>
+        <button class="btn-primary" onclick="registerNext(2)">Next ▶</button>
+      </div>
+
+      <!-- Step 3 — Gender -->
+      <div class="register-step" id="reg-step-3" style="display:none">
+        <div class="field-group">
+          <label>Gender</label>
+          <div class="age-grid">
+            <button class="age-btn" data-gender="Boy"  onclick="registerSelectGender(this)">🦁 Boy</button>
+            <button class="age-btn" data-gender="Girl" onclick="registerSelectGender(this)">🦋 Girl</button>
+            <button class="age-btn" data-gender="Prefer not to say" onclick="registerSelectGender(this)">🐲 Prefer not to say</button>
+          </div>
+        </div>
+        <div class="err" id="reg-err-3"></div>
+        <button class="btn-primary" onclick="registerNext(3)">Next ▶</button>
+      </div>
+
+      <!-- Step 4 — ID picker -->
+      <div class="register-step" id="reg-step-4" style="display:none">
+        <div class="field-group">
+          <label>Pick your 6-character Trainer ID (A–Z, 0–9)</label>
+          <input type="text" id="reg-id" placeholder="e.g. ASH007" maxlength="6"
+            oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,''); registerIdChanged()">
+          <div class="reg-id-status" id="reg-id-status">Pick 6 letters or numbers, then check availability.</div>
+        </div>
+        <div class="err" id="reg-err-4"></div>
+        <div class="register-actions">
+          <button class="btn-secondary" id="reg-check-btn" onclick="registerCheckId()">Check Availability</button>
+          <button class="btn-primary" id="reg-confirm-btn" onclick="registerConfirm()" disabled style="opacity:0.4">Confirm</button>
+        </div>
+      </div>
+
+      <!-- Welcome screen -->
+      <div class="register-step" id="reg-welcome" style="display:none">
+        <div class="welcome-hero">
+          <div class="welcome-emoji" id="welcome-emoji">🎉</div>
+          <h3 id="welcome-greeting">Welcome!</h3>
+          <div class="welcome-id-label">Your Trainer ID</div>
+          <div class="welcome-id" id="welcome-id">------</div>
+          <p class="welcome-note">Remember this ID — you'll need it to log in next time.</p>
+        </div>
+        <button class="btn-primary" onclick="dashboardFromRegister()">Continue ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOGIN — single 6-char ID input -->
+  <div id="screen-login" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-account-gate')">← Back</button>
+      <h2>🔑 Log In</h2>
     </div>
     <div class="login-card">
       <div class="field-group">
-        <label>Your Name</label>
-        <input type="text" id="login-name" placeholder="Enter your name" maxlength="16">
-      </div>
-      <div class="field-group">
-        <label>Pick Your Emoji</label>
-        <div class="emoji-grid" id="emoji-grid">
-          <span class="emoji-opt selected" onclick="selectEmoji(this,'🦁')">🦁</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐯')">🐯</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐻')">🐻</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🦊')">🦊</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐼')">🐼</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐸')">🐸</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🦋')">🦋</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐬')">🐬</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🦅')">🦅</span>
-          <span class="emoji-opt" onclick="selectEmoji(this,'🐲')">🐲</span>
-        </div>
-      </div>
-      <div class="field-group">
-        <label>Age Group</label>
-        <div class="age-grid">
-          <button class="age-btn selected" id="age-senior" onclick="selectAge('senior')">
-            🎓 Senior<br><small>12+ years · Standard timer</small>
-          </button>
-          <button class="age-btn" id="age-junior" onclick="selectAge('junior')">
-            🌟 Junior<br><small>9-11 years · +5s bonus time</small>
-          </button>
-        </div>
+        <label>Trainer ID (6 characters)</label>
+        <input type="text" id="login-id" placeholder="e.g. ASH007" maxlength="6"
+          oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
       </div>
       <div class="err" id="login-err"></div>
-      <button class="btn-primary" onclick="createPlayer()">🚀 Start My Journey!</button>
+      <button class="btn-primary" onclick="loginSubmit()">Log In ▶</button>
+    </div>
+  </div>
+
+  <!-- PLAYER DASHBOARD — landing screen for logged-in players -->
+  <div id="screen-player-dashboard" class="screen">
+    <div class="player-dashboard-hero">
+      <div class="pdh-emoji" id="pdh-emoji">👤</div>
+      <div class="pdh-name" id="pdh-name">Trainer</div>
+      <div class="pdh-id" id="pdh-id">------</div>
+      <div class="pdh-pills">
+        <span class="pdh-pill" id="pdh-age-pill">—</span>
+        <span class="pdh-pill pdh-pill-balance">💎 <span id="pdh-balance">0</span></span>
+      </div>
+    </div>
+
+    <div class="pd-actions">
+      <button class="btn-primary big" onclick="showScreen('screen-join')">🎮 Join a Room</button>
+      <button class="btn-secondary big" onclick="openWallet()">💎 Crystal Wallet</button>
+    </div>
+
+    <div class="pd-section">
+      <div class="pd-section-label">▶ ACTIVE GAMES <span class="pdh-count" id="pd-active-count">0</span></div>
+      <div id="pd-active-list"><div class="pd-empty">No active games.</div></div>
+    </div>
+
+    <div class="pd-section">
+      <div class="pd-section-label">⏳ PENDING (LOBBY) <span class="pdh-count" id="pd-pending-count">0</span></div>
+      <div id="pd-pending-list"><div class="pd-empty">No pending games.</div></div>
+    </div>
+
+    <div class="pd-section">
+      <div class="pd-section-label">📦 ARCHIVED / FINISHED <span class="pdh-count" id="pd-archived-count">0</span></div>
+      <div id="pd-archived-list"><div class="pd-empty">No archived games.</div></div>
+    </div>
+
+    <div class="pd-logout">
+      <a class="pd-logout-link" onclick="dashboardLogout()">Log out</a>
     </div>
   </div>
 
@@ -389,47 +492,18 @@
   <!-- JOIN SCREEN -->
   <div id="screen-join" class="screen">
     <div class="screen-header">
-      <button class="back-btn" onclick="showScreen('screen-home')">← Back</button>
+      <button class="back-btn" onclick="showScreen('screen-player-dashboard')">← Back</button>
       <h2>🎮 Join Room</h2>
     </div>
     <div class="login-card">
       <div id="join-banner" style="display:none" class="join-banner">
         🔗 Joining room: <b id="join-banner-code" style="color:var(--gold)"></b>
       </div>
+      <div id="join-identity-card" class="join-identity-card"></div>
       <div class="field-group">
         <label>Room Code</label>
         <input type="text" id="join-code" placeholder="e.g. POKEMON" maxlength="8"
           oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')">
-      </div>
-      <div class="field-group">
-        <label>Your Name</label>
-        <input type="text" id="join-name" placeholder="e.g. Maria" maxlength="16">
-      </div>
-      <div class="field-group">
-        <label>Pick Your Emoji</label>
-        <div class="emoji-grid" id="join-emoji-grid">
-          <span class="emoji-opt selected" onclick="selectJoinEmoji(this,'🦁')">🦁</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐯')">🐯</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐻')">🐻</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦊')">🦊</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐼')">🐼</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐸')">🐸</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦋')">🦋</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐬')">🐬</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🦅')">🦅</span>
-          <span class="emoji-opt" onclick="selectJoinEmoji(this,'🐲')">🐲</span>
-        </div>
-      </div>
-      <div class="field-group">
-        <label>Age Group</label>
-        <div class="age-grid">
-          <button class="age-btn selected" id="join-age-senior" onclick="selectJoinAge('senior')">
-            🎓 Senior<br><small>12+ years · Standard timer</small>
-          </button>
-          <button class="age-btn" id="join-age-junior" onclick="selectJoinAge('junior')">
-            🌟 Junior<br><small>9-11 years · +5s bonus time</small>
-          </button>
-        </div>
       </div>
       <div class="err" id="join-err"></div>
       <button class="btn-primary" id="join-btn" onclick="playerJoin()">🚀 Join Room!</button>

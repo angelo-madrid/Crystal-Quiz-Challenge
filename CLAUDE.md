@@ -1,5 +1,5 @@
 # Crystal Quiz Challenge
-Version: 0.4.0
+Version: 0.5.0
 Last updated: 2026-05-22
 
 > **Phase 1 complete** — engine wired to age-split question banks, random
@@ -101,6 +101,41 @@ restores them silently:
   set, each player upserts a `last_seen` ISO timestamp into their save.
   The host dashboard reads this to render 🟢 Connected (<20s), ⏳
   Reconnecting (<60s), or ⚪ Not yet rejoined.
+
+## Persistent Player Identity
+Every player has a permanent **6-character A-Z0-9 Trainer ID** they pick at
+registration and keep across all games. The `player_saves` table now stores
+identity at the row level (columns: `name`, `age`, `gender`, `created_at`)
+in addition to the JSONB `data` blob with the game state. A `CHECK
+(player_id ~ '^[A-Z0-9]{6}$')` constraint enforces the format.
+
+**Screens** (in flow order):
+- `screen-account-gate` — shown when "Join a Room" is tapped without
+  `localStorage.cqc_player_id`. Two choices: register or log in.
+- `screen-register` — 4-step wizard (Name → Age 9-13 → Gender →
+  6-char ID with Check Availability + Confirm). Ends on a welcome
+  screen displaying the ID prominently.
+- `screen-login` — single 6-char ID input.
+- `screen-player-dashboard` — landing screen for logged-in players:
+  profile (name + ID + age-band pill + 💎 balance), Join a Room and
+  Crystal Wallet actions, and three game sections (**Active** = in
+  progress, **Pending** = lobby, **Archived** = finished/archived).
+  Auto-rejoin from `?room=CODE` lands here with the URL room
+  highlighted. Log Out clears localStorage and returns to home.
+
+**Identity in playerJoin**: the join form is now code-only. Identity
+(name, emoji, age, gender) comes from `STATE.player` loaded from
+localStorage / the persistent row. No name input on join. A small
+"logged in as" card sits above the code field. Auto-rejoin and
+roster-match rejoin behaviour are preserved.
+
+**Host Add Crystals lookup** queries the new `name` column directly
+(via the updated `dbLookupPlayer`).
+
+**Identity helpers** (in game.js): `PLAYER_ID_RE`, `isValidPlayerId`,
+`normalizePlayerId`, `ageGroupFromAge`, `emojiFromGender`,
+`dbIsIdTaken`, `dbRegisterPlayer`, `dbLoginPlayer`. `dbLookupPlayer`
+returns a unified shape including identity columns and balance.
 
 ## Crystal Banking (ledger + redemption)
 **Storage** — `crystal_ledger` table in Supabase (see `MIGRATIONS.md`).

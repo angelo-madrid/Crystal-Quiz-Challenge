@@ -5,6 +5,36 @@ feature. They're additive and idempotent (`IF NOT EXISTS`).
 
 ---
 
+## 2026-05-22 — player identity system — clean slate + schema additions
+
+Drops all pre-launch test data and re-shapes `player_saves` to enforce
+the new persistent-identity model (6-char alphanumeric IDs chosen by
+the player on registration, with name/age/gender row columns).
+
+```sql
+-- Clean slate (pre-launch test data only)
+delete from crystal_ledger;
+delete from rooms;
+delete from player_saves;
+
+-- New identity columns on player_saves
+alter table player_saves
+  add column if not exists name       text       not null default '',
+  add column if not exists age        integer    not null default 0,
+  add column if not exists gender     text       not null default '',
+  add column if not exists created_at timestamptz default now();
+
+-- Enforce: player_id must be exactly 6 uppercase alphanumerics
+alter table player_saves
+  add constraint player_id_format
+  check (player_id ~ '^[A-Z0-9]{6}$');
+```
+
+> Run the DELETEs first; the CHECK constraint would otherwise reject the
+> existing rows (which use the legacy `XX-NNNN` format).
+
+---
+
 ## 2026-05-22 — `crystal_ledger` (crystal banking layer)
 
 ```sql

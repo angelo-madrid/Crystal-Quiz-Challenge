@@ -48,6 +48,91 @@ async function dbReadRoom(roomId) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// PERSISTENT PLAYER IDENTITY (see MIGRATIONS.md 2026-05-22)
+// ═══════════════════════════════════════════════════════════
+// Each player chooses their own 6-char A-Z0-9 ID at registration.
+// The row on player_saves carries name/age/gender at the column level
+// and game state inside the data JSONB blob.
+
+const PLAYER_ID_RE = /^[A-Z0-9]{6}$/;
+function normalizePlayerId(s) { return String(s || '').trim().toUpperCase(); }
+function isValidPlayerId(s)   { return PLAYER_ID_RE.test(normalizePlayerId(s)); }
+
+// Junior 9-11, Senior 12-13 per CLAUDE.md "Players" section.
+function ageGroupFromAge(age) { return Number(age) >= 12 ? 'senior' : 'junior'; }
+
+// We still need an emoji for existing renderers (host cards, waiting
+// lobby slots, player save shape). Derive from gender so kids don't
+// need to pick a separate one.
+function emojiFromGender(g) {
+  const v = String(g || '').toLowerCase();
+  if (v.startsWith('boy'))  return '🦁';
+  if (v.startsWith('girl')) return '🦋';
+  return '🐲';   // "Prefer not to say" / other
+}
+
+// True iff this exact player_id is already on player_saves.
+async function dbIsIdTaken(playerId) {
+  const id = normalizePlayerId(playerId);
+  if (!isValidPlayerId(id)) return false;
+  const { data, error } = await sb.from('player_saves')
+    .select('player_id').eq('player_id', id).maybeSingle();
+  if (error) { console.error('id-check error:', JSON.stringify(error)); return false; }
+  return !!data;
+}
+
+// Insert a brand-new player_saves row. Includes the identity columns
+// (name/age/gender/created_at) and an initial game-state blob in `data`.
+// Returns { ok:true, player } on success or { ok:false, reason } on
+// duplicate-id / DB error.
+async function dbRegisterPlayer({ player_id, name, age, gender }) {
+  const id = normalizePlayerId(player_id);
+  if (!isValidPlayerId(id)) return { ok:false, reason:'invalid_id' };
+  // Build the canonical player object and the initial save blob.
+  const player = {
+    id, name, age, gender,
+    emoji:    emojiFromGender(gender),
+    ageGroup: ageGroupFromAge(age),
+  };
+  const save = newSave(player);
+  // Insert via the regular table — fails on duplicate primary key, which
+  // we treat as "ID already taken".
+  const { error } = await sb.from('player_saves').insert({
+    player_id:  id,
+    name,
+    age,
+    gender,
+    data:       save,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) {
+    if ((error.code || '') === '23505') return { ok:false, reason:'taken' };
+    console.error('register error:', JSON.stringify(error));
+    return { ok:false, reason:'db_error' };
+  }
+  return { ok:true, player, save };
+}
+
+// Login: read the row by id and return { player, save } or null.
+async function dbLoginPlayer(playerId) {
+  const id = normalizePlayerId(playerId);
+  if (!isValidPlayerId(id)) return null;
+  const { data, error } = await sb.from('player_saves')
+    .select('player_id, name, age, gender, created_at, data, updated_at')
+    .eq('player_id', id).single();
+  if (error || !data) return null;
+  const player = {
+    id:       data.player_id,
+    name:     data.name || (data.data && data.data.player_name) || '',
+    age:      data.age,
+    gender:   data.gender,
+    emoji:    (data.data && data.data.player_emoji) || emojiFromGender(data.gender),
+    ageGroup: ageGroupFromAge(data.age),
+  };
+  return { player, save: data.data || newSave(player) };
+}
+
+// ═══════════════════════════════════════════════════════════
 // CRYSTAL LEDGER (banking layer — see MIGRATIONS.md)
 // ═══════════════════════════════════════════════════════════
 // Canonical balance rule: player_saves.data.total_crystals is
@@ -100,12 +185,31 @@ async function dbHasPendingRedemption(playerId) {
   return Array.isArray(data) && data.length > 0;
 }
 
-// Look up a player's save by id (for host's add-crystals form preview).
+// Look up a player by id. Returns a normalized object combining the
+// new column-level identity fields (name/age/gender) with the data
+// JSON blob. Host's Add Crystals preview reads name/balance from the
+// returned object.
 async function dbLookupPlayer(playerId) {
+  const id = normalizePlayerId(playerId);
+  if (!id) return null;
   const { data, error } = await sb.from('player_saves')
-    .select('data').eq('player_id', playerId).single();
+    .select('player_id, name, age, gender, data').eq('player_id', id).maybeSingle();
   if (error || !data) return null;
-  return data.data;
+  const blob = data.data || {};
+  return {
+    // identity (column-level)
+    player_id:    data.player_id,
+    name:         data.name || blob.player_name || '',
+    age:          data.age,
+    gender:       data.gender,
+    // legacy aliases for callers that still read save-blob fields
+    player_name:  data.name || blob.player_name || data.player_id,
+    player_emoji: blob.player_emoji || emojiFromGender(data.gender),
+    age_group:    blob.age_group || ageGroupFromAge(data.age),
+    total_crystals: blob.total_crystals || 0,
+    // raw save for anyone who needs it
+    _data: blob,
+  };
 }
 
 // Mutate the canonical balance. Reads save, applies delta, writes back.
@@ -417,6 +521,14 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  // Persistent-identity: rendering the join screen shows who's logged in.
+  if (id === 'screen-join' && typeof refreshJoinIdentityCard === 'function') {
+    refreshJoinIdentityCard();
+  }
+  if (id === 'screen-register' && typeof registerResetState === 'function') {
+    // Fresh wizard each visit
+    registerResetState();
+  }
 }
 
 // ── LOGIN / PLAYER CREATION ──────────────────────────────────
@@ -449,27 +561,276 @@ function selectJoinAge(age) {
   document.getElementById('join-age-junior').classList.toggle('selected', age === 'junior');
 }
 
-// Solo-create flow disabled. The legitimate new-player creation now lives
-// inside `playerJoin()` which requires a valid Supabase room. If anything
-// still reaches `screen-login` and calls createPlayer (e.g. a stale link),
-// surface a clear message and redirect to the room-join entry. We do NOT
-// write a save or generate a player ID outside a room context.
-async function createPlayer() {
-  const err = document.getElementById('login-err');
-  if (err) {
-    err.textContent = '🎮 New players join through a room code — ask Papa for one.';
+// Legacy createPlayer / continueJourney are gone — the persistent-identity
+// system replaces them. Stubs kept so any stale onclick still lands the
+// user somewhere sane (the account gate).
+async function createPlayer()    { showScreen('screen-account-gate'); }
+async function continueJourney() { showScreen('screen-account-gate'); }
+
+// ═══════════════════════════════════════════════════════════
+// PERSISTENT-IDENTITY FLOW (registration + login + dashboard)
+// ═══════════════════════════════════════════════════════════
+
+// Home → Join a Room routing. If localStorage already has a valid
+// player_id, jump straight to the dashboard; otherwise show the gate.
+function homeJoinARoom() {
+  const stored = localStorage.getItem('cqc_player_id');
+  if (stored && isValidPlayerId(stored)) {
+    openPlayerDashboard();
+  } else {
+    showScreen('screen-account-gate');
   }
-  showScreen('screen-join');
 }
 
-// Solo "Continue Journey" was removed from the home screen. The function
-// is kept as a stub so any stale onclick / bookmark routes through the
-// multiplayer entry — never silently restores a save and drops the kid
-// onto the map without a room context. The legitimate rejoin path is
-// `tryAutoRejoinFromURL(code)` triggered by `?room=CODE`, which is left
-// untouched.
-async function continueJourney() {
-  showScreen('screen-join');
+// ── REGISTRATION (4-step wizard + welcome) ───────────────────
+let REGISTER_STATE = { name: '', age: 0, gender: '', id: '', idChecked: null /* null|true|false */ };
+
+function registerResetState() {
+  REGISTER_STATE = { name: '', age: 0, gender: '', id: '', idChecked: null };
+  // Clear any previous form state
+  ['reg-name','reg-age','reg-id'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  document.querySelectorAll('#reg-step-3 .age-btn').forEach(b => b.classList.remove('selected'));
+  registerShowStep(1);
+  const status = document.getElementById('reg-id-status');
+  if (status) { status.textContent = 'Pick 6 letters or numbers, then check availability.'; status.className = 'reg-id-status'; }
+  const confirmBtn = document.getElementById('reg-confirm-btn');
+  if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.style.opacity = '0.4'; }
+}
+
+function registerShowStep(step) {
+  for (let i = 1; i <= 4; i++) {
+    const el = document.getElementById('reg-step-' + i);
+    if (el) el.style.display = (i === step) ? 'block' : 'none';
+  }
+  const welcome = document.getElementById('reg-welcome');
+  if (welcome) welcome.style.display = (step === 'welcome') ? 'block' : 'none';
+  const progress = document.getElementById('register-progress');
+  if (progress) progress.textContent = (step === 'welcome') ? '✓ Complete' : `Step ${step} of 4`;
+}
+
+function registerSelectGender(btn) {
+  document.querySelectorAll('#reg-step-3 .age-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  REGISTER_STATE.gender = btn.getAttribute('data-gender') || '';
+}
+
+function registerNext(fromStep) {
+  if (fromStep === 1) {
+    const name = (document.getElementById('reg-name').value || '').trim();
+    const err = document.getElementById('reg-err-1');
+    if (!name) { err.textContent = '⚠️ Enter your name'; return; }
+    if (name.length > 32) { err.textContent = '⚠️ Keep it under 32 characters'; return; }
+    err.textContent = '';
+    REGISTER_STATE.name = name;
+    registerShowStep(2);
+  } else if (fromStep === 2) {
+    const age = parseInt(document.getElementById('reg-age').value, 10);
+    const err = document.getElementById('reg-err-2');
+    if (!age || age < 9 || age > 13) { err.textContent = '⚠️ Age must be 9 to 13'; return; }
+    err.textContent = '';
+    REGISTER_STATE.age = age;
+    registerShowStep(3);
+  } else if (fromStep === 3) {
+    const err = document.getElementById('reg-err-3');
+    if (!REGISTER_STATE.gender) { err.textContent = '⚠️ Pick one'; return; }
+    err.textContent = '';
+    registerShowStep(4);
+  }
+}
+
+function registerIdChanged() {
+  // Any keystroke invalidates a prior "available" check
+  REGISTER_STATE.id = document.getElementById('reg-id').value;
+  REGISTER_STATE.idChecked = null;
+  const status = document.getElementById('reg-id-status');
+  status.className = 'reg-id-status';
+  if (!isValidPlayerId(REGISTER_STATE.id)) {
+    status.textContent = `${REGISTER_STATE.id.length} / 6 characters — A–Z and 0–9 only.`;
+  } else {
+    status.textContent = 'Looks good — tap Check Availability to confirm.';
+  }
+  const confirmBtn = document.getElementById('reg-confirm-btn');
+  confirmBtn.disabled = true;
+  confirmBtn.style.opacity = '0.4';
+}
+
+async function registerCheckId() {
+  const id = normalizePlayerId(document.getElementById('reg-id').value);
+  const status = document.getElementById('reg-id-status');
+  const err = document.getElementById('reg-err-4');
+  err.textContent = '';
+  if (!isValidPlayerId(id)) {
+    status.textContent = '❌ Must be exactly 6 characters (A–Z, 0–9)';
+    status.className = 'reg-id-status reg-id-bad';
+    return;
+  }
+  status.textContent = '⏳ Checking…';
+  status.className = 'reg-id-status';
+  const taken = await dbIsIdTaken(id);
+  if (taken) {
+    status.textContent = `❌ ${id} is already taken. Try another.`;
+    status.className = 'reg-id-status reg-id-bad';
+    REGISTER_STATE.idChecked = false;
+    const confirmBtn = document.getElementById('reg-confirm-btn');
+    confirmBtn.disabled = true; confirmBtn.style.opacity = '0.4';
+    return;
+  }
+  status.textContent = `✅ ${id} is available!`;
+  status.className = 'reg-id-status reg-id-ok';
+  REGISTER_STATE.id = id;
+  REGISTER_STATE.idChecked = true;
+  const confirmBtn = document.getElementById('reg-confirm-btn');
+  confirmBtn.disabled = false; confirmBtn.style.opacity = '';
+}
+
+async function registerConfirm() {
+  const err = document.getElementById('reg-err-4');
+  err.textContent = '';
+  if (REGISTER_STATE.idChecked !== true) { err.textContent = '⚠️ Tap Check Availability first'; return; }
+  const result = await dbRegisterPlayer({
+    player_id: REGISTER_STATE.id,
+    name:      REGISTER_STATE.name,
+    age:       REGISTER_STATE.age,
+    gender:    REGISTER_STATE.gender,
+  });
+  if (!result.ok) {
+    if (result.reason === 'taken') {
+      err.textContent = '⚠️ Someone grabbed that ID a moment ago. Pick another.';
+      REGISTER_STATE.idChecked = false;
+      const confirmBtn = document.getElementById('reg-confirm-btn');
+      confirmBtn.disabled = true; confirmBtn.style.opacity = '0.4';
+      return;
+    }
+    err.textContent = '❌ Could not create account. ' + (result.reason || '');
+    return;
+  }
+  // Persist identity to localStorage and STATE.
+  STATE.player = result.player;
+  STATE.save   = result.save;
+  localStorage.setItem('cqc_player_id', result.player.id);
+  localStorage.setItem('cqc_player',    JSON.stringify(result.player));
+  // Welcome screen
+  document.getElementById('welcome-emoji').textContent = result.player.emoji || '🎉';
+  document.getElementById('welcome-greeting').textContent = `Welcome, ${result.player.name}!`;
+  document.getElementById('welcome-id').textContent = result.player.id;
+  registerShowStep('welcome');
+}
+
+async function dashboardFromRegister() {
+  openPlayerDashboard();
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function loginSubmit() {
+  const id = normalizePlayerId(document.getElementById('login-id').value);
+  const err = document.getElementById('login-err');
+  err.textContent = '';
+  if (!isValidPlayerId(id)) { err.textContent = '⚠️ ID must be exactly 6 characters (A–Z, 0–9)'; return; }
+  const result = await dbLoginPlayer(id);
+  if (!result) { err.textContent = '❌ No account with that ID. Tap Back to register.'; return; }
+  STATE.player = result.player;
+  STATE.save   = result.save;
+  localStorage.setItem('cqc_player_id', result.player.id);
+  localStorage.setItem('cqc_player',    JSON.stringify(result.player));
+  openPlayerDashboard();
+}
+
+// ── PLAYER DASHBOARD ─────────────────────────────────────────
+// Sits between login and joining a room. Auto-rejoin from ?room=CODE
+// also lands here, with the URL's room highlighted in Active.
+let _dashboardHighlightRoom = null;
+
+async function openPlayerDashboard() {
+  if (!STATE.player) { showScreen('screen-account-gate'); return; }
+  showScreen('screen-player-dashboard');
+  await renderPlayerDashboard();
+}
+
+async function renderPlayerDashboard() {
+  const player = STATE.player;
+  if (!player) return;
+  // Refresh authoritative save (host bonuses may have arrived).
+  const fresh = await dbLoad(player.id);
+  if (fresh) STATE.save = fresh;
+  const balance = (STATE.save && STATE.save.total_crystals) || 0;
+  const ageBand = ageGroupFromAge(player.age);
+
+  document.getElementById('pdh-emoji').textContent = player.emoji || '👤';
+  document.getElementById('pdh-name').textContent  = player.name;
+  document.getElementById('pdh-id').textContent    = player.id;
+  document.getElementById('pdh-age-pill').textContent = ageBand === 'junior'
+    ? '🌟 Junior (9–11)' : '🎓 Senior (12–13)';
+  document.getElementById('pdh-balance').textContent = balance.toLocaleString();
+
+  // Find all rooms this player belongs to.
+  const allRooms = await dbListRooms();
+  const mine = allRooms.filter(r =>
+    (r.data?.players || []).some(p => p.id === player.id)
+  );
+  const active   = mine.filter(r => !r.data?.archived && r.data?.phase !== 'GAME_OVER' && r.data?.phase !== 'lobby');
+  const pending  = mine.filter(r => !r.data?.archived && r.data?.phase === 'lobby');
+  const archived = mine.filter(r =>  r.data?.archived || r.data?.phase === 'GAME_OVER');
+
+  document.getElementById('pd-active-count').textContent   = active.length;
+  document.getElementById('pd-pending-count').textContent  = pending.length;
+  document.getElementById('pd-archived-count').textContent = archived.length;
+
+  const renderList = (list, type) => list.length
+    ? list.map(r => playerDashboardGameCard(r, type)).join('')
+    : `<div class="pd-empty">No ${type} games.</div>`;
+  document.getElementById('pd-active-list').innerHTML   = renderList(active,   'active');
+  document.getElementById('pd-pending-list').innerHTML  = renderList(pending,  'pending');
+  document.getElementById('pd-archived-list').innerHTML = renderList(archived, 'archived');
+}
+
+function playerDashboardGameCard(r, type) {
+  const status = deriveRoomStatus(r.data);
+  const players = (r.data.players || []).length;
+  const updated = relTime(r.updated_at);
+  const isHighlight = (_dashboardHighlightRoom && _dashboardHighlightRoom === r.id);
+  const cls = `game-card${isHighlight ? ' highlight' : ''}${type==='archived' ? ' archived' : ''}`;
+  const resumeBtn = (type === 'archived' && r.data?.phase === 'GAME_OVER')
+    ? `<button class="btn-secondary" onclick="playerDashboardOpenRoom('${escapeAttr(r.id)}')">📊 View</button>`
+    : `<button class="btn-primary" onclick="playerDashboardOpenRoom('${escapeAttr(r.id)}')">▶ ${type==='pending' ? 'Lobby' : 'Resume'}</button>`;
+  return `
+    <div class="${cls}">
+      <div class="game-card-top">
+        <div class="room-code-box${isHighlight ? '' : ' small'}">${escapeHTML(r.id)}</div>
+        <button class="copy-btn" onclick="landingCopyCode('${escapeAttr(r.id)}')">📋 Copy</button>
+      </div>
+      <div class="game-card-meta">
+        <span class="status-pill status-${status.cls}">${status.label}</span>
+        <span class="meta-sep">·</span>
+        <span>👥 ${players}</span>
+        <span class="meta-sep">·</span>
+        <span>🕒 ${updated}</span>
+        ${isHighlight ? '<span class="meta-sep">·</span><span class="pd-highlight-tag">⭐ from URL</span>' : ''}
+      </div>
+      <div class="game-card-actions">
+        ${resumeBtn}
+      </div>
+    </div>`;
+}
+
+// Tap a game card → resume into that room
+async function playerDashboardOpenRoom(code) {
+  // Drop the code into screen-join as a pre-filled value and submit,
+  // routing through playerJoin (which handles rejoin-vs-new).
+  STATE.roomCode = code;
+  const codeInp = document.getElementById('join-code');
+  if (codeInp) codeInp.value = code;
+  await playerJoin();
+}
+
+function dashboardLogout() {
+  localStorage.removeItem('cqc_player_id');
+  localStorage.removeItem('cqc_player');
+  localStorage.removeItem('cqc_room_code');
+  STATE.player = null;
+  STATE.save   = null;
+  STATE.roomCode = null;
+  _dashboardHighlightRoom = null;
+  showScreen('screen-home');
 }
 
 // ── LOAD POKEMON ──────────────────────────────────────────────
@@ -2349,37 +2710,46 @@ async function hostCreate() {
   // This is kept as fallback
 }
 
+// ── PLAYER JOIN — identity-aware (post-persistent-identity rewrite) ──
+// The player's identity (id, name, emoji, age, gender) is established
+// at registration/login and lives in STATE.player + localStorage. This
+// function ONLY needs a room code from the form. It dispatches:
+//   - returning player (id already on the roster) → reconnectExistingPlayer
+//   - lobby phase + space available + not a stranger → add to room
+//   - everything else → friendly rejection
 async function playerJoin() {
-  const name = document.getElementById('join-name').value.trim();
-  const code = document.getElementById('join-code').value.trim();
+  const code = (document.getElementById('join-code').value || '').trim().toUpperCase();
   const err  = document.getElementById('join-err');
   const btn  = document.getElementById('join-btn');
 
+  // Identity guard: the persistent-identity flow must have happened first.
+  const storedId = localStorage.getItem('cqc_player_id');
+  if (!STATE.player || !storedId || !isValidPlayerId(storedId)) {
+    if (err) err.textContent = '⚠️ Log in or create an account first.';
+    showScreen('screen-account-gate');
+    return;
+  }
+
   if (!code) { err.textContent = '⚠️ Enter the room code!'; return; }
-  if (!name) { err.textContent = '⚠️ Enter your name!'; return; }
 
   btn.textContent = '⏳ Joining…'; btn.disabled = true; err.textContent = '';
 
   try {
     const room = await dbReadRoom(code);
     if (!room) {
-      err.textContent = `❌ Room "${code}" not found. Ask Papa to open the Host page first!`;
+      err.textContent = `❌ Room "${code}" not found. Ask Papa for the right code.`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
 
-    // Phase A rejoin: if my stored playerId is already on this room's
-    // roster, restore my save and reconnect instead of creating a new
-    // player. Same-device only (cross-device rejoin via name matching is
-    // out of scope per the agreed plan).
-    const storedId = localStorage.getItem('cqc_player_id');
-    const isReturning = !!storedId && (room.players || []).some(p => p.id === storedId);
+    // Returning player — already on this room's roster.
+    const isReturning = (room.players || []).some(p => p.id === storedId);
     if (isReturning) {
       const ok = await reconnectExistingPlayer(code, room, storedId);
       if (!ok) { btn.textContent = '🚀 Join Room!'; btn.disabled = false; }
       return;
     }
 
-    // Not a returning player. Game already started? Reject strangers.
+    // Fresh joiner — must be lobby phase.
     if (room.phase !== 'lobby') {
       err.textContent = `❌ Game already started — only returning players can rejoin.`;
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
@@ -2389,38 +2759,52 @@ async function playerJoin() {
       btn.textContent = '🚀 Join Room!'; btn.disabled = false; return;
     }
 
-    // Brand-new lobby joiner. Existing fresh-save path.
-    const playerId = name.substring(0,2).toUpperCase() + '-' + Math.floor(1000+Math.random()*9000);
-    const player = { id: playerId, name, emoji: joinEmoji, ageGroup: joinAge };
-    STATE.player   = player;
+    // Add the logged-in player to the room. No fresh save — their save
+    // already exists from registration/login.
     STATE.roomCode = code;
     STATE.isHost   = false;
-
-    // Save to localStorage (include room code so the home screen can
-    // discover an active multiplayer context if the player navigates away).
-    localStorage.setItem('cqc_player_id', playerId);
-    localStorage.setItem('cqc_player', JSON.stringify(player));
     localStorage.setItem('cqc_room_code', code);
 
-    // Create save
-    const save = newSave(player);
-    save.last_seen = new Date().toISOString();
-    STATE.save = save;
-    await dbSave(playerId, save);
+    // Ensure save loaded (refresh from Supabase in case of stale local copy).
+    if (!STATE.save) {
+      STATE.save = await dbLoad(storedId) || newSave(STATE.player);
+    }
+    STATE.save.last_seen = new Date().toISOString();
+    await dbSave(storedId, STATE.save);
 
-    // Add to room
     if (!room.players) room.players = [];
-    room.players.push({ id: playerId, name, emoji: joinEmoji, ageGroup: joinAge });
+    room.players.push({
+      id:       STATE.player.id,
+      name:     STATE.player.name,
+      emoji:    STATE.player.emoji,
+      ageGroup: STATE.player.ageGroup,
+    });
     await dbWriteRoom(code, room);
 
     ensureHeartbeat();
-    showWaitingLobby(code, room.players, playerId, false);
-    startWaitingPoll(code, playerId, false);
+    showWaitingLobby(code, room.players, storedId, false);
+    startWaitingPoll(code, storedId, false);
 
   } catch(e) {
-    err.textContent = '❌ Error: ' + e.message;
+    err.textContent = '❌ Error: ' + (e && e.message ? e.message : e);
     btn.textContent = '🚀 Join Room!'; btn.disabled = false;
   }
+}
+
+// Render the "you're logged in as" card inside screen-join. Called when
+// the screen activates.
+function refreshJoinIdentityCard() {
+  const el = document.getElementById('join-identity-card');
+  if (!el) return;
+  if (!STATE.player) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div class="join-identity-line">
+      <span class="join-identity-emoji">${STATE.player.emoji || '👤'}</span>
+      <div>
+        <div class="join-identity-name">${escapeHTML(STATE.player.name)}</div>
+        <div class="join-identity-id">${escapeHTML(STATE.player.id)}</div>
+      </div>
+    </div>`;
 }
 
 // ── PHASE A: reconnect a returning player whose ID is already in the room.
@@ -3670,18 +4054,28 @@ window.addEventListener('load', () => {
 // up — the user can manually retry.
 async function tryAutoRejoinFromURL(code) {
   const storedId = localStorage.getItem('cqc_player_id');
-  if (!storedId) return;
+  if (!storedId || !isValidPlayerId(storedId)) return;
   try {
     const room = await dbReadRoom(code);
     if (!room) return;
     const isOnRoster = (room.players || []).some(p => p.id === storedId);
     if (!isOnRoster) return;
-    // Show a small "Reconnecting…" status in the existing banner so the
-    // user knows something's happening if there's lag.
-    const bc = document.getElementById('join-banner-code');
-    if (bc) bc.textContent = `${code} — reconnecting…`;
-    const ok = await reconnectExistingPlayer(code, room, storedId);
-    if (!ok && bc) bc.textContent = code;  // restore the banner on failure
+    // Restore identity + save from Supabase so STATE is correct.
+    const result = await dbLoginPlayer(storedId);
+    if (!result) return;
+    STATE.player   = result.player;
+    STATE.save     = result.save;
+    STATE.roomCode = code;
+    STATE.isHost   = false;
+    // Persistent-identity update: bring the user to the dashboard with
+    // the URL's room highlighted as the active resumable game. Replaces
+    // the older "drop straight into the game screen" behavior.
+    _dashboardHighlightRoom = code;
+    ensureHeartbeat();
+    // Update last_seen so the host's presence dot turns green within a poll.
+    STATE.save.last_seen = new Date().toISOString();
+    await dbSave(storedId, STATE.save);
+    await openPlayerDashboard();
   } catch (e) {
     console.warn('auto-rejoin failed:', e);
   }
