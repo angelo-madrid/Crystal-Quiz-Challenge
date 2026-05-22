@@ -133,6 +133,10 @@ let STATE = {
   totalTime: 20,                // Phase 1 step 1.5: tracked so TIME/FREEZE can adjust the bar correctly
   gymCrystals: 0,
   gymCorrect: 0,
+  // Review feature: per-question answer log for the in-progress gym.
+  // Indexed by question position; null = timeout/skip. Persisted to
+  // save.regions[r].gymResults[g].questions[i].chosen at endGym.
+  gymAnswerLog: [],
   abilityUsedThisGym: false,
   pendingAbilityPokemon: null,
   // 1.5: single-question modifiers set by an ability, consumed on next answer
@@ -1252,16 +1256,24 @@ function showGymSelect(regionId) {
 
     const card = document.createElement('div');
     card.className = `gym-card${isLocked ? ' locked' : ''}${isCompleted ? ' completed' : ''}`;
+    // Review feature: completed gym → "Tap to review" subtitle so the kid
+    // knows it's now read-only.
+    const subtitle = isCompleted
+      ? `${GYM_FORMATS[i-1]} · ✅ Tap to review`
+      : `${GYM_FORMATS[i-1]} · ${region.badgeMin} 🔮 min`;
     card.innerHTML = `
       <div class="gym-num">${i}</div>
       <div class="gym-info">
         <div class="gym-name">${GYM_NAMES[i-1]}</div>
-        <div class="gym-meta">${GYM_FORMATS[i-1]} · ${region.badgeMin} 🔮 min</div>
+        <div class="gym-meta">${subtitle}</div>
       </div>
       <div class="gym-badge-status">${isCompleted ? '🏅' : isLocked ? '🔒' : '▶'}</div>
     `;
     if (!isLocked) {
-      card.onclick = () => startGym(regionId, i);
+      // Completed gyms → read-only review. In-progress/not-started → play.
+      card.onclick = isCompleted
+        ? () => openGymReview(regionId, i)
+        : () => startGym(regionId, i);
     }
     container.appendChild(card);
   }
@@ -1269,15 +1281,119 @@ function showGymSelect(regionId) {
   showScreen('screen-gym-select');
 }
 
+// ── GYM REVIEW (read-only) ────────────────────────────────────
+// Opens when a completed gym is tapped from gym-select. Renders the
+// stored per-question record (kid's pick + correct answer per question).
+// No timer, no scoring, no abilities, no submit — purely a recap.
+//
+// Backward-compat: if the save has gymsCompleted but no gymResults entry
+// (i.e. completed before this feature shipped), shows a graceful fallback
+// banner instead of attempting to draw fresh questions.
+function openGymReview(regionId, gymNum) {
+  STATE.currentRegion = regionId;
+  STATE.currentGym    = gymNum;
+  // Ensure no lingering quiz timer ticks under the review screen.
+  if (STATE.timerInt) { clearInterval(STATE.timerInt); STATE.timerInt = null; }
+  const regionSave = (STATE.save && STATE.save.regions || {})[regionId] || {};
+  const results = (regionSave.gymResults || {})[gymNum] || null;
+  renderGymReview(regionId, gymNum, results);
+  showScreen('screen-gym-review');
+}
+
+function renderGymReview(regionId, gymNum, results) {
+  const region = REGIONS.find(r => r.id === regionId);
+  const titleEl   = document.getElementById('review-title');
+  const contentEl = document.getElementById('review-content');
+  titleEl.textContent = `${region.emoji} ${region.name} · Gym ${gymNum} — Review`;
+
+  // Fallback for pre-feature saves: gym is in gymsCompleted but the
+  // per-question record was never written. Show a friendly notice.
+  if (!results || !Array.isArray(results.questions)) {
+    contentEl.innerHTML = `
+      <div class="review-fallback">
+        <div class="review-fallback-icon">📜</div>
+        <h3>Gym already cleared</h3>
+        <p>This gym was completed before answer-review was turned on,
+           so the questions you saw weren't recorded.</p>
+        <p>Replay isn't available — but new gyms you finish from now on
+           will be fully reviewable here.</p>
+        <button class="btn-primary" onclick="showScreen('screen-gym-select')">← Back to Gyms</button>
+      </div>`;
+    return;
+  }
+
+  const correctCount = results.questions.reduce((n, qr) => n + (qr.correct ? 1 : 0), 0);
+  const total = results.questions.length;
+
+  const qsHTML = results.questions.map((qr, idx) => {
+    const optsHTML = (qr.options || []).map(opt => {
+      const isCorrect = opt === qr.answer;
+      const isChosen  = qr.chosen === opt;
+      let cls = 'review-option';
+      let tag = '';
+      if (isCorrect && isChosen) { cls += ' is-correct-chosen'; tag = '✅ Your pick (correct)'; }
+      else if (isCorrect)        { cls += ' is-correct';        tag = '✅ Correct answer'; }
+      else if (isChosen)         { cls += ' is-wrong-chosen';   tag = '❌ Your pick'; }
+      return `<div class="${cls}">
+        <span class="review-opt-text">${opt}</span>
+        ${tag ? `<span class="review-opt-tag">${tag}</span>` : ''}
+      </div>`;
+    }).join('');
+
+    let verdict, verdictClass;
+    if (qr.chosen === null || qr.chosen === undefined) {
+      verdict = '⏱ Timed out / skipped'; verdictClass = 'verdict-timeout';
+    } else if (qr.correct) {
+      verdict = '✅ Correct';             verdictClass = 'verdict-correct';
+    } else {
+      verdict = '❌ Wrong';                verdictClass = 'verdict-wrong';
+    }
+    const catLabel  = (typeof CATEGORY_LABELS !== 'undefined' && CATEGORY_LABELS[qr.category]) || qr.category;
+    const tierLabel = (typeof TIER_LABELS     !== 'undefined' && TIER_LABELS[qr.tier])         || qr.tier;
+    return `
+      <div class="review-question">
+        <div class="review-q-header">
+          <span class="review-q-num">Q${idx+1}</span>
+          <span class="review-q-meta">${catLabel} · ${tierLabel}</span>
+          <span class="review-q-verdict ${verdictClass}">${verdict}</span>
+        </div>
+        <div class="review-q-text">${qr.question}</div>
+        <div class="review-opts">${optsHTML}</div>
+      </div>`;
+  }).join('');
+
+  const passText = results.passed ? '🏅 Passed' : '💔 Did not pass';
+  contentEl.innerHTML = `
+    <div class="review-stats">
+      <div class="review-stat-cell"><div class="review-stat-val">${passText}</div></div>
+      <div class="review-stat-cell"><div class="review-stat-val">${(results.gymCrystals||0).toLocaleString()} 🔮</div><div class="review-stat-label">Earned</div></div>
+      <div class="review-stat-cell"><div class="review-stat-val">${correctCount} / ${total}</div><div class="review-stat-label">Correct</div></div>
+    </div>
+    <div class="review-note">📖 Read-only — re-entry does NOT earn crystals or use abilities.</div>
+    <div class="review-questions">${qsHTML}</div>
+    <div class="review-footer">
+      <button class="btn-secondary" onclick="showScreen('screen-gym-select')">← Back to Gyms</button>
+    </div>`;
+}
+
 // ── START GYM ─────────────────────────────────────────────────
 async function startGym(regionId, gymId) {
   // 1.6: defensive — never load a gym from an out-of-scope region.
   if (regionId > MAX_PLAYABLE_REGION) { showTestBuildComplete(); return; }
+  // Review feature: completed gyms are READ-ONLY. Any code path that
+  // reaches startGym for a gym already in gymsCompleted gets redirected
+  // to the review screen instead of running the timer/scoring loop.
+  const _regSave = (STATE.save && STATE.save.regions || {})[regionId] || {};
+  if ((_regSave.gymsCompleted || []).includes(gymId)) {
+    openGymReview(regionId, gymId);
+    return;
+  }
   STATE.currentRegion = regionId;
   STATE.currentGym = gymId;
   STATE.currentQ = 0;
   STATE.gymCrystals = 0;
   STATE.gymCorrect = 0;
+  STATE.gymAnswerLog = [];     // review feature: per-question answer log
   STATE.answered = false;
   STATE.abilityUsedThisGym = false;
 
@@ -1446,6 +1562,9 @@ function checkAnswer(idx) {
   STATE.answered = true;
   clearInterval(STATE.timerInt);
   STATE.timerInt = null;
+  // Review feature: record the kid's final pick for this question (indexed
+  // by position so SKIP-gaps remain `undefined` → padded to null at endGym).
+  STATE.gymAnswerLog[STATE.currentQ] = chosen;
 
   // Reveal answers
   for (let i = 0; i < 4; i++) {
@@ -1499,6 +1618,8 @@ function checkAnswer(idx) {
 
 function timeUp() {
   STATE.answered = true;
+  // Review feature: timed-out questions log as null (no pick).
+  STATE.gymAnswerLog[STATE.currentQ] = null;
   const q = STATE.currentQData[STATE.currentQ];
   const correctIdx = STATE.currentChoices.indexOf(q.answer);
 
@@ -1543,6 +1664,31 @@ async function endGym() {
     regionSave.gymsCompleted.push(STATE.currentGym);
     STATE.save.badges_earned = (STATE.save.badges_earned || 0) + 1;
   }
+
+  // Review feature: persist a per-gym results object so completed gyms
+  // open in read-only review mode. Written on every attempt (pass or
+  // fail) so the most recent run is what gets shown.
+  if (!regionSave.gymResults) regionSave.gymResults = {};
+  regionSave.gymResults[STATE.currentGym] = {
+    passed,
+    gymCrystals: STATE.gymCrystals,
+    gymCorrect:  STATE.gymCorrect,
+    completedAt: new Date().toISOString(),
+    questions:   STATE.currentQData.map((q, i) => {
+      const chosen = (STATE.gymAnswerLog[i] !== undefined) ? STATE.gymAnswerLog[i] : null;
+      return {
+        id:       q.id,
+        category: q.category,
+        tier:     q.tier,
+        type:     q.type,
+        question: q.question,   // already-scrambled for unscramble
+        answer:   q.answer,
+        options:  q.options,
+        chosen:   chosen,
+        correct:  chosen === q.answer,
+      };
+    }),
+  };
 
   STATE.save.updated_at = new Date().toISOString();
 

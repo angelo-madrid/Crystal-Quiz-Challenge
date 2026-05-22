@@ -1560,3 +1560,82 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   padding: 18px;
   box-shadow: 0 6px 28px rgba(255,203,5,0.4);
 }
+
+/* ═══════════════════════════════════════════════
+   GYM REVIEW (read-only review of completed gyms)
+   ═══════════════════════════════════════════════ */
+#review-content { padding: 0 16px 28px; }
+
+.review-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  padding: 14px 4px; margin-bottom: 6px;
+}
+.review-stat-cell {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 10px 6px; text-align: center;
+}
+.review-stat-val   { font-size: 0.95rem; font-weight: 900; color: var(--gold); line-height: 1.2; }
+.review-stat-label { font-size: 0.7rem;  opacity: 0.7; margin-top: 3px; font-weight: 700; }
+
+.review-note {
+  margin: 6px 4px 16px; padding: 10px 14px;
+  background: rgba(167,139,250,0.10);
+  border: 1px dashed var(--crystal);
+  border-radius: 10px; font-size: 0.82rem; font-weight: 700;
+  color: var(--crystal); text-align: center;
+}
+
+.review-questions { display: flex; flex-direction: column; gap: 12px; }
+.review-question {
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 14px; padding: 14px;
+}
+.review-q-header {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.75rem; font-weight: 800; margin-bottom: 8px;
+}
+.review-q-num    { color: var(--gold); }
+.review-q-meta   { flex: 1; opacity: 0.6; }
+.review-q-verdict        { padding: 3px 9px; border-radius: 999px; font-size: 0.7rem; }
+.verdict-correct         { background: rgba(34,197,94,0.18);  color: #22c55e; }
+.verdict-wrong           { background: rgba(239,68,68,0.18);  color: #ef4444; }
+.verdict-timeout         { background: rgba(249,115,22,0.18); color: #f97316; }
+
+.review-q-text   { font-size: 0.98rem; font-weight: 700; margin-bottom: 12px; }
+
+.review-opts     { display: flex; flex-direction: column; gap: 6px; }
+.review-option {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  font-size: 0.88rem; font-weight: 700;
+}
+.review-option.is-correct {
+  background: rgba(34,197,94,0.10);
+  border-color: rgba(34,197,94,0.4);
+}
+.review-option.is-correct-chosen {
+  background: rgba(34,197,94,0.18);
+  border: 2px solid #22c55e;
+}
+.review-option.is-wrong-chosen {
+  background: rgba(239,68,68,0.15);
+  border: 2px solid #ef4444;
+}
+.review-opt-tag {
+  font-size: 0.7rem; opacity: 0.85; margin-left: 10px;
+  white-space: nowrap;
+}
+
+.review-fallback {
+  margin: 20px; padding: 24px 18px; text-align: center;
+  background: var(--card); border: 1px solid var(--card-border);
+  border-radius: 16px;
+}
+.review-fallback-icon { font-size: 2.6rem; margin-bottom: 6px; }
+.review-fallback h3   { margin-bottom: 8px; font-weight: 900; }
+.review-fallback p    { opacity: 0.75; font-size: 0.9rem; margin-bottom: 8px; }
+.review-fallback .btn-primary { margin-top: 14px; }
+
+.review-footer { margin-top: 18px; padding: 0 4px; }

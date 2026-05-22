@@ -243,6 +243,15 @@
     </div>
   </div>
 
+  <!-- GYM REVIEW (read-only) — opens when tapping a completed gym -->
+  <div id="screen-gym-review" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-gym-select')">← Back</button>
+      <h2 id="review-title">Gym Review</h2>
+    </div>
+    <div id="review-content"><!-- rendered by JS --></div>
+  </div>
+
   <!-- TEST BUILD COMPLETE — temporary lid for the engine test (Phase 1 step 1.6) -->
   <div id="screen-test-build-complete" class="screen">
     <div class="complete-hero">
