@@ -141,12 +141,29 @@ async function dbLoginPlayer(playerId) {
 // bumps the balance. Pending and declined ledger entries never touch
 // the balance.
 
-// Insert a new ledger entry. Returns the inserted row.
+// Insert a new ledger entry. Returns the inserted row on success, or
+// null on failure (logged with [LEDGER WRITE FAILED]). Every caller
+// MUST check for null and surface the failure to the user — silent
+// failures here would let the kid see a false "Request sent" toast
+// while the row never reaches Supabase. Most common cause of null
+// return: RLS blocking anon inserts on the crystal_ledger table.
 async function dbLedgerInsert(entry) {
-  const { data, error } = await sb.from('crystal_ledger')
-    .insert(entry).select().single();
-  if (error) { console.error('Ledger insert error:', JSON.stringify(error)); return null; }
-  return data;
+  try {
+    const { data, error } = await sb.from('crystal_ledger')
+      .insert(entry).select().single();
+    if (error) {
+      console.error('[LEDGER WRITE FAILED]', error, 'entry:', entry);
+      return null;
+    }
+    if (!data) {
+      console.error('[LEDGER WRITE FAILED] insert returned no row', 'entry:', entry);
+      return null;
+    }
+    return data;
+  } catch (err) {
+    console.error('[LEDGER WRITE FAILED]', err, 'entry:', entry);
+    return null;
+  }
 }
 
 // Update an existing ledger entry (typically host approves/declines).
@@ -177,9 +194,15 @@ async function dbLedgerPending() {
   const { data, error } = await sb.from('crystal_ledger')
     .select('*').eq('status', 'pending')
     .order('created_at', { ascending: true });   // oldest pending first
-  if (error) { console.error('Ledger pending fetch error:', JSON.stringify(error)); return []; }
-  console.log('[REDEEM READ] pending requests:', data ? data.length : 0, data);
-  return data || [];
+  if (error) { console.error('[LEDGER PENDING FAILED]', error); return []; }
+  const rows = data || [];
+  // Split-log so the user can see redemption vs abandon counts clearly.
+  const redemptions = rows.filter(r => r.type === 'redeem_request');
+  const abandons    = rows.filter(r => r.type === 'adjustment'
+                                    && (r.note || '').startsWith('Abandon request'));
+  console.log('[CRYSTAL REQUESTS]', { total: rows.length, redemptions, abandons, all: rows });
+  console.log('[REDEEM READ] pending requests:', rows.length, rows);
+  return rows;
 }
 
 // Ledger invariant — sum every approved/modified row for a player and
@@ -1281,11 +1304,18 @@ async function pdcSubmitRedeem() {
     type:       'redeem_request',
     amount:     -Math.abs(amount),
     status:     'pending',
-    note:       note || null,
+    note:       note || '',
     resolved_at: null,
   };
   const inserted = await dbLedgerInsert(ledgerRow);
-  console.log('[REDEEM WRITE]', inserted || ledgerRow);
+  if (!inserted) {
+    // Insert failed (RLS, schema mismatch, network). Surface the
+    // error to the player — DO NOT show the success confirmation.
+    console.error('[REDEEM WRITE] INSERT FAILED', ledgerRow);
+    if (err) err.textContent = '❌ Could not send request — check console and ask Papa to retry.';
+    return;
+  }
+  console.log('[REDEEM WRITE]', inserted);
   // Inline confirmation block; refresh after a beat.
   const zone = document.getElementById('pdc-redeem-zone');
   zone.innerHTML = `<div class="pdc-redeem-confirm">✅ Request sent! Papa will approve your redemption.</div>`;
@@ -2493,11 +2523,16 @@ async function walletSubmitRedeem() {
     type:       'redeem_request',
     amount:     -Math.abs(amount),
     status:     'pending',
-    note:       note || null,
+    note:       note || '',
     resolved_at: null,
   };
   const inserted = await dbLedgerInsert(ledgerRow);
-  console.log('[REDEEM WRITE]', inserted || ledgerRow);
+  if (!inserted) {
+    console.error('[REDEEM WRITE] INSERT FAILED', ledgerRow);
+    if (err) err.textContent = '❌ Could not send request — check console and ask Papa to retry.';
+    return;
+  }
+  console.log('[REDEEM WRITE]', inserted);
   // Confirmation banner — re-render replaces the form with the pending notice.
   await renderWallet();
   const sec = document.getElementById('wallet-redeem-section');

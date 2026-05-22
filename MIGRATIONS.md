@@ -83,3 +83,49 @@ convention — there's no separate `player_accounts` table in this
 project. The canonical row for a player lives in `player_saves`
 (`player_id` text primary key). If a dedicated accounts table is ever
 introduced, retarget the FK with an `ALTER TABLE`.
+
+---
+
+## 2026-05-23 — `crystal_ledger` RLS policies (if writes are silently empty)
+
+**Symptom**: every insert in the browser console logs `[LEDGER WRITE
+FAILED]` with `permission denied for table crystal_ledger`, and the
+Table Editor shows zero rows even after the game has been played.
+
+**Cause**: Supabase enables Row-Level Security by default on every
+new table but creates **no policies** — the `anon` key the browser
+uses then can't INSERT or SELECT anything.
+
+**Fix** (run once in SQL Editor — open to anon for this pre-launch
+project, same posture as `player_saves` and `rooms`):
+
+```sql
+-- Enable RLS if it isn't already (idempotent).
+alter table crystal_ledger enable row level security;
+
+-- Open INSERT to anon (the game writes ledger rows from the browser).
+drop policy if exists "anon can insert ledger rows" on crystal_ledger;
+create policy "anon can insert ledger rows"
+  on crystal_ledger for insert
+  to anon
+  with check (true);
+
+-- Open SELECT to anon (host dashboard + player wallet both read).
+drop policy if exists "anon can read ledger rows" on crystal_ledger;
+create policy "anon can read ledger rows"
+  on crystal_ledger for select
+  to anon
+  using (true);
+
+-- Open UPDATE to anon (host approves / declines / modifies pending rows).
+drop policy if exists "anon can update ledger rows" on crystal_ledger;
+create policy "anon can update ledger rows"
+  on crystal_ledger for update
+  to anon
+  using (true)
+  with check (true);
+```
+
+Pre-launch convention is "anon can do anything" since the only client
+is the kid's browser and there's no auth tier. Tighten this before
+public release if the threat model changes.
