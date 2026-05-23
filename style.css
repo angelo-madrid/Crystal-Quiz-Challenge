@@ -387,19 +387,6 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .region-card.locked { opacity: 0.45; cursor: not-allowed; }
 .region-card.locked:hover { transform: none; }
 .region-card.completed { border-color: var(--green); }
-/* Phase 1 step 1.6: regions past the engine-test ceiling (Coming Soon).
-   Still clickable so users see the "test build complete" lid. */
-.region-card.coming-soon {
-  opacity: 0.55;
-  cursor: pointer;
-  border-style: dashed;
-  border-color: var(--gold2);
-}
-.region-card.coming-soon:hover {
-  opacity: 0.75;
-  background: rgba(255,203,5,0.06);
-  transform: translateX(2px);
-}
 
 .region-emoji { font-size: 2rem; }
 .region-info { flex: 1; }

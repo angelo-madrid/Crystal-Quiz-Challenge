@@ -1578,11 +1578,36 @@ async function loadQuestions() {
     const res = await fetch(fileName);
     STATE.questions = await res.json();
     console.log(`[loadQuestions] loaded ${fileName} for ageGroup=${ageGroup}`);
+    verifyQuestionBanks(STATE.questions, ageGroup);
     return STATE.questions;
   } catch(e) {
     console.error(`Failed to load ${fileName}:`, e);
     return null;
   }
+}
+
+// Defensive coverage check — walks Regions 1..10, logs a [MISSING BANK]
+// warning for any region with no blueprints or no catch_bank. The result
+// also populates STATE._missingBankRegions so showMap can flag those
+// regions as unplayable without crashing the player.
+function verifyQuestionBanks(qData, band) {
+  const missing = new Set();
+  if (!qData) return missing;
+  const blueprints = qData.gym_blueprints || [];
+  const catchBank  = qData.catch_bank || {};
+  for (let r = 1; r <= 10; r++) {
+    const gyms = blueprints.filter(b => b.region === r);
+    const slotCount = gyms.reduce((s, g) => s + (g.slots || []).length, 0);
+    const cb = catchBank[String(r)] || catchBank[r] || [];
+    const ok = gyms.length >= 5 && slotCount >= 50 && cb.length >= 5;
+    console.log(`[BANK CHECK] Region ${r} ${band}: gyms=${gyms.length}, slots=${slotCount}, catch=${cb.length} → ${ok ? 'OK' : 'MISSING'}`);
+    if (!ok) {
+      console.warn(`[MISSING BANK] Region ${r} has no questions for ${band}`);
+      missing.add(r);
+    }
+  }
+  STATE._missingBankRegions = missing;
+  return missing;
 }
 
 
@@ -2342,7 +2367,11 @@ function showFinalCompleteScreen() {
 function showTestBuildComplete() { return showFinalCompleteScreen(); }
 
 // ── MAP SCREEN ────────────────────────────────────────────────
-function showMap() {
+async function showMap() {
+  // Preload questions so verifyQuestionBanks populates
+  // STATE._missingBankRegions before we render the region cards.
+  // If loadQuestions has already run, this is effectively a no-op.
+  await loadQuestions();
   const save = STATE.save;
   const player = STATE.player;
   document.getElementById('map-player-name').textContent = `${player.emoji} ${player.name}'s Journey`;
@@ -2352,6 +2381,10 @@ function showMap() {
 
   const container = document.getElementById('region-map');
   container.innerHTML = '';
+
+  // Read the verifyQuestionBanks output so missing-bank regions can be
+  // flagged on the map instead of crashing the player mid-gym.
+  const missingBanks = STATE._missingBankRegions || new Set();
 
   REGIONS.forEach((region, idx) => {
     const regionSave = (save.regions || {})[region.id] || {};
@@ -2363,19 +2396,25 @@ function showMap() {
     const isLocked = idx > 0
       && ((save.regions || {})[REGIONS[idx-1].id]?.gymsCompleted || []).length < 5;
     const isCompleted = gymsCompleted >= 5;
+    // Defensive — if loadQuestions found an empty bank for this region
+    // (verifyQuestionBanks logs [MISSING BANK]), mark it unplayable so
+    // the player can't tap in and hit an alert.
+    const isMissingBank = missingBanks.has(region.id);
 
     const card = document.createElement('div');
     const classes = ['region-card'];
-    if (isLocked) classes.push('locked');
+    if (isLocked || isMissingBank) classes.push('locked');
     if (isCompleted) classes.push('completed');
     card.className = classes.join(' ');
 
-    const statusText = isCompleted  ? '✅ Complete'
-                     : isLocked     ? '🔒 Locked'
-                     :                '▶ In Progress';
-    const statusIcon = isCompleted  ? '✅'
-                     : isLocked     ? '🔒'
-                     :                '▶';
+    const statusText = isMissingBank ? '⚠️ No questions yet'
+                     : isCompleted   ? '✅ Complete'
+                     : isLocked      ? '🔒 Locked'
+                     :                 '▶ In Progress';
+    const statusIcon = isMissingBank ? '⚠️'
+                     : isCompleted   ? '✅'
+                     : isLocked      ? '🔒'
+                     :                 '▶';
 
     card.innerHTML = `
       <div class="region-emoji">${region.emoji}</div>
@@ -2386,7 +2425,7 @@ function showMap() {
       </div>
       <div class="region-status">${statusIcon}</div>
     `;
-    if (!isLocked) {
+    if (!isLocked && !isMissingBank) {
       card.onclick = () => showGymSelect(region.id);
     }
     container.appendChild(card);
