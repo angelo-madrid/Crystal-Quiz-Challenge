@@ -1,6 +1,39 @@
 # Crystal Quiz Challenge
-Version: 0.5.0
-Last updated: 2026-05-23
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ BUILD VERSION: v0.5.0   ·   LAST UPDATED: 2026-05-24         │
+│ SYNCED TO SPEC: pre-v3 (this file = the CURRENT LIVE build;  │
+│   the post-UAT redesign is DESIGNED but NOT yet built)       │
+│ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.2)       │
+│   — all design decisions/principles/mechanics/region themes  │
+│   live there. THIS file = build state only; it must not      │
+│   restate design. If "Synced to SPEC" < the SPEC's version,  │
+│   the redesign is ahead of this build (expected for now).    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> ⚠️ **DESIGN vs BUILD:** The sections below accurately describe the CURRENT,
+> PRE-REDESIGN build (original 110-Pokemon library, race rule, old catch flow,
+> 10 old ability mechanics). The post-UAT redesign — new catch mechanics, snake
+> draft, 183-line evolution library, Philippine R10, cosmetic evolution — is
+> fully DESIGNED in the SPEC (Parts 10–11) but NOT yet applied here. These
+> sections get rewritten WHEN that redesign is built, not before.
+
+### Implemented vs. Designed (status map; detail lives in the SPEC)
+| Area | Status | Design ref |
+|---|---|---|
+| Multiplayer core, rooms, ledger, dashboards, rejoin | ✅ LIVE | (this file) |
+| Pokemon library v2.0 (183 lines, evolution, PH R10) | 🔄 applying | SPEC Part 10–11 |
+| Catch mechanics (snake draft, cap 3, pokeball bet) | ⬜ designed | SPEC Part 11 |
+| Cosmetic evolution (A1) | ⬜ designed | SPEC Part 11 P10 |
+| Unified player-level rarity gate | ⬜ designed | SPEC Part 4 |
+| Appreciating-asset XP/HP model | ⬜ designed | SPEC Part 3, 8 |
+| MOVES (ELIMINATE/CLOCK/SWAP/EXTRA SHOT/CLUE/TIME TRAVEL) | ⬜ designed | SPEC Part 5, 11 |
+| Battle system / bosses | ⬜ designed | SPEC Part 9 |
+| Economy (redeem/catch cost/trade-in) | ⬜ next session | SPEC Part 10E, 11 |
+
+Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
 
 > **Phase 1 + Phase 2 complete** — engine wired to age-split question
 > banks, random per-kid draw, full Pokemon library with all 10 ability
