@@ -1,6 +1,6 @@
 # Crystal Quiz Challenge — File Manifest
-Manifest version: 1.27
-Last updated: 2026-05-23
+Manifest version: 1.28
+Last updated: 2026-05-24
 
 | File | Version | Last Updated | Purpose | Status |
 |------|---------|--------------|---------|--------|
@@ -10,11 +10,14 @@ Last updated: 2026-05-23
 | questions.json | 3.0 | 2026-05-22 | Archived source library (590, blueprint+bank format) — not loaded at runtime | Archived |
 | questions-junior.json | 3.3 | 2026-05-23 | Junior bank (9-11), 729 questions: 590 source + 49 R1-3 gym topups + 90 catch topups; every region catch >=15, pokeball=30, every R1-3 bucket >=6. v3.3: in-file version string synced to manifest (all 10 regions fully populated). | Active |
 | questions-senior.json | 3.3 | 2026-05-23 | Senior bank (12-13), 729 questions: 590 source + 49 R1-3 gym topups + 90 catch topups; every region catch >=15, pokeball=30, every R1-3 bucket >=6. v3.3: in-file version string synced to manifest. | Active |
-| pokemon.json | 1.1 | 2026-05-23 | Pokemon library: 10 starters + 100 regional. Every Pokemon has a unique ability NAME and unique effect across 10 mechanics; rarity scales power; baseValue inflates per region. v1.1: Groudon corrected to legendary; 5 ability names renamed for uniqueness; in-file version string synced to manifest. | Active |
+| pokemon.json | 2.0 | 2026-05-24 | Pokemon library — **Library v2.0 LIVE (data; engine still on old shape)**. 10 starters + 183 evolution-line regional + 18-entry `bench`. Tier rename common→basic + new `holo` tier. `abilityEffect` removed; replaced by `move{type,phase,description}`. 6 MOVE types only (CLUE/CLOCK/SWAP/EXTRA_SHOT/TIME_TRAVEL/ELIMINATE) with strict rarity-pool legality. New per-entry fields: `lineName`, `catchForm`, `evolutionChain[]`, `stages` (1-3), `battleAbility:null` (deferred), `redeemValue:null` (deferred; starters=0). R10 = 🇵🇭 Pilipinas (10 Filipino-mythology legendaries + 8 PH endemic fauna, all carry `loreNote`). Tier totals 45/30/37/42/29 = 183. Legendary spread R7=3, R8=7, R9=9, R10=10. 18/18 validation checks pass. v1.1: Groudon corrected to legendary; 5 ability names renamed for uniqueness. | Active |
 | gengar.png | 1.1 | 2026-05-22 | Home mascot — new mascot image (Pikachu vs Gengar battle scene), 1024×1024 PNG | Active |
 | MIGRATIONS.md | 1.2 | 2026-05-23 | Supabase SQL migrations. v1.2 adds the `crystal_ledger` RLS policy block — three policies (anon insert + select + update) for the pre-launch "anon can do anything" posture. Use this when `[LEDGER WRITE FAILED] permission denied for table crystal_ledger` shows up in the browser console. v1.1: persistent-identity block (clean-slate DELETEs + new columns + CHECK constraint on `player_id`). v1.0: `crystal_ledger` create-table + indexes. Run blocks in order in Supabase Studio. | Active |
-| CLAUDE.md | 0.5.0 | 2026-05-23 | Master project doc — Phase 1 + Phase 2 complete (all 10 regions playable; GAME_OVER on Region 10 clear; test-build lid retired). Sessions 2026-05-22 changelog block updated to cover Host/Player 3-col redesigns, entry-flow corrections, ledger sync, pause freeze, TIME ability speed cap, Regions 3-10 unlock, cosmetic fixes. Phase 3 Backlog replaced with remaining-items list (prize screen + animations/sound/leaderboard polish); Phase 4 Checklist now includes gengar.png optimization step. | Active |
-| FILES.md | 1.27 | 2026-05-23 | This manifest | Active |
+| CLAUDE.md | 0.5.0 | 2026-05-24 | Master project doc — replaced wholesale with version-headered copy from staging. Adds Implemented-vs-Designed status table + `SYNCED TO SPEC` line. Status now v3.2: "Pokemon library v2.0" flipped to ✅ LIVE (data caught up; engine still reads old shape — game.js wiring is the next pass). Body intentionally still describes the CURRENT pre-redesign build. | Active |
+| FILES.md | 1.28 | 2026-05-24 | This manifest | Active |
+| CRYSTAL_QUIZ_REDESIGN_SPEC.md | v3.2 | 2026-05-24 | Design bible. DESIGN VERSION v3.2 — adds Document Hygiene + versioning rules; locks Part 11 catch-mechanics principles (snake draft, exclusive pool, team cap 3, trade-in release, cosmetic evolution A1, R10 Philippine theme). Authoritative — supersedes earlier parts where they conflict. | Active |
+| POKEMON_LIBRARY_v2.md | 1.0 | 2026-05-24 | Roster reference for Library v2.0: per-region tables (183 lines), bench (18 displaced), R10 cultural notes. Companion to REDESIGN_SPEC Part 11. | Active |
+| CLAUDE_CODE_PROMPT_v2_FINAL.md | 1.0 | 2026-05-24 | The apply prompt for Library v2.0 — kept in repo for trace / future re-runs. | Active |
 
 Maintain this manifest on every future file change — it's the single
 source of truth for what's deployed.

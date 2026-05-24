@@ -3,8 +3,8 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ BUILD VERSION: v0.5.0   ·   LAST UPDATED: 2026-05-24         │
-│ SYNCED TO SPEC: pre-v3 (this file = the CURRENT LIVE build;  │
-│   the post-UAT redesign is DESIGNED but NOT yet built)       │
+│ SYNCED TO SPEC: v3.2 (library DATA caught up to v3.2; engine │
+│   still reads the old shape — game.js wiring is the next pass)│
 │ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.2)       │
 │   — all design decisions/principles/mechanics/region themes  │
 │   live there. THIS file = build state only; it must not      │
@@ -24,7 +24,7 @@
 | Area | Status | Design ref |
 |---|---|---|
 | Multiplayer core, rooms, ledger, dashboards, rejoin | ✅ LIVE | (this file) |
-| Pokemon library v2.0 (183 lines, evolution, PH R10) | 🔄 applying | SPEC Part 10–11 |
+| Pokemon library v2.0 (183 lines, evolution, PH R10) | ✅ LIVE | SPEC Part 10–11 |
 | Catch mechanics (snake draft, cap 3, pokeball bet) | ⬜ designed | SPEC Part 11 |
 | Cosmetic evolution (A1) | ⬜ designed | SPEC Part 11 P10 |
 | Unified player-level rarity gate | ⬜ designed | SPEC Part 4 |
