@@ -1,6 +1,6 @@
 {
-  "version": "2.0",
-  "last_updated": "2026-05-24",
+  "version": "2.2",
+  "last_updated": "2026-05-25",
   "schema_notes": "v2.0: 183 catchable LINES + cosmetic evolution. common->basic, +holo. abilityEffect->move{}. battleAbility/redeemValue deferred. R10 = Philippine-themed (Filipino mythology legendaries + real PH fauna). Stages reveal by PLAYER level.",
   "level_multipliers": {
     "1": 1,
@@ -26,7 +26,7 @@
         "phase": "in_question",
         "description": "Eliminates wrong option(s) on the current question"
       },
-      "battleAbility": null,
+      "battleAbility": "CRITICAL_HIT",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -41,7 +41,7 @@
         "phase": "in_question",
         "description": "Adds time to the current question"
       },
-      "battleAbility": null,
+      "battleAbility": "SECOND_WIND",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -56,7 +56,7 @@
         "phase": "in_question",
         "description": "Swaps the current question for a different one"
       },
-      "battleAbility": null,
+      "battleAbility": "PROTECT",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -71,7 +71,7 @@
         "phase": "in_question",
         "description": "Reveals a hint toward the answer (self-paced)"
       },
-      "battleAbility": null,
+      "battleAbility": "HEAL",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -86,7 +86,7 @@
         "phase": "in_question",
         "description": "Swaps the current question for a different one"
       },
-      "battleAbility": null,
+      "battleAbility": "COMBO_TEAM_STRIKE",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -101,7 +101,7 @@
         "phase": "in_question",
         "description": "Reveals a hint toward the answer (self-paced)"
       },
-      "battleAbility": null,
+      "battleAbility": "FREEZE_STUN",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -116,7 +116,7 @@
         "phase": "in_question",
         "description": "Adds time to the current question"
       },
-      "battleAbility": null,
+      "battleAbility": "GUARD",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -131,7 +131,7 @@
         "phase": "in_question",
         "description": "Reveals a hint toward the answer (self-paced)"
       },
-      "battleAbility": null,
+      "battleAbility": "FREEZE_STUN",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -146,7 +146,7 @@
         "phase": "in_question",
         "description": "Adds time to the current question"
       },
-      "battleAbility": null,
+      "battleAbility": "CRITICAL_HIT",
       "redeemValue": 0,
       "baseValue": 0
     },
@@ -161,7 +161,7 @@
         "phase": "in_question",
         "description": "Adds time to the current question"
       },
-      "battleAbility": null,
+      "battleAbility": "COMBO_TEAM_STRIKE",
       "redeemValue": 0,
       "baseValue": 0
     }
@@ -184,7 +184,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🦋",
         "type": "Bug/Flying",
         "redeemValue": null,
@@ -206,7 +206,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐛",
         "type": "Bug/Poison",
         "redeemValue": null,
@@ -228,7 +228,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐛",
         "type": "Bug",
         "redeemValue": null,
@@ -249,7 +249,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦗",
         "type": "Bug",
         "redeemValue": null,
@@ -271,7 +271,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🍃",
         "type": "Bug/Grass",
         "redeemValue": null,
@@ -293,7 +293,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐛",
         "type": "Bug",
         "redeemValue": null,
@@ -315,7 +315,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐛",
         "type": "Bug",
         "redeemValue": null,
@@ -337,7 +337,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐛",
         "type": "Bug",
         "redeemValue": null,
@@ -359,7 +359,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐦",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -380,7 +380,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐀",
         "type": "Normal",
         "redeemValue": null,
@@ -401,7 +401,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐦",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -422,7 +422,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐿️",
         "type": "Normal",
         "redeemValue": null,
@@ -443,7 +443,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦝",
         "type": "Normal",
         "redeemValue": null,
@@ -464,7 +464,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦫",
         "type": "Normal",
         "redeemValue": null,
@@ -485,7 +485,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐹",
         "type": "Normal",
         "redeemValue": null,
@@ -507,7 +507,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐶",
         "type": "Normal",
         "redeemValue": null,
@@ -528,7 +528,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐰",
         "type": "Normal",
         "redeemValue": null,
@@ -550,7 +550,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🕊️",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -573,7 +573,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦉",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -595,7 +595,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐦",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -617,7 +617,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐦",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -638,7 +638,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐿️",
         "type": "Normal",
         "redeemValue": null,
@@ -660,7 +660,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐦",
         "type": "Flying",
         "redeemValue": null,
@@ -681,7 +681,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐀",
         "type": "Normal",
         "redeemValue": null,
@@ -702,7 +702,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐑",
         "type": "Normal",
         "redeemValue": null,
@@ -724,7 +724,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌱",
         "type": "Grass/Poison",
         "redeemValue": null,
@@ -746,7 +746,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🌱",
         "type": "Grass/Poison",
         "redeemValue": null,
@@ -768,7 +768,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🌰",
         "type": "Grass",
         "redeemValue": null,
@@ -790,7 +790,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦇",
         "type": "Poison/Flying",
         "redeemValue": null,
@@ -811,7 +811,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐈",
         "type": "Normal",
         "redeemValue": null,
@@ -831,7 +831,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "😬",
         "type": "Steel/Fairy",
         "redeemValue": null,
@@ -851,7 +851,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "💎",
         "type": "Dark/Ghost",
         "redeemValue": null,
@@ -873,7 +873,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "💪",
         "type": "Fighting",
         "redeemValue": null,
@@ -895,7 +895,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🪨",
         "type": "Rock/Ground",
         "redeemValue": null,
@@ -917,7 +917,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🕯️",
         "type": "Ghost/Fire",
         "redeemValue": null,
@@ -939,7 +939,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "👁️",
         "type": "Psychic",
         "redeemValue": null,
@@ -963,7 +963,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🪷",
         "type": "Water/Grass",
         "redeemValue": null,
@@ -984,7 +984,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "☁️",
         "type": "Grass/Fairy",
         "redeemValue": null,
@@ -1006,7 +1006,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🌷",
         "type": "Grass/Flying",
         "redeemValue": null,
@@ -1027,7 +1027,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌻",
         "type": "Grass",
         "redeemValue": null,
@@ -1048,7 +1048,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌷",
         "type": "Grass",
         "redeemValue": null,
@@ -1070,7 +1070,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🍇",
         "type": "Grass",
         "redeemValue": null,
@@ -1091,7 +1091,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🐕",
         "type": "Fire",
         "redeemValue": null,
@@ -1112,7 +1112,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🦊",
         "type": "Fire",
         "redeemValue": null,
@@ -1133,7 +1133,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐴",
         "type": "Fire",
         "redeemValue": null,
@@ -1154,7 +1154,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦆",
         "type": "Water",
         "redeemValue": null,
@@ -1175,7 +1175,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🦀",
         "type": "Water",
         "redeemValue": null,
@@ -1196,7 +1196,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🪼",
         "type": "Water/Poison",
         "redeemValue": null,
@@ -1218,7 +1218,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐅",
         "type": "Fire/Dark",
         "redeemValue": null,
@@ -1240,7 +1240,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🎶",
         "type": "Water/Fairy",
         "redeemValue": null,
@@ -1262,7 +1262,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🏹",
         "type": "Grass/Ghost",
         "redeemValue": null,
@@ -1284,7 +1284,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🔥",
         "type": "Fire",
         "redeemValue": null,
@@ -1306,7 +1306,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐊",
         "type": "Water",
         "redeemValue": null,
@@ -1328,7 +1328,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌸",
         "type": "Grass",
         "redeemValue": null,
@@ -1350,7 +1350,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🦅",
         "type": "Fire/Fighting",
         "redeemValue": null,
@@ -1374,7 +1374,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌀",
         "type": "Water",
         "redeemValue": null,
@@ -1395,7 +1395,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐟",
         "type": "Water",
         "redeemValue": null,
@@ -1416,7 +1416,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐸",
         "type": "Water/Ground",
         "redeemValue": null,
@@ -1437,7 +1437,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "💧",
         "type": "Water/Fairy",
         "redeemValue": null,
@@ -1458,7 +1458,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐚",
         "type": "Water",
         "redeemValue": null,
@@ -1479,7 +1479,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "😴",
         "type": "Psychic",
         "redeemValue": null,
@@ -1500,7 +1500,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "☁️",
         "type": "Poison",
         "redeemValue": null,
@@ -1521,7 +1521,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐍",
         "type": "Poison",
         "redeemValue": null,
@@ -1542,7 +1542,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "💀",
         "type": "Ground",
         "redeemValue": null,
@@ -1564,7 +1564,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🌊",
         "type": "Water/Ground",
         "redeemValue": null,
@@ -1586,7 +1586,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦎",
         "type": "Grass",
         "redeemValue": null,
@@ -1608,7 +1608,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐒",
         "type": "Fire/Fighting",
         "redeemValue": null,
@@ -1630,7 +1630,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐧",
         "type": "Water/Steel",
         "redeemValue": null,
@@ -1652,7 +1652,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐢",
         "type": "Grass",
         "redeemValue": null,
@@ -1674,7 +1674,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐍",
         "type": "Grass",
         "redeemValue": null,
@@ -1696,7 +1696,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🔥",
         "type": "Fire/Fighting",
         "redeemValue": null,
@@ -1718,7 +1718,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "⚔️",
         "type": "Water",
         "redeemValue": null,
@@ -1740,7 +1740,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🛡️",
         "type": "Grass/Fighting",
         "redeemValue": null,
@@ -1764,7 +1764,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐸",
         "type": "Water",
         "redeemValue": null,
@@ -1785,7 +1785,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐢",
         "type": "Water",
         "redeemValue": null,
@@ -1806,7 +1806,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦦",
         "type": "Water",
         "redeemValue": null,
@@ -1828,7 +1828,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐑",
         "type": "Electric",
         "redeemValue": null,
@@ -1849,7 +1849,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐘",
         "type": "Ground",
         "redeemValue": null,
@@ -1870,7 +1870,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🐌",
         "type": "Fire",
         "redeemValue": null,
@@ -1891,7 +1891,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐪",
         "type": "Fire/Ground",
         "redeemValue": null,
@@ -1913,7 +1913,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🦊",
         "type": "Fire/Psychic",
         "redeemValue": null,
@@ -1935,7 +1935,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🥷",
         "type": "Water/Dark",
         "redeemValue": null,
@@ -1956,7 +1956,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐺",
         "type": "Rock",
         "redeemValue": null,
@@ -1978,7 +1978,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐈",
         "type": "Electric",
         "redeemValue": null,
@@ -1999,7 +1999,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐇",
         "type": "Normal",
         "redeemValue": null,
@@ -2021,7 +2021,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐉",
         "type": "Dragon",
         "redeemValue": null,
@@ -2043,7 +2043,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦖",
         "type": "Rock/Dark",
         "redeemValue": null,
@@ -2065,7 +2065,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐲",
         "type": "Dragon/Flying",
         "redeemValue": null,
@@ -2087,7 +2087,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🤖",
         "type": "Steel/Psychic",
         "redeemValue": null,
@@ -2109,7 +2109,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦈",
         "type": "Dragon/Ground",
         "redeemValue": null,
@@ -2131,7 +2131,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐲",
         "type": "Dark/Dragon",
         "redeemValue": null,
@@ -2153,7 +2153,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "💧",
         "type": "Dragon",
         "redeemValue": null,
@@ -2174,7 +2174,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦋",
         "type": "Bug/Fire",
         "redeemValue": null,
@@ -2197,7 +2197,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🦔",
         "type": "Ground",
         "redeemValue": null,
@@ -2219,7 +2219,7 @@
           "phase": "in_question",
           "description": "Reveals a hint toward the answer (self-paced)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐭",
         "type": "Normal",
         "redeemValue": null,
@@ -2241,7 +2241,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🪨",
         "type": "Rock",
         "redeemValue": null,
@@ -2262,7 +2262,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦓",
         "type": "Electric",
         "redeemValue": null,
@@ -2283,7 +2283,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "😺",
         "type": "Psychic",
         "redeemValue": null,
@@ -2304,7 +2304,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐷",
         "type": "Psychic",
         "redeemValue": null,
@@ -2325,7 +2325,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🥋",
         "type": "Fighting",
         "redeemValue": null,
@@ -2346,7 +2346,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐞",
         "type": "Bug",
         "redeemValue": null,
@@ -2367,7 +2367,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🕷️",
         "type": "Bug/Electric",
         "redeemValue": null,
@@ -2388,7 +2388,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🌰",
         "type": "Grass/Steel",
         "redeemValue": null,
@@ -2410,7 +2410,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐉",
         "type": "Dragon",
         "redeemValue": null,
@@ -2432,7 +2432,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🦏",
         "type": "Steel/Rock",
         "redeemValue": null,
@@ -2454,7 +2454,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐜",
         "type": "Ground",
         "redeemValue": null,
@@ -2475,7 +2475,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🐟",
         "type": "Water",
         "redeemValue": null,
@@ -2497,7 +2497,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐗",
         "type": "Ice/Ground",
         "redeemValue": null,
@@ -2519,7 +2519,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🥚",
         "type": "Fairy",
         "redeemValue": null,
@@ -2541,7 +2541,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌹",
         "type": "Grass/Poison",
         "redeemValue": null,
@@ -2562,7 +2562,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐈‍⬛",
         "type": "Dark/Ice",
         "redeemValue": null,
@@ -2585,7 +2585,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "😺",
         "type": "Normal",
         "redeemValue": null,
@@ -2606,7 +2606,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐐",
         "type": "Grass",
         "redeemValue": null,
@@ -2626,7 +2626,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐹",
         "type": "Electric/Fairy",
         "redeemValue": null,
@@ -2647,7 +2647,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🌊",
         "type": "Water/Flying",
         "redeemValue": null,
@@ -2668,7 +2668,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🥋",
         "type": "Fighting/Steel",
         "redeemValue": null,
@@ -2689,7 +2689,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦊",
         "type": "Dark",
         "redeemValue": null,
@@ -2711,7 +2711,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "⚔️",
         "type": "Steel/Ghost",
         "redeemValue": null,
@@ -2733,7 +2733,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🧲",
         "type": "Electric/Steel",
         "redeemValue": null,
@@ -2755,7 +2755,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "⚡",
         "type": "Electric",
         "redeemValue": null,
@@ -2777,7 +2777,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🔥",
         "type": "Fire",
         "redeemValue": null,
@@ -2798,7 +2798,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦂",
         "type": "Ground/Flying",
         "redeemValue": null,
@@ -2820,7 +2820,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🦏",
         "type": "Ground/Rock",
         "redeemValue": null,
@@ -2841,7 +2841,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🌿",
         "type": "Grass",
         "redeemValue": null,
@@ -2863,7 +2863,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦆",
         "type": "Normal",
         "redeemValue": null,
@@ -2885,7 +2885,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "👻",
         "type": "Psychic/Fairy",
         "redeemValue": null,
@@ -2905,7 +2905,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🧬",
         "type": "Psychic",
         "redeemValue": null,
@@ -2925,7 +2925,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "💗",
         "type": "Psychic",
         "redeemValue": null,
@@ -2945,7 +2945,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🕊️",
         "type": "Psychic/Flying",
         "redeemValue": null,
@@ -2968,7 +2968,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "😺",
         "type": "Normal",
         "redeemValue": null,
@@ -2990,7 +2990,7 @@
           "phase": "in_question",
           "description": "Adds time to the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🔘",
         "type": "Rock",
         "redeemValue": null,
@@ -3010,7 +3010,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐳",
         "type": "Water/Ice",
         "redeemValue": null,
@@ -3031,7 +3031,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🌳",
         "type": "Rock",
         "redeemValue": null,
@@ -3052,7 +3052,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦗",
         "type": "Bug/Flying",
         "redeemValue": null,
@@ -3074,7 +3074,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "💀",
         "type": "Ghost",
         "redeemValue": null,
@@ -3096,7 +3096,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "❄️",
         "type": "Ice",
         "redeemValue": null,
@@ -3116,7 +3116,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "👻",
         "type": "Ghost/Dark",
         "redeemValue": null,
@@ -3137,7 +3137,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦂",
         "type": "Poison/Bug",
         "redeemValue": null,
@@ -3158,7 +3158,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐸",
         "type": "Poison/Fighting",
         "redeemValue": null,
@@ -3179,7 +3179,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "👅",
         "type": "Normal",
         "redeemValue": null,
@@ -3199,7 +3199,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🌅",
         "type": "Fire/Flying",
         "redeemValue": null,
@@ -3219,7 +3219,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐲",
         "type": "Dragon/Flying",
         "redeemValue": null,
@@ -3239,7 +3239,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐋",
         "type": "Water",
         "redeemValue": null,
@@ -3259,7 +3259,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🌋",
         "type": "Ground",
         "redeemValue": null,
@@ -3279,7 +3279,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "👑",
         "type": "Normal",
         "redeemValue": null,
@@ -3299,7 +3299,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "⏰",
         "type": "Steel/Dragon",
         "redeemValue": null,
@@ -3319,7 +3319,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🌌",
         "type": "Water/Dragon",
         "redeemValue": null,
@@ -3342,7 +3342,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🦨",
         "type": "Poison/Dark",
         "redeemValue": null,
@@ -3363,7 +3363,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🪨",
         "type": "Rock/Ground",
         "redeemValue": null,
@@ -3385,7 +3385,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐦",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -3406,7 +3406,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🪰",
         "type": "Bug/Flying",
         "redeemValue": null,
@@ -3427,7 +3427,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "🐦‍⬛",
         "type": "Dark/Flying",
         "redeemValue": null,
@@ -3448,7 +3448,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "👻",
         "type": "Ghost",
         "redeemValue": null,
@@ -3469,7 +3469,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦖",
         "type": "Rock/Dragon",
         "redeemValue": null,
@@ -3490,7 +3490,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🦕",
         "type": "Rock/Ice",
         "redeemValue": null,
@@ -3510,7 +3510,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🪲",
         "type": "Bug/Fighting",
         "redeemValue": null,
@@ -3530,7 +3530,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🌑",
         "type": "Ghost/Dragon",
         "redeemValue": null,
@@ -3550,7 +3550,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "FREEZE_STUN",
         "emoji": "❄️",
         "type": "Ice/Flying",
         "redeemValue": null,
@@ -3570,7 +3570,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "⚡",
         "type": "Electric/Flying",
         "redeemValue": null,
@@ -3590,7 +3590,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🔥",
         "type": "Fire/Flying",
         "redeemValue": null,
@@ -3610,7 +3610,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "⚡",
         "type": "Electric",
         "redeemValue": null,
@@ -3630,7 +3630,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🔥",
         "type": "Fire",
         "redeemValue": null,
@@ -3650,7 +3650,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "💧",
         "type": "Water",
         "redeemValue": null,
@@ -3670,7 +3670,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "💖",
         "type": "Dragon/Psychic",
         "redeemValue": null,
@@ -3690,7 +3690,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "💙",
         "type": "Dragon/Psychic",
         "redeemValue": null,
@@ -3712,7 +3712,7 @@
           "phase": "in_question",
           "description": "Swaps the current question for a different one"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "👁️",
         "type": "Normal",
         "redeemValue": null,
@@ -3733,7 +3733,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🦚",
         "type": "Normal/Flying",
         "redeemValue": null,
@@ -3754,7 +3754,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🦅",
         "type": "Flying",
         "redeemValue": null,
@@ -3775,7 +3775,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐃",
         "type": "Normal",
         "redeemValue": null,
@@ -3796,7 +3796,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "PROTECT",
         "emoji": "🐊",
         "type": "Water",
         "redeemValue": null,
@@ -3817,7 +3817,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐂",
         "type": "Normal/Ground",
         "redeemValue": null,
@@ -3838,7 +3838,7 @@
           "phase": "post_gym",
           "description": "Post-gym: bonus question toward the badge (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "COMBO_TEAM_STRIKE",
         "emoji": "🐗",
         "type": "Normal",
         "redeemValue": null,
@@ -3859,7 +3859,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🐀",
         "type": "Normal",
         "redeemValue": null,
@@ -3880,7 +3880,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🐲",
         "type": "Dragon/Dark",
         "redeemValue": null,
@@ -3901,7 +3901,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "CRITICAL_HIT",
         "emoji": "🌒",
         "type": "Dragon/Flying",
         "redeemValue": null,
@@ -3922,7 +3922,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🦚",
         "type": "Fairy/Fire",
         "redeemValue": null,
@@ -3943,7 +3943,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "🏔️",
         "type": "Fairy/Grass",
         "redeemValue": null,
@@ -3964,7 +3964,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "HEAL",
         "emoji": "⛰️",
         "type": "Fairy/Grass",
         "redeemValue": null,
@@ -3985,7 +3985,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐴",
         "type": "Ground/Fighting",
         "redeemValue": null,
@@ -4006,7 +4006,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "GUARD",
         "emoji": "🐃",
         "type": "Fighting/Rock",
         "redeemValue": null,
@@ -4027,7 +4027,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🧚",
         "type": "Fairy",
         "redeemValue": null,
@@ -4048,7 +4048,7 @@
           "phase": "post_gym",
           "description": "Post-gym: fix a past wrong answer (rescue only)"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "☀️",
         "type": "Psychic/Fairy",
         "redeemValue": null,
@@ -4069,7 +4069,7 @@
           "phase": "in_question",
           "description": "Eliminates wrong option(s) on the current question"
         },
-        "battleAbility": null,
+        "battleAbility": "SECOND_WIND",
         "emoji": "🌕",
         "type": "Fairy/Psychic",
         "redeemValue": null,
