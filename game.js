@@ -324,8 +324,27 @@ async function dbListRooms() {
 
 // ── CONSTANTS ────────────────────────────────────────────────
 const TIER_TIME = { basic: 10, holo: 12, rare: 15, super: 18, ultra: 20 };
-const TIER_BASE = { basic: 100, holo: 150, rare: 200, super: 300, ultra: 400 };
-const TIER_SPEED_MAX = { basic: 50, holo: 75, rare: 100, super: 150, ultra: 200 };
+// ── ECONOMY v3.3 (SPEC Part 12) ──────────────────────────────
+// Pokeball cost / catch rate / redeem-base are RARITY-driven (Part 12C/D),
+// NOT region-driven. The old region-based pokeball ladder is dead.
+const BALL_COST       = { basic:  50, holo: 150, rare: 400, super: 1000, legendary: 2500 };
+const CATCH_RATE      = { basic:0.85, holo:0.80, rare:0.70, super: 0.60, legendary: 0.50 };
+const REDEEM_BASE     = { basic:  20, holo:  80, rare: 200, super:  500, legendary: 1200 };
+// Cap GROWS with player level (Part 12E). Render 5 slots always; lock future ones.
+const TEAM_CAP_BY_LEVEL = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 5 };
+const MAX_TEAM_CAP      = 5;
+// Pity softener — 3 consecutive misses on the same Pokemon → next catch
+// question one tier easier (Part 12G).
+const PITY_MISS_THRESHOLD = 3;
+const TIER_LADDER = ['basic','holo','rare','super','legendary'];
+// Trade-in on release: 40% (ungrown) → 80% (fully grown), scaled by xpRatio (Part 12F).
+const RELEASE_MIN_PCT = 0.40;
+const RELEASE_MAX_PCT = 0.80;
+
+// SUPERSEDED by Part 12C (rarity-based ball ladder). Constants kept absent
+// so any stale reference fails fast in dev:
+// const TIER_BASE       — removed (was dead code per SPEC KEY BUILD FLAGS)
+// const TIER_SPEED_MAX  — removed (was dead code per SPEC KEY BUILD FLAGS)
 const FORMAT_TIME_MOD = { mc: 0, tf: -3, closest: 5, unscramble: 8, chain: 0 };
 const AGE_TIME_MOD = { senior: 0, junior: 5 };
 
@@ -363,17 +382,97 @@ const MAX_PLAYABLE_REGION = 10;
 
 // ── REGION DATA ──────────────────────────────────────────────
 const REGIONS = [
-  { id:1,  name:'Kanto',    theme:'The Beginning',      emoji:'🌿', badge:'r1', baseCrystals:100, speedMax:50,   pokeball:300,  badgeMin:200 },
-  { id:2,  name:'Johto',    theme:'Ancient Traditions', emoji:'🌊', badge:'r2', baseCrystals:150, speedMax:75,   pokeball:500,  badgeMin:300 },
-  { id:3,  name:'Hoenn',    theme:"Nature's Balance",   emoji:'🌸', badge:'r3', baseCrystals:200, speedMax:100,  pokeball:800,  badgeMin:400 },
-  { id:4,  name:'Sinnoh',   theme:'Origin of Time',     emoji:'❄️', badge:'r4', baseCrystals:300, speedMax:150,  pokeball:1200, badgeMin:500 },
-  { id:5,  name:'Unova',    theme:'Truth vs Ideals',    emoji:'⚡', badge:'r5', baseCrystals:400, speedMax:200,  pokeball:1800, badgeMin:600 },
-  { id:6,  name:'Kalos',    theme:'Beauty & Elegance',  emoji:'🗼', badge:'r6', baseCrystals:550, speedMax:275,  pokeball:2600, badgeMin:700 },
-  { id:7,  name:'Alola',    theme:'Island Spirit',      emoji:'🌺', badge:'r7', baseCrystals:700, speedMax:350,  pokeball:3600, badgeMin:800 },
-  { id:8,  name:'Galar',    theme:'The Spectacle',      emoji:'⚔️', badge:'r8', baseCrystals:900, speedMax:450,  pokeball:5000, badgeMin:900 },
-  { id:9,  name:'Paldea',   theme:'Open World Freedom', emoji:'🍃', badge:'r9', baseCrystals:1150,speedMax:575,  pokeball:7000, badgeMin:1000},
-  { id:10, name:'Pilipinas', theme:'Bayanihan',         emoji:'🇵🇭',badge:'r10',baseCrystals:1500,speedMax:750,  pokeball:10000,badgeMin:1200}
+  // v3.3 (SPEC Part 2): speedMax cut to ~20% of baseCrystals. Old per-region
+  // `pokeball` and `badgeMin` fields are removed — ball cost is rarity-based
+  // (Part 12C, see BALL_COST) and the badge is 8/10 accuracy (Part 1).
+  { id:1,  name:'Kanto',    theme:'The Beginning',      emoji:'🌿', badge:'r1',  baseCrystals: 100, speedMax: 20 },
+  { id:2,  name:'Johto',    theme:'Ancient Traditions', emoji:'🌊', badge:'r2',  baseCrystals: 150, speedMax: 30 },
+  { id:3,  name:'Hoenn',    theme:"Nature's Balance",   emoji:'🌸', badge:'r3',  baseCrystals: 200, speedMax: 40 },
+  { id:4,  name:'Sinnoh',   theme:'Origin of Time',     emoji:'❄️', badge:'r4',  baseCrystals: 300, speedMax: 60 },
+  { id:5,  name:'Unova',    theme:'Truth vs Ideals',    emoji:'⚡', badge:'r5',  baseCrystals: 400, speedMax: 80 },
+  { id:6,  name:'Kalos',    theme:'Beauty & Elegance',  emoji:'🗼', badge:'r6',  baseCrystals: 550, speedMax:110 },
+  { id:7,  name:'Alola',    theme:'Island Spirit',      emoji:'🌺', badge:'r7',  baseCrystals: 700, speedMax:140 },
+  { id:8,  name:'Galar',    theme:'The Spectacle',      emoji:'⚔️', badge:'r8',  baseCrystals: 900, speedMax:180 },
+  { id:9,  name:'Paldea',   theme:'Open World Freedom', emoji:'🍃', badge:'r9',  baseCrystals:1150, speedMax:230 },
+  { id:10, name:'Pilipinas',theme:'Bayanihan',          emoji:'🇵🇭',badge:'r10', baseCrystals:1500, speedMax:300 }
 ];
+
+// ── ECONOMY HELPERS (SPEC Part 12) ───────────────────────────
+// Player level from cumulative badges (Part 4 normal curve):
+//   L1 0-4 · L2 5-11 · L3 12-20 · L4 21-34 · L5 35+
+function playerLevelFromBadges(badges) {
+  const b = Number(badges) || 0;
+  if (b >= 35) return 5;
+  if (b >= 21) return 4;
+  if (b >= 12) return 3;
+  if (b >= 5)  return 2;
+  return 1;
+}
+function currentPlayerLevel() {
+  return playerLevelFromBadges((STATE.save && STATE.save.badges_earned) || 0);
+}
+function currentTeamCap() {
+  return TEAM_CAP_BY_LEVEL[currentPlayerLevel()] || 3;
+}
+function ballCostForRarity(rarity) {
+  const key = (rarity || 'basic').toLowerCase();
+  return BALL_COST[key] !== undefined ? BALL_COST[key] : BALL_COST.basic;
+}
+function redeemBaseForRarity(rarity) {
+  const key = (rarity || 'basic').toLowerCase();
+  return REDEEM_BASE[key] !== undefined ? REDEEM_BASE[key] : REDEEM_BASE.basic;
+}
+// xpRatio ∈ [0,1] — clamps any incoming `xp` proportion. Used for the
+// 1+xpRatio*0.5 multiplier in redeem and the 40→80% scale in release.
+function xpRatioOf(poke) {
+  if (!poke) return 0;
+  // Honor an explicit ratio if set; otherwise derive from xp ÷ xpCap (default 100).
+  if (typeof poke.xpRatio === 'number') return Math.max(0, Math.min(1, poke.xpRatio));
+  const xp    = Number(poke.xp || 0);
+  const xpCap = Number(poke.xpCap || 100);
+  if (xpCap <= 0) return 0;
+  return Math.max(0, Math.min(1, xp / xpCap));
+}
+function redeemValueFor(poke) {
+  if (!poke) return 0;
+  // Starter is companion-only — never cashable (Part 3D / 12D LOCKED).
+  if (poke.starter === true || poke.caughtAt === 'pregame') return 0;
+  const base  = redeemBaseForRarity(poke.rarity);
+  const ratio = xpRatioOf(poke);
+  return Math.round(base * (1 + ratio * 0.5));
+}
+function tradeInValueFor(poke) {
+  if (!poke) return 0;
+  if (poke.starter === true || poke.caughtAt === 'pregame') return 0;
+  const ballCost = ballCostForRarity(poke.rarity);
+  const ratio    = xpRatioOf(poke);
+  const pct      = RELEASE_MIN_PCT + (RELEASE_MAX_PCT - RELEASE_MIN_PCT) * ratio;
+  // NEVER exceeds the ball cost — anti-farm guard.
+  return Math.min(ballCost, Math.round(ballCost * pct));
+}
+// Pity softener (Part 12G). Tracks consecutive misses per pokemon id.
+function getPityCounter(pokeId) {
+  if (!STATE.save) return 0;
+  if (!STATE.save.pityMisses) return 0;
+  return Number(STATE.save.pityMisses[pokeId] || 0);
+}
+function bumpPityCounter(pokeId) {
+  if (!STATE.save) return 0;
+  if (!STATE.save.pityMisses) STATE.save.pityMisses = {};
+  STATE.save.pityMisses[pokeId] = (STATE.save.pityMisses[pokeId] || 0) + 1;
+  return STATE.save.pityMisses[pokeId];
+}
+function resetPityCounter(pokeId) {
+  if (!STATE.save || !STATE.save.pityMisses) return;
+  delete STATE.save.pityMisses[pokeId];
+}
+function pityTierEasierThan(rarity) {
+  // After PITY_MISS_THRESHOLD consecutive misses, the NEXT catch-question
+  // draws from one tier easier. Basic stays Basic (already easiest).
+  const idx = TIER_LADDER.indexOf((rarity || 'basic').toLowerCase());
+  if (idx <= 0) return TIER_LADDER[0];
+  return TIER_LADDER[idx - 1];
+}
 
 // ── STARTER POKEMON ──────────────────────────────────────────
 // Phase 1 step 1.4: starter data lives in pokemon.json under .starters.
@@ -441,7 +540,7 @@ function newSave(player) {
     total_crystals: 0,
     regions: {},           // { "1": { gymsCompleted: [], badges: [] } }
     pokemon_team: [],
-    pokeballs: 3,          // start with 3 free pokeballs
+    pokeballs: 1,          // SPEC Part 11 P8: 1 free ball at game start
     badges_earned: 0,
     total_correct: 0,
     fastest_answer: null,
@@ -1392,32 +1491,94 @@ function pdcToggleAllScores() {
 async function pdcRenderPokemonTeam() {
   const team = (STATE.save && STATE.save.pokemon_team) || [];
   const container = document.getElementById('pdc-pokemon-team');
-  if (!team.length) {
-    container.innerHTML = `<div class="pdc-empty">No Pokemon caught yet — catch your first in the pre-game! 🎮</div>`;
+  // SPEC Part 12E: always render MAX_TEAM_CAP (5) slots. Filled slots
+  // show the Pokemon; unlocked-empty slots invite a catch; future slots
+  // are greyed "🔒 Reach Level N" (visible goal, never denial).
+  const cap   = currentTeamCap();
+  const level = currentPlayerLevel();
+  const slots = [];
+  for (let i = 0; i < MAX_TEAM_CAP; i++) {
+    if (i < team.length) {
+      slots.push({ kind: 'filled', poke: team[i], idx: i });
+    } else if (i < cap) {
+      slots.push({ kind: 'empty' });
+    } else {
+      // Locked — determine when this slot unlocks (3→4 at L3, 4→5 at L5).
+      const needLevel = (i < 4) ? 3 : 5;
+      slots.push({ kind: 'locked', needLevel });
+    }
+  }
+  const header = `
+    <div class="pdc-team-header">
+      <span>Team ${team.length}/${cap}</span>
+      <span class="pdc-team-cap-hint">Cap grows at L3 (4) and L5 (5)</span>
+    </div>`;
+
+  const slotHTML = slots.map((slot, i) => {
+    if (slot.kind === 'filled') {
+      const p = slot.poke;
+      const r = (p.rarity || 'basic').toLowerCase();
+      const tradeIn = tradeInValueFor(p);
+      const isStarter = p.starter === true || p.caughtAt === 'pregame';
+      const releaseBtn = isStarter
+        ? `<span class="pdc-poke-starter-tag">Starter (cannot release)</span>`
+        : `<button class="pdc-poke-release" onclick="pdcConfirmRelease(${slot.idx})">🔄 Release · trade-in ${tradeIn.toLocaleString()} 💎</button>`;
+      return `
+        <div class="pdc-pokemon-row filled">
+          <span class="pdc-poke-emoji">${p.emoji || '🐾'}</span>
+          <span class="pdc-poke-name">${escapeHTML(p.name || '?')}</span>
+          <span class="pdc-poke-rarity ${r}">${r.toUpperCase()}</span>
+          ${p.roomCode ? `<span class="pdc-poke-room">${escapeHTML(p.roomCode)}</span>` : ''}
+          ${releaseBtn}
+        </div>`;
+    }
+    if (slot.kind === 'empty') {
+      return `<div class="pdc-pokemon-row empty">＋ Empty slot — catch a Pokemon to fill</div>`;
+    }
+    return `<div class="pdc-pokemon-row locked">🔒 Reach Level ${slot.needLevel} to unlock</div>`;
+  }).join('');
+
+  container.innerHTML = header + slotHTML;
+}
+
+// SPEC Part 12F + Part 11 P7: release returns trade-in crystals and the
+// species is gone forever from the room's shared pool. Confirm-on-release
+// prevents accidents.
+async function pdcConfirmRelease(idx) {
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const p = team[idx];
+  if (!p) return;
+  if (p.starter === true || p.caughtAt === 'pregame') {
+    showToast('🛡️ Starter cannot be released');
     return;
   }
-  const ORDER = ['legendary', 'super', 'rare', 'common'];
-  const LABEL = { legendary:'👑 Legendary', super:'🌟 Super Rare', rare:'💎 Rare', common:'⬜ Common' };
-  const groups = {};
-  for (const p of team) {
-    const rarity = (p.rarity || 'common').toLowerCase();
-    if (!groups[rarity]) groups[rarity] = [];
-    groups[rarity].push(p);
+  const tradeIn = tradeInValueFor(p);
+  const xpPct   = Math.round(xpRatioOf(p) * 100);
+  const proceed = confirm(
+    `Send ${p.name} to train? You'll get ${tradeIn.toLocaleString()} 💎 (${xpPct}% grown).\n\n` +
+    `⚠️ Released Pokemon are gone forever from this room's pool — no kid can ever catch ${p.name} again.`
+  );
+  if (!proceed) return;
+  // Remove from team + bank the trade-in.
+  team.splice(idx, 1);
+  STATE.save.pokemon_team = team;
+  STATE.save.total_crystals = (STATE.save.total_crystals || 0) + tradeIn;
+  STATE.save.updated_at = new Date().toISOString();
+  await dbSave(STATE.player.id, STATE.save);
+  if (STATE.player && STATE.player.id) {
+    await dbLedgerInsert({
+      player_id:   STATE.player.id,
+      room_code:   STATE.roomCode || null,
+      type:        'adjustment',
+      amount:      +tradeIn,
+      status:      'approved',
+      note:        `Released ${p.name} (${p.rarity}) — trade-in @ ${xpPct}% grown`,
+      resolved_at: new Date().toISOString(),
+    });
+    balanceFromLedger(STATE.player.id);
   }
-  container.innerHTML = ORDER.filter(r => groups[r]).map(r => {
-    const rows = groups[r].map(p => `
-      <div class="pdc-pokemon-row">
-        <span class="pdc-poke-emoji">${p.emoji || '🐾'}</span>
-        <span class="pdc-poke-name">${escapeHTML(p.name || '?')}</span>
-        <span class="pdc-poke-rarity ${r}">${(p.rarity || 'common').toUpperCase()}</span>
-        ${p.roomCode ? `<span class="pdc-poke-room">${escapeHTML(p.roomCode)}</span>` : ''}
-      </div>`).join('');
-    return `
-      <div class="pdc-pokemon-group">
-        <div class="pdc-pokemon-group-label">${LABEL[r] || r}</div>
-        ${rows}
-      </div>`;
-  }).join('');
+  showToast(`🔄 ${p.name} sent to train · +${tradeIn.toLocaleString()} 💎`);
+  await renderPlayerDashboard();
 }
 
 async function pdcRenderBroadcastSection() {
@@ -1618,7 +1779,10 @@ function verifyQuestionBanks(qData, band) {
 // PREGAME_QUESTIONS array has been removed.
 
 let PREGAME_STATE = {
-  pokeballs: 3,
+  // SPEC Part 11 Principle 8: start with 1 FREE ball (was 3).
+  // No starting crystals means a 2nd attempt was never affordable anyway;
+  // next catch comes post-Gym 1 once the kid has earned crystals to buy more.
+  pokeballs: 1,
   selectedPokemon: null,
   usedQuestions: [],
   currentQuestion: null,
@@ -1634,7 +1798,7 @@ async function startPreGameCatch() {
   await loadPokemon();
 
   PREGAME_STATE = {
-    pokeballs: STATE.save.pokeballs || 3,
+    pokeballs: STATE.save.pokeballs ?? 1,   // SPEC Part 11 P8: 1 free ball
     selectedPokemon: null,
     usedQuestions: [],
     currentQuestion: null,
@@ -2035,8 +2199,14 @@ function selectRegionalPokemon(pokeId) {
 function renderRegionalCatch() {
   const s      = REGIONAL_CATCH_STATE;
   const region = s.region;
-  const cost   = region.pokeball;
   const have   = STATE.save.total_crystals || 0;
+  // SPEC Part 12C: ball cost = TARGET pokemon's rarity, not the region.
+  // Pre-selection fallback = Basic (cheapest tier) so the kid sees the
+  // floor price before picking a target.
+  const targetRarity = (s.selectedPokemon && s.selectedPokemon.rarity) || 'basic';
+  const cost = ballCostForRarity(targetRarity);
+  // SPEC Part 11 — crystals are the gate, not a per-region cap. We keep
+  // a soft per-region 3-throw ceiling to avoid one kid camping a region.
   const canBuy = s.ballsThrown + s.pokeballs < 3 && have >= cost;
   const canThrow = s.pokeballs > 0 && s.selectedPokemon;
   const caughtNames = s.caughtPokemon.length > 0
@@ -2131,19 +2301,27 @@ function renderRegionalCatch() {
 async function buyRegionalPokeball() {
   const s = REGIONAL_CATCH_STATE;
   const region = s.region;
-  const cost = region.pokeball;
+  // SPEC Part 12C: cost = TARGET pokemon's rarity. Pre-selection falls
+  // back to Basic so the cheapest ball is shown.
+  const targetRarity = (s.selectedPokemon && s.selectedPokemon.rarity) || 'basic';
+  const cost = ballCostForRarity(targetRarity);
   if (s.ballsThrown + s.pokeballs >= 3) { alert('Max 3 Pokeballs per region.'); return; }
-  if ((STATE.save.total_crystals || 0) < cost) { alert(`Need ${cost} 🔮.`); return; }
+  if ((STATE.save.total_crystals || 0) < cost) { alert(`Need ${cost.toLocaleString()} 🔮.`); return; }
+  // Cap-aware: don't let the kid buy a ball they can't legally throw because
+  // their team is already full (Part 12E). Soft block — surfaces the gate.
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  if (team.length >= currentTeamCap()) {
+    alert(`Team is full (${currentTeamCap()}/${MAX_TEAM_CAP}). Release a Pokemon to catch a new one.`);
+    return;
+  }
   STATE.save.total_crystals -= cost;
   s.pokeballs += 1;
-  // Crystal-banking audit: 'adjustment' ledger entry so the ledger sum
-  // continues to mirror the canonical balance.
   if (STATE.player && STATE.player.id) {
     await dbLedgerInsert({
       player_id: STATE.player.id,
       room_code: STATE.roomCode || null,
       type: 'adjustment', amount: -cost, status: 'approved',
-      note: `Bought Pokeball in ${region.name}`,
+      note: `Bought ${targetRarity} Pokeball in ${region.name}`,
       resolved_at: new Date().toISOString(),
     });
     balanceFromLedger(STATE.player.id);
@@ -2170,10 +2348,21 @@ async function attemptRegionalCatch() {
   }
 
   // Phase 1 step 1.3: draw from catch_bank[regionId] in the age file.
+  // SPEC Part 12G — Pity softener: if the player has missed this same
+  // Pokemon ≥ PITY_MISS_THRESHOLD times in a row, draw the NEXT catch-Q
+  // from one region lower (a faithful "one tier easier" proxy — the
+  // catch_bank is region-keyed, not tier-keyed).
   const qData = await loadQuestions();
-  const pool = qData && qData.catch_bank ? (qData.catch_bank[String(s.region.id)] || []) : [];
+  let sourceRegion = s.region.id;
+  const target = s.selectedPokemon;
+  const pity = target ? getPityCounter(target.id) : 0;
+  if (pity >= PITY_MISS_THRESHOLD && s.region.id > 1) {
+    sourceRegion = s.region.id - 1;
+    console.log(`[PITY] ${target.name} drew from R${sourceRegion} after ${pity} misses`);
+  }
+  const pool = (qData && qData.catch_bank && qData.catch_bank[String(sourceRegion)]) || [];
   if (pool.length === 0) {
-    alert(`No catch questions for region ${s.region.id}.`);
+    alert(`No catch questions for region ${sourceRegion}.`);
     return;
   }
 
@@ -2292,29 +2481,35 @@ function showRegionalCatchResult(caught) {
   const fb = document.getElementById('rc-feedback');
   const target = s.selectedPokemon;
   if (caught && target) {
-    // Phase 1 step 1.4: award the REAL Pokemon from pokemon.json (spread
-    // preserves name/type/rarity/ability/abilityEffect/baseValue). Add
-    // level + caughtAt for runtime tracking.
     const newPokemon = {
       ...target,
-      level: 1,
+      level: currentPlayerLevel(),         // SPEC Part 4: born at player's level
+      xp: 0, xpCap: 100, xpRatio: 0,       // appreciating-asset XP track (Part 3C)
       caughtAt: `region${s.region.id}`,
-      roomCode: STATE.roomCode || null,  // for the player-dashboard "caught in" tag
+      roomCode: STATE.roomCode || null,
     };
     s.caughtPokemon.push(newPokemon);
     if (!STATE.save.pokemon_team) STATE.save.pokemon_team = [];
     STATE.save.pokemon_team.push(newPokemon);
-    // Race rule: tell the room this Pokemon is now taken.
     recordCatchInRoom(newPokemon);
+    // SPEC Part 12G: a successful catch resets the pity counter.
+    resetPityCounter(target.id);
     fb.textContent = `🎉 ${target.emoji} ${target.name} caught! (${target.rarity})`;
     fb.className = 'feedback-bar correct';
   } else {
-    fb.textContent = target
-      ? `💨 ${target.emoji} ${target.name} broke free! Ball wasted.`
-      : `💨 It broke free! Ball wasted.`;
+    // SPEC Part 12G: bump the pity counter on miss. If we've now crossed
+    // the threshold, surface that next catch-Q will be easier.
+    if (target) {
+      const n = bumpPityCounter(target.id);
+      const pityFires = n >= PITY_MISS_THRESHOLD;
+      fb.textContent = pityFires
+        ? `💨 ${target.emoji} ${target.name} broke free! (${n} misses — next try is one tier easier 🙏)`
+        : `💨 ${target.emoji} ${target.name} broke free! Ball wasted.`;
+    } else {
+      fb.textContent = `💨 It broke free! Ball wasted.`;
+    }
     fb.className = 'feedback-bar wrong';
   }
-  // Clear selection so the player must pick again for the next ball.
   s.selectedPokemon = null;
   setTimeout(() => {
     document.getElementById('regional-catch-question').style.display = 'none';
@@ -2461,7 +2656,7 @@ function showGymSelect(regionId) {
     // knows it's now read-only.
     const subtitle = isCompleted
       ? `${GYM_FORMATS[i-1]} · ✅ Tap to review`
-      : `${GYM_FORMATS[i-1]} · ${region.badgeMin} 🔮 min`;
+      : `${GYM_FORMATS[i-1]} · 8/10 to earn badge`;   // SPEC Part 1 (accuracy badge)
     card.innerHTML = `
       <div class="gym-num">${i}</div>
       <div class="gym-info">
@@ -2929,89 +3124,36 @@ function checkAnswer(idx) {
   const fb = document.getElementById('feedback-bar');
   const mods = STATE.pendingMods;
   if (chosen === correct) {
-    // Base crystals — speed bonus is capped to STATE.originalTimeLimit so
-    // the TIME ability buys safety only, never inflates earnings.
+    // Path B (SPEC Part 12B): NO per-question crystal mutation. Settlement
+    // happens ONCE in endGym (formula uses correct/10 × baseCrystals +
+    // capped speed bonus + badge multiplier). The "+💎" shown here is a
+    // DISPLAY-ONLY feel-good preview — must NEVER mutate the balance.
+    // MULTIPLY / DOUBLE_OR_NOTHING are dead (SPEC v3 — abilities never
+    // touch crystals; AMPLIFIER ranks CUT). No more `earned *= 2` etc.
     const base = region.baseCrystals;
     const denom = STATE.originalTimeLimit
       || (TIER_TIME[q.tier] + FORMAT_TIME_MOD[q.type] + AGE_TIME_MOD[STATE.player?.ageGroup]);
-    // Clamp timeLeft to the original limit — if TIME ability pushed timeLeft
-    // beyond the original window, the surplus does not earn extra bonus.
     const effectiveTimeLeft = Math.min(STATE.timeLeft, denom);
-    const speedBonus = Math.round((effectiveTimeLeft / denom) * region.speedMax);
-    const baseEarned = base + speedBonus;
-    let earned = baseEarned;
+    // 20% speed-bonus cap is already baked into the region.speedMax values
+    // (Part 2). Pro-rate by 1/10 for the per-question display preview.
+    const speedSliceDisplay = Math.round((effectiveTimeLeft / denom) * region.speedMax / 10);
+    const displayEarn = Math.round(base / 10) + speedSliceDisplay;
 
-    // 1.5: apply DOUBLE_OR_NOTHING (×2 on correct) then MULTIPLY (×value)
-    const modParts = [];
-    const usedDoN = !!mods.doubleOrNothing;
-    const usedMult = mods.multiplier && mods.multiplier !== 1;
-    if (usedDoN)  { earned *= 2; modParts.push('×2 Double'); }
-    if (usedMult) { earned = Math.round(earned * mods.multiplier); modParts.push(`×${mods.multiplier} Multiply`); }
-
-    STATE.gymCrystals += earned;
     STATE.gymCorrect++;
-    STATE.save.total_crystals = (STATE.save.total_crystals || 0) + earned;
     STATE.save.total_correct = (STATE.save.total_correct || 0) + 1;
 
-    document.getElementById('quiz-crystals').textContent = STATE.save.total_crystals.toLocaleString();
-
-    fb.textContent = modParts.length
-      ? `✅ Correct! +${earned} 🔮  (${modParts.join(' + ')})`
-      : `✅ Correct! +${earned} 🔮`;
+    fb.textContent = `✅ Correct! +${displayEarn} 🔮 (settles at gym end)`;
     fb.className = 'feedback-bar correct';
-
-    // Crystal-banking audit: write 'adjustment' ledger rows for the
-    // EXTRA crystals contributed by modifier abilities (on top of the
-    // base earn row that endGym writes for the full gym total). This
-    // gives players a per-ability history without double-counting —
-    // amount here is the delta the modifier added, not the full earned.
-    if (STATE.player && STATE.player.id && (usedDoN || usedMult)) {
-      const code = STATE.roomCode || null;
-      // Reconstruct the deltas in the same order the multipliers stack.
-      let runningBase = baseEarned;
-      if (usedDoN) {
-        const donDelta = runningBase;  // doubled = added one full base
-        runningBase *= 2;
-        dbLedgerInsert({
-          player_id: STATE.player.id, room_code: code,
-          type: 'adjustment', amount: +donDelta, status: 'approved',
-          note: `DOUBLE_OR_NOTHING — won`,
-          resolved_at: new Date().toISOString(),
-        }).then(() => balanceFromLedger(STATE.player.id));
-      }
-      if (usedMult) {
-        const after = Math.round(runningBase * mods.multiplier);
-        const multDelta = after - runningBase;
-        if (multDelta !== 0) {
-          dbLedgerInsert({
-            player_id: STATE.player.id, room_code: code,
-            type: 'adjustment', amount: +multDelta, status: 'approved',
-            note: `MULTIPLY ability used`,
-            resolved_at: new Date().toISOString(),
-          }).then(() => balanceFromLedger(STATE.player.id));
-        }
-      }
-    }
   } else {
-    // 1.5: DOUBLE_OR_NOTHING wrong = 0 crystals (which is the default anyway).
-    // SHIELD: noted in the feedback but no scoring change today (no wrong penalties exist).
-    const note = mods.shield ? ' 🛡️ Shielded' : '';
-    fb.textContent = `❌ Wrong! Answer: ${correct}${note}`;
+    // No wrong-answer penalty (SPEC Part 1). Encouraging framing only —
+    // never "❌ Wrong" in red. SHIELD/RETRY/SKIP modifiers harmlessly noop.
+    fb.textContent = `The answer was ${correct} 💪`;
     fb.className = 'feedback-bar wrong';
-    // DOUBLE_OR_NOTHING — even a "lose" outcome writes an audit row so
-    // the ledger reflects the risked attempt. amount=0 keeps the canonical
-    // balance unchanged. Only fired when the player explicitly used DoN.
-    if (mods.doubleOrNothing && STATE.player && STATE.player.id) {
-      dbLedgerInsert({
-        player_id: STATE.player.id, room_code: STATE.roomCode || null,
-        type: 'adjustment', amount: 0, status: 'approved',
-        note: `DOUBLE_OR_NOTHING — lost`,
-        resolved_at: new Date().toISOString(),
-      }).then(() => balanceFromLedger(STATE.player.id));
-    }
   }
 
-  // Consume single-question mods
+  // pendingMods kept (retry/shield are still wired); MULTIPLY/DoN ability
+  // hooks are stubbed in applyAbility* below, so this reset only clears
+  // the residual flags those stubs no longer set.
   STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
 
   // Auto advance after 2s
@@ -3058,19 +3200,47 @@ async function endGym() {
   clearInterval(STATE.timerInt);
 
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
-  const passed = STATE.gymCrystals >= region.badgeMin;
+  // SPEC Part 1: badge = ACCURACY, not crystals. Ships at 8/10 normal.
+  const totalQs = (STATE.currentQData && STATE.currentQData.length) || 10;
+  const passed  = STATE.gymCorrect >= 8;
 
-  // Update save
+  // Path B settlement (SPEC Part 12B): earned = round(baseCrystals × (correct/10))
+  //                                              + speedBonus  [+ badge multiplier if passed]
+  //   8/10 ×1.0 · 9/10 ×1.5 · 10/10 ×2.0 — Part 1.
+  //   speedBonus already 20%-capped via region.speedMax (Part 2),
+  //   pro-rated by correct/10 so it tracks accuracy too.
+  const baseEarn       = Math.round(region.baseCrystals * (STATE.gymCorrect / 10));
+  const speedBonus     = Math.round(region.speedMax * (STATE.gymCorrect / 10));
+  let earnedNoBonus    = baseEarn + speedBonus;
+  let badgeMultiplier  = 1;
+  if (passed) {
+    if (STATE.gymCorrect >= 10)      badgeMultiplier = 2.0;
+    else if (STATE.gymCorrect >= 9)  badgeMultiplier = 1.5;
+    else                              badgeMultiplier = 1.0;
+  }
+  // The badge multiplier is a BONUS on top of the base earn — recorded
+  // as a separate 'bonus' ledger row per Part 1.
+  const finalEarn      = passed ? Math.round(earnedNoBonus * badgeMultiplier) : earnedNoBonus;
+  const badgeBonusOnly = passed ? (finalEarn - earnedNoBonus) : 0;
+
+  // Stash on STATE.gymCrystals so the existing complete-screen + review
+  // renderers stay correct (they read this field).
+  STATE.gymCrystals = finalEarn;
+  STATE.gymSpeedBonus = speedBonus;
+
+  // Update save — gymsCompleted + badges_earned only when passed.
   if (!STATE.save.regions) STATE.save.regions = {};
   if (!STATE.save.regions[STATE.currentRegion]) {
     STATE.save.regions[STATE.currentRegion] = { gymsCompleted: [], badges: [] };
   }
-
   const regionSave = STATE.save.regions[STATE.currentRegion];
   if (passed && !regionSave.gymsCompleted.includes(STATE.currentGym)) {
     regionSave.gymsCompleted.push(STATE.currentGym);
     STATE.save.badges_earned = (STATE.save.badges_earned || 0) + 1;
   }
+
+  // Bank the per-gym earn (Path B mutates ONLY here, never per-question).
+  STATE.save.total_crystals = (STATE.save.total_crystals || 0) + finalEarn;
 
   // Review feature: persist a per-gym results object so completed gyms
   // open in read-only review mode. Written on every attempt (pass or
@@ -3080,8 +3250,10 @@ async function endGym() {
     passed,
     gymCrystals: STATE.gymCrystals,
     gymCorrect:  STATE.gymCorrect,
+    speedBonus,
+    badgeMultiplier,
     completedAt: new Date().toISOString(),
-    roomCode:    STATE.roomCode || null,  // for the player-dashboard "Room CODE" tag
+    roomCode:    STATE.roomCode || null,
     questions:   STATE.currentQData.map((q, i) => {
       const chosen = (STATE.gymAnswerLog[i] !== undefined) ? STATE.gymAnswerLog[i] : null;
       return {
@@ -3089,7 +3261,7 @@ async function endGym() {
         category: q.category,
         tier:     q.tier,
         type:     q.type,
-        question: q.question,   // already-scrambled for unscramble
+        question: q.question,
         answer:   q.answer,
         options:  q.options,
         chosen:   chosen,
@@ -3099,27 +3271,32 @@ async function endGym() {
   };
 
   STATE.save.updated_at = new Date().toISOString();
-
-  // Auto-save to Supabase
   await dbSave(STATE.player.id, STATE.save);
 
-  // Crystal-banking: every gym attempt writes an 'earn' ledger row,
-  // status=approved. Earned > 0 → labeled with crystal amount + region.
-  // Earned 0 (gym fail with no correct answers) → amount=0 row, kept
-  // so the audit shows every attempt. The per-question balance updates
-  // in checkAnswer already mutated STATE.save.total_crystals, so we
-  // record the ledger entry WITHOUT re-bumping the balance.
+  // Ledger — ONE 'earn' row per gym (Part 12B) and a separate 'bonus' row
+  // for the badge multiplier delta when passed (Part 1).
   if (STATE.player && STATE.player.id) {
-    const verdict = passed ? 'passed' : (STATE.gymCrystals > 0 ? 'partial' : 'failed');
+    const verdict = passed ? 'passed' : (STATE.gymCorrect > 0 ? 'partial' : 'failed');
     await dbLedgerInsert({
-      player_id:  STATE.player.id,
-      room_code:  STATE.roomCode || null,
-      type:       'earn',
-      amount:     STATE.gymCrystals,
-      status:     'approved',
-      note:       `Gym ${STATE.currentGym} ${verdict} · ${region.name}`,
+      player_id:   STATE.player.id,
+      room_code:   STATE.roomCode || null,
+      type:        'earn',
+      amount:      earnedNoBonus,
+      status:      'approved',
+      note:        `Gym ${STATE.currentGym} ${verdict} · ${region.name} · ${STATE.gymCorrect}/${totalQs}`,
       resolved_at: new Date().toISOString(),
     });
+    if (badgeBonusOnly > 0) {
+      await dbLedgerInsert({
+        player_id:   STATE.player.id,
+        room_code:   STATE.roomCode || null,
+        type:        'bonus',
+        amount:      badgeBonusOnly,
+        status:      'approved',
+        note:        `Badge bonus — ${STATE.gymCorrect}/${totalQs}`,
+        resolved_at: new Date().toISOString(),
+      });
+    }
     balanceFromLedger(STATE.player.id);
   }
 
@@ -3134,9 +3311,10 @@ async function endGym() {
   icon.textContent = passed ? '🏅' : '💔';
   title.textContent = `Gym ${STATE.currentGym} ${passed ? 'Complete!' : 'Failed'}`;
 
+  // SPEC Part 1: 8/10 accuracy → badge. Encouraging framing on miss.
   resultMsg.textContent = passed
-    ? `Badge earned! +${STATE.gymCrystals} 🔮`
-    : `Need ${region.badgeMin} 🔮 — you earned ${STATE.gymCrystals} 🔮`;
+    ? `Badge earned! ${STATE.gymCorrect}/${totalQs} · +${STATE.gymCrystals.toLocaleString()} 🔮`
+    : `${STATE.gymCorrect}/${totalQs} — get 8 next time to earn the badge! +${STATE.gymCrystals.toLocaleString()} 🔮`;
   resultMsg.className = `result-msg ${passed ? 'passed' : 'failed'}`;
 
   const pct = Math.round((STATE.gymCorrect / STATE.currentQData.length) * 100);
@@ -3265,13 +3443,17 @@ async function useAbility(pokemonIdx) {
       case 'TIME':              resultMsg = applyAbilityTime(value); break;
       case 'ELIMINATE':         resultMsg = applyAbilityEliminate(value); break;
       case 'SKIP':              resultMsg = applyAbilitySkip(); break;
-      case 'MULTIPLY':          resultMsg = applyAbilityMultiply(value); break;
-      case 'STEAL':             resultMsg = await applyAbilitySteal(value); break;
       case 'FREEZE':            resultMsg = applyAbilityFreeze(value); break;
       case 'REVEAL':            resultMsg = applyAbilityReveal(); break;
       case 'RETRY':             resultMsg = applyAbilityRetry(); break;
       case 'SHIELD':            resultMsg = applyAbilityShield(); break;
-      case 'DOUBLE_OR_NOTHING': resultMsg = applyAbilityDoN(value); break;
+      // CUT (SPEC v3 DROPPED): abilities never touch crystals.
+      // MULTIPLY / DOUBLE_OR_NOTHING / STEAL retired — no-op fallback so
+      // legacy pokemon.json rows don't crash. (pokemon.json v2.0 has no
+      // abilityEffect, so these branches shouldn't fire at runtime.)
+      case 'MULTIPLY':          resultMsg = 'Ability retired — no effect.'; break;
+      case 'DOUBLE_OR_NOTHING': resultMsg = 'Ability retired — no effect.'; break;
+      case 'STEAL':             resultMsg = 'Ability retired — no effect.'; break;
       default:                  resultMsg = `Unknown ability mechanic: ${mechanic || '(none)'}`;
     }
   } catch (e) {
@@ -3345,63 +3527,15 @@ function applyAbilitySkip() {
   return 'Skipping question — no penalty';
 }
 
-// MULTIPLY — set a multiplier consumed by the next correct answer.
-function applyAbilityMultiply(rawValue) {
-  const mult = normalizeMultiplier(rawValue);
-  STATE.pendingMods.multiplier = mult;
-  return `Next correct answer × ${mult}`;
-}
-
-// STEAL — take crystals from the current room leader. Solo no-op.
-async function applyAbilitySteal(value) {
-  const code = STATE.roomCode || (typeof HOST !== 'undefined' && HOST.roomCode) || '';
-  if (!code) return 'No room — solo play, no one to steal from';
-
-  const room = await dbReadRoom(code);
-  if (!room) return 'Room not found';
-
-  const myId = STATE.player && STATE.player.id;
-  const roomIds = (room.players || []).map(p => p.id).filter(id => id && id !== myId);
-  if (roomIds.length === 0) return 'No other players in this room';
-
-  const allSaves = await dbLoadAllPlayers();
-  const others = allSaves.filter(s => roomIds.includes(s.player_id));
-  if (others.length === 0) return 'No saved data for room players yet';
-
-  others.sort((a, b) => (b.total_crystals || 0) - (a.total_crystals || 0));
-  const leader = others[0];
-  const available = Math.max(0, leader.total_crystals || 0);
-  const amount = Math.min(value, available);
-  if (amount <= 0) return `${leader.player_name || 'Leader'} has no crystals to steal`;
-
-  leader.total_crystals = available - amount;
-  STATE.save.total_crystals = (STATE.save.total_crystals || 0) + amount;
-  await dbSave(leader.player_id, leader);
-  await dbSave(STATE.player.id, STATE.save);
-
-  // Crystal-banking audit: pair of 'adjustment' ledger entries so the
-  // ledger sum stays equal to the canonical balance for both sides.
-  await dbLedgerInsert({
-    player_id: leader.player_id, room_code: code,
-    type: 'adjustment', amount: -amount, status: 'approved',
-    note: `Stolen by ${STATE.player.name || 'player'} (Pokemon ability)`,
-    resolved_at: new Date().toISOString(),
-  });
-  await dbLedgerInsert({
-    player_id: STATE.player.id, room_code: code,
-    type: 'adjustment', amount: +amount, status: 'approved',
-    note: `Stole ${amount} from ${leader.player_name || 'leader'}`,
-    resolved_at: new Date().toISOString(),
-  });
-
-  // Invariant check on both sides.
-  balanceFromLedger(leader.player_id);
-  balanceFromLedger(STATE.player.id);
-
-  const crystEl = document.getElementById('quiz-crystals');
-  if (crystEl) crystEl.textContent = STATE.save.total_crystals.toLocaleString();
-  return `Stole ${amount} 🔮 from ${leader.player_name || 'leader'}`;
-}
+// ── DROPPED ABILITIES (SPEC v3 DROPPED list) ─────────────────
+// MULTIPLY / STEAL / DOUBLE_OR_NOTHING removed — abilities never touch
+// crystals (Part 3A "the only four honest channels"). The function names
+// are kept as stubs so any pokemon.json row with abilityEffect.mechanic
+// = 'MULTIPLY'|'STEAL'|'DOUBLE_OR_NOTHING' falls through harmlessly
+// rather than throwing. v2.0 pokemon.json no longer references these.
+function applyAbilityMultiply(_value) { return 'Ability retired — no effect.'; }
+function applyAbilityDoN(_value)      { return 'Ability retired — no effect.'; }
+async function applyAbilitySteal(_value) { return 'Ability retired — no effect.'; }
 
 // FREEZE — pause the timer interval for N seconds, then resume from the
 // frozen value. The bar fades to half-opacity while paused.
@@ -5239,15 +5373,17 @@ function getPlayerStatusInfo(player) {
         statusClass: answered ? 'done' : 'active',
         detail: `Q${(player.current_q||0)+1}/10 · ${player.current_gym_correct||0} correct`
       };
-    case 'GYM_COMPLETE':
+    case 'GYM_COMPLETE': {
+      // SPEC Part 1: 8/10 accuracy badge (badgeMin retired).
       const gymCrystals = player.last_gym_crystals || 0;
-      const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
-      const passed = gymCrystals >= region.badgeMin;
+      const gymCorrect  = player.last_gym_correct  || 0;
+      const passed      = gymCorrect >= 8;
       return {
         icon: passed ? '🏅' : '❌',
         statusClass: passed ? 'done' : 'failed',
-        detail: `${player.last_gym_correct||0}/10 correct · ${gymCrystals} 🔮 · ${passed ? 'PASSED' : 'FAILED'}`
+        detail: `${gymCorrect}/10 correct · ${gymCrystals.toLocaleString()} 🔮 · ${passed ? 'PASSED' : 'FAILED'}`
       };
+    }
     default:
       return {
         icon: '▶',
@@ -5262,9 +5398,9 @@ function renderHostLeaderboard() {
   const sorted = [...HOST.players].sort((a,b) => (b.total_crystals||0) - (a.total_crystals||0));
 
   container.innerHTML = sorted.map((p, i) => {
-    const gymC = p.last_gym_crystals || 0;
-    const region = REGIONS.find(r => r.id === HOST.currentRegion) || REGIONS[0];
-    const passed = gymC >= region.badgeMin;
+    // SPEC Part 1: 8/10 accuracy badge (badgeMin retired).
+    const gymCorrect = p.last_gym_correct || 0;
+    const passed     = gymCorrect >= 8;
     return `
       <div class="host-lb-row rank-${i+1}">
         <div class="hlb-rank">${MEDALS[i]||i+1}</div>

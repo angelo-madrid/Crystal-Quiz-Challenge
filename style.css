@@ -2863,6 +2863,38 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   color: var(--gold); letter-spacing: 1px;
 }
 
+/* Team cap + slots (SPEC v3.3 Part 12E) */
+.pdc-team-header {
+  display: flex; justify-content: space-between; align-items: center;
+  font-weight: 800; font-size: 0.88rem;
+  margin-bottom: 6px;
+}
+.pdc-team-cap-hint {
+  font-size: 0.72rem; opacity: 0.6;
+  font-weight: 600;
+}
+.pdc-pokemon-row.filled  { background: rgba(255,255,255,0.04); }
+.pdc-pokemon-row.empty   {
+  border: 1px dashed rgba(255,255,255,0.18);
+  opacity: 0.65; padding: 8px 12px; margin-top: 4px;
+  border-radius: 8px; font-size: 0.85rem;
+}
+.pdc-pokemon-row.locked  {
+  border: 1px dashed rgba(255,255,255,0.10);
+  opacity: 0.45; padding: 8px 12px; margin-top: 4px;
+  border-radius: 8px; font-size: 0.85rem;
+}
+.pdc-poke-release {
+  background: rgba(239,68,68,0.10);
+  border: 1px solid rgba(239,68,68,0.35);
+  color: #fca5a5; font-weight: 700; font-size: 0.75rem;
+  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+}
+.pdc-poke-release:hover { background: rgba(239,68,68,0.20); }
+.pdc-poke-starter-tag {
+  font-size: 0.72rem; opacity: 0.6; font-style: italic;
+}
+
 /* Column 3 — Broadcast */
 .pdc-broadcast-text {
   width: 100%; min-height: 64px; resize: vertical;
