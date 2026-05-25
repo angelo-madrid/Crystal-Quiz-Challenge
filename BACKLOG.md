@@ -125,6 +125,12 @@
   validation. Lowest-level kid vs matched enemy is the critical test case.
 - Foul Play (Vullaby R4 enrage): targets lowest HP kid — watch if this feels unfair
   in practice; can swap to random target if needed.
+- RE-ENTRY / RECONNECT paths (found at pre-game catch, fixed v1.21.1): a kid
+  refreshing or rejoining mid-game could land back on a phase screen they'd
+  already completed (pre-game catch trapped them with team + 0 balls). Fixed for
+  pre-game; AUDIT the other phase screens (gym, regional catch, boss fight) for
+  the same re-entry pattern during UAT — confirm reconnect always routes to the
+  correct CURRENT state, never a completed one.
 
 ---
 

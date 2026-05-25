@@ -114,7 +114,11 @@ peso credits for real Pokemon cards.
   food, languages, math
 - Tiers: basic, holo, rare, super, ultra (harder tier = MORE time)
 - Formats: mc, tf, closest, unscramble, chain
-- Pre-game: catch 1 starter (3 pokeballs, 1 catch only, rest waived)
+- Pre-game: catch 1 starter (1 free pokeball, 1 attempt; SPEC Part 11 P8)
+  - HOTFIX v1.21.1: pre-game catch is now strictly one-time —
+    `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
+    and the waiting-lobby poll guards before invoking it. Closes the
+    "re-enter catch with a team + 0 balls + no exit" trap.
 - Regional catch: buy up to 3 pokeballs; 1 ball = 1 question = 1 attempt;
   wrong answer consumes the ball; 10 Pokemon available per region
 - Crystals scale per region; 100 crystals = 1 peso credit

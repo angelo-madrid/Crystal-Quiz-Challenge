@@ -1,5 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.21.1 HOTFIX: pre-game catch re-entry trap closed (already-has-starter
+//                 → skip to map); catch-card "undefined" ability labels fixed.
 // v1.21: Kid-managed round flow — Papa starts Round 1 only,
 //        rounds auto-chain on last-kid Ready; COMBO_TEAM_STRIKE armed between rounds;
 //        enrage warnings on summary; host watch-only + force-next fallback.
@@ -558,7 +560,34 @@ function findRegional(regionId, id) {
 }
 function getAbilityDesc(p) {
   // Prefer new schema; fall back to legacy abilityDesc for any old saves still around.
-  return p?.abilityEffect?.description || p?.abilityDesc || '';
+  return p?.abilityEffect?.description || p?.abilityDesc || p?.move?.description || '';
+}
+
+// Robust ability label for catch-card display. pokemon.json v2.2 starters carry
+// `move.type` (the MOVE-ability constant — gym phase) and `battleAbility` (the
+// battle phase constant). Legacy saves may carry `p.ability` as a string. This
+// helper never returns "undefined" — it falls back through the available fields
+// in order of relevance to where the card is shown (catch screen → gym next,
+// then boss). HOTFIX v1.21.1.
+function getAbilityLabel(p) {
+  if (!p) return '';
+  // Legacy schema: a flat `ability` string (old saves).
+  if (p.ability) return p.ability;
+  // Current schema: MOVE ability is the gym-phase label — most relevant on catch.
+  if (p.move && p.move.type) {
+    return String(p.move.type).toLowerCase().replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+  // Fallback: battle ability, prettified (reuse _battleAbilityLabel if defined).
+  if (p.battleAbility) {
+    if (typeof _battleAbilityLabel === 'function') {
+      const l = _battleAbilityLabel(p.battleAbility);
+      return l.name;
+    }
+    return String(p.battleAbility).toLowerCase().replace(/_/g, ' ')
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return '';
 }
 
 // ── GAME STATE ────────────────────────────────────────────────
@@ -1864,6 +1893,17 @@ async function startPreGameCatch() {
   // Phase 1 step 1.4: load pokemon library (10 starters) once before rendering.
   await loadPokemon();
 
+  // HOTFIX v1.21.1: pre-game catch is a ONE-TIME, first-ball event (1 ball, 0
+  // Pokémon at game start). If the player already has a Pokémon on their team,
+  // they've completed pre-game catch — skip straight to the map. This closes
+  // the "stuck with a team + 0 balls + no exit" trap.
+  const existingTeam = (STATE.save && STATE.save.pokemon_team) || [];
+  if (existingTeam.length > 0) {
+    console.log('[startPreGameCatch] player already has a starter — skipping to map');
+    finishPreGame();
+    return;
+  }
+
   PREGAME_STATE = {
     pokeballs: STATE.save.pokeballs ?? 1,   // SPEC Part 11 P8: 1 free ball
     selectedPokemon: null,
@@ -1879,12 +1919,44 @@ async function startPreGameCatch() {
   renderStarterGrid();
   updatePokeballDisplay();
 
+  // Safety exit: if the player has no Pokeballs (shouldn't happen given Fix 1,
+  // but guards any odd reconnect state), surface a Continue button so they're
+  // never trapped on the choose step. HOTFIX v1.21.1.
+  _pregameRenderEscapeIfNeeded();
+
   // Show step 1, hide others
   document.getElementById('pregame-step-choose').style.display = 'block';
   document.getElementById('pregame-step-question').style.display = 'none';
   document.getElementById('pregame-step-result').style.display = 'none';
 
   showScreen('screen-pregame-catch');
+}
+
+// Shows a "Continue without catching" button on the choose step if the player
+// has 0 Pokeballs (defensive — Fix 1 should prevent reaching here in that
+// state). HOTFIX v1.21.1.
+function _pregameRenderEscapeIfNeeded() {
+  const balls = PREGAME_STATE.pokeballs;
+  let escapeEl = document.getElementById('pregame-escape-zone');
+  // Create the escape zone container if the HTML doesn't have it.
+  if (!escapeEl) {
+    const chooseStep = document.getElementById('pregame-step-choose');
+    if (!chooseStep) return;
+    escapeEl = document.createElement('div');
+    escapeEl.id = 'pregame-escape-zone';
+    escapeEl.style.cssText = 'padding:12px 0 0;text-align:center';
+    chooseStep.appendChild(escapeEl);
+  }
+  if (balls <= 0) {
+    escapeEl.innerHTML = `
+      <div style="opacity:0.75;font-size:0.85rem;margin-bottom:8px">
+        No Pokéballs left — you can start your journey now.
+      </div>
+      <button class="btn-primary" onclick="finishPreGame()">✅ Start My Journey</button>`;
+    escapeEl.style.display = 'block';
+  } else {
+    escapeEl.style.display = 'none';
+  }
 }
 
 function renderStarterGrid() {
@@ -1914,7 +1986,7 @@ function renderStarterGrid() {
         <div class="sc-emoji">${p.emoji}</div>
         <div class="sc-name">${p.name}</div>
         <div class="sc-type">${p.type}</div>
-        <div class="sc-ability">⚡ ${p.ability}</div>
+        <div class="sc-ability">⚡ ${getAbilityLabel(p)}</div>
         <div class="sc-desc">${getAbilityDesc(p)}</div>
         ${tag ? `<div class="sc-caught">${tag}</div>` : ''}
       </div>
@@ -1979,7 +2051,7 @@ async function attemptCatch() {
     <div class="psd-emoji">${poke.emoji}</div>
     <div class="psd-info">
       <div class="psd-name">${poke.name}</div>
-      <div class="psd-ability">⚡ ${poke.ability} — ${getAbilityDesc(poke)}</div>
+      <div class="psd-ability">⚡ ${getAbilityLabel(poke)} — ${getAbilityDesc(poke)}</div>
       <div class="psd-hint">✨ Answer correctly to catch!</div>
     </div>
   `;
@@ -2110,7 +2182,7 @@ function showCatchResult(caught) {
       <h3>${poke.emoji} ${poke.name} was caught!</h3>
       <p class="catch-result-msg">
         <b>${poke.name}</b> joins your team!<br>
-        Ability: <span style="color:var(--crystal)">⚡ ${poke.ability}</span><br>
+        Ability: <span style="color:var(--crystal)">⚡ ${getAbilityLabel(poke)}</span><br>
         <em>${getAbilityDesc(poke)}</em>
       </p>
       <p class="catch-result-msg" style="margin-top:10px;color:var(--gold);font-weight:800">
@@ -2302,7 +2374,7 @@ function renderRegionalCatch() {
             <div class="sc-emoji">${p.emoji}</div>
             <div class="sc-name">${p.name}</div>
             <div class="sc-type">${p.type}</div>
-            <div class="sc-ability">⚡ ${p.ability}</div>
+            <div class="sc-ability">⚡ ${getAbilityLabel(p)}</div>
             <div class="sc-desc">${getAbilityDesc(p)}</div>
             <div class="sc-caught">${tag}</div>
           </div>
@@ -4655,7 +4727,7 @@ function renderPokemonTeam() {
         <div class="poke-name">${p.name}</div>
         <div class="poke-level">${stars}</div>
         <button class="poke-ability-btn" onclick="activateAbility(${idx})">
-          ${p.emoji} ${p.ability}
+          ${p.emoji} ${getAbilityLabel(p)}
         </button>
         <div class="poke-ability-desc">${getAbilityDesc(p)}</div>
       </div>
@@ -4688,7 +4760,7 @@ function activateAbility(pokemonIdx) {
 
   document.getElementById('modal-poke-emoji').textContent  = pokemon.emoji;
   document.getElementById('modal-poke-name').textContent   = pokemon.name;
-  document.getElementById('modal-ability-name').textContent = pokemon.ability;
+  document.getElementById('modal-ability-name').textContent = getAbilityLabel(pokemon);
   document.getElementById('modal-ability-desc').textContent = getAbilityDesc(pokemon);
 
   document.getElementById('modal-confirm-btn').onclick = () => useAbility(pokemonIdx);
@@ -4752,7 +4824,7 @@ async function useAbility(pokemonIdx) {
   // before this fires, so the bar may already be reset — that's fine).
   const fb = document.getElementById('feedback-bar');
   if (fb && resultMsg) {
-    fb.textContent = `${pokemon.emoji} ${pokemon.ability}: ${resultMsg}`;
+    fb.textContent = `${pokemon.emoji} ${getAbilityLabel(pokemon)}: ${resultMsg}`;
     fb.className = 'feedback-bar';
   }
 }
@@ -5168,10 +5240,18 @@ function startWaitingPoll(code, myPlayerId, isHost) {
     );
     renderWaitingSlots(realPlayers, myPlayerId);
 
-    // If host started → players go to pregame catch
+    // If host started → players go to pregame catch — but ONLY if they
+    // haven't already caught a starter (guards the re-entry trap;
+    // startPreGameCatch also self-guards, this just avoids the needless
+    // screen flip). HOTFIX v1.21.1.
     if (!isHost && room.phase === 'PREGAME_CATCH') {
       clearInterval(waitingPollInt);
-      startPreGameCatch();
+      const team = (STATE.save && STATE.save.pokemon_team) || [];
+      if (team.length > 0) {
+        showMap();
+      } else {
+        startPreGameCatch();
+      }
     }
   }, 2000);
 }
