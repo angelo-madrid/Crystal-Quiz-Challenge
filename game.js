@@ -1182,7 +1182,8 @@ async function pdcRenderCol2Wallet() {
   if (!player) return;
   const balance = (STATE.save && STATE.save.total_crystals) || 0;
   document.getElementById('pdc-balance-big').textContent = balance.toLocaleString();
-  document.getElementById('pdc-peso').textContent = (balance / 100).toFixed(2);
+  // Peso removed from player UI per SPEC v3.3 Part 12I — crystals are
+  // arcade tickets, no money framing. Host UI retains peso for prize pricing.
 
   // Redeem button — disabled while a redemption is already pending
   const hasPending = await dbHasPendingRedemption(player.id);
@@ -2498,11 +2499,10 @@ async function renderWallet() {
   const fresh = await dbLoad(player.id);
   if (fresh) STATE.save = fresh;
   const balance = (STATE.save && STATE.save.total_crystals) || 0;
-  const peso = (balance / 100).toFixed(2);
+  // Peso removed from player UI (SPEC v3.3 Part 12I); host UI keeps peso.
 
   document.getElementById('wallet-title').textContent = `💎 ${player.name}'s Crystal Wallet`;
   document.getElementById('wallet-balance').textContent = `${balance.toLocaleString()} 🔮`;
-  document.getElementById('wallet-peso').textContent = peso;
 
   // Redeem button — disabled while a request is already pending.
   const redeemSection = document.getElementById('wallet-redeem-section');
