@@ -527,6 +527,11 @@
     <!-- Player contribution trackers — one per kid, rendered by JS -->
     <div class="battle-contrib-row" id="battle-contrib-row"></div>
 
+    <!-- Battle ability bar — declared pre-answer, one per Pokémon per battle.
+         Populated by _battleRenderAbilityBar(); hidden when no abilities or
+         when lockdown enrage (R3 Klink) is active. -->
+    <div class="battle-ability-bar" id="battle-ability-bar" style="display:none"></div>
+
     <!-- Active question area (hidden until round starts) -->
     <div class="battle-question-area" id="battle-question-area" style="display:none">
       <div class="timer-container">
@@ -546,13 +551,10 @@
       <div class="feedback-bar" id="battle-feedback"></div>
     </div>
 
-    <!-- Team Strike declare button (shown pre-round) -->
-    <div class="battle-controls" id="battle-controls" style="display:none">
-      <button class="btn-primary" id="battle-team-strike-btn" onclick="battleDeclareTeamStrike()">
-        ⚡ Team Strike!
-      </button>
-      <button class="btn-secondary" onclick="battleStartRound()">Start Round ▶</button>
-    </div>
+    <!-- Battle controls — rounds are Papa-gated from the host panel; kids have
+         no Start Round button. Team Strike will be kid-managed on the
+         between-round screen in Commit 4 (COMBO_TEAM_STRIKE). -->
+    <div class="battle-controls" id="battle-controls" style="display:none"></div>
 
     <!-- Post-round result (shown after round resolves) -->
     <div class="battle-round-result" id="battle-round-result" style="display:none">

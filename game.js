@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.20: Battle Commit 3 — 6 battle abilities (CRITICAL_HIT / FREEZE_STUN
+//        / HEAL / PROTECT / GUARD / SECOND_WIND) declared pre-answer +
+//        applied in _battleResolveRound; R10 Legendary gate + Papa override
+//        (hostGrantLegendary, room.battleState.legendaryOverride); R5/R7/R8
+//        reminder nudges (_maybeShowLegendaryReminder); dead pre-Commit-2
+//        controls (battleDeclareTeamStrike / battleStartRound) replaced;
+//        showToast now accepts an optional duration.
 // v1.19: Battle loop core — startBossFight() full implementation,
 //        round engine, auto-resolve, host battle panel, Darkrai cameo stub.
 // ═══════════════════════════════════════════════════════════
@@ -2601,7 +2608,31 @@ async function finishRegionalCatch() {
     return;
   }
 
+  // SPEC Part 14G-7: in-game Legendary reminders at R5/R7/R8 if the kid
+  // hasn't caught one yet. Fires once per region (idempotent).
+  _maybeShowLegendaryReminder(justFinished && justFinished.id);
+
   showMap();
+}
+
+// Nudge the kid to chase a Legendary if they haven't caught one by R5/R7/R8.
+// Idempotent: each region's reminder fires at most once per save.
+function _maybeShowLegendaryReminder(regionId) {
+  if (!regionId) return;
+  if (regionId !== 5 && regionId !== 7 && regionId !== 8) return;
+  if (_playerHasLegendary()) return;
+  STATE.save.legendaryRemindersSeen = STATE.save.legendaryRemindersSeen || [];
+  if (STATE.save.legendaryRemindersSeen.includes(regionId)) return;
+  STATE.save.legendaryRemindersSeen.push(regionId);
+  // Persist the flag (fire-and-forget — failure is fine, worst case is a
+  // duplicate nudge next time).
+  dbSave(STATE.player.id, STATE.save).catch(() => {});
+  const messages = {
+    5: '🌟 Halfway there! You still need a Legendary to face the Region 10 boss — keep an eye out!',
+    7: '⛩️ Only 3 regions left! No Legendary yet — Region 8, 9, and 10 are your last chances.',
+    8: '⚠️ Last call! Without a Legendary you\'ll need Papa to grant an override at the final boss.',
+  };
+  showToast(messages[regionId], 6000);
 }
 
 // ── FINAL COMPLETE (Region 10 cleared) ────────────────────────
@@ -3430,6 +3461,16 @@ async function startBossFight(regionId) {
   const boss = BOSS_DATA[regionId];
   if (!boss) { console.warn('[startBossFight] no BOSS_DATA for region', regionId); showMap(); return; }
 
+  // SPEC Part 14G-7: R10 Legendary gate.
+  // Kid must hold at least one Legendary-rarity Pokémon to face the final boss,
+  // unless Papa has granted an override for this player + region.
+  if (regionId === 10
+      && !_playerHasLegendary()
+      && !_battleLegendaryOverrideGranted(regionId)) {
+    _battleShowLegendaryGate(regionId);
+    return;
+  }
+
   STATE.currentRegion = regionId;
   STATE.battle = null; // cleared; will be populated from room poll
 
@@ -3466,6 +3507,49 @@ async function startBossFight(regionId) {
   _battleStartPoll();
 }
 
+// ── R10 LEGENDARY GATE (SPEC Part 14G-7) ─────────────────────
+// Does this player hold any Legendary-rarity Pokémon?
+function _playerHasLegendary() {
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  return team.some(p => (p.rarity || '').toLowerCase() === 'legendary');
+}
+
+// Has Papa granted an override for this region on this player?
+// Override is stamped on the room.battleState by hostGrantLegendary().
+function _battleLegendaryOverrideGranted(regionId) {
+  // We may not have the room cached at this point; check STATE.battle as a
+  // fast path, but the authoritative read is on the room. Since the gate
+  // fires synchronously before the room poll begins, also peek at the last
+  // known room snapshot if game.js cached one.
+  const me = STATE.player && STATE.player.id;
+  if (!me) return false;
+  const bs = STATE.battle || (STATE._lastRoom && STATE._lastRoom.battleState);
+  if (!bs || !bs.legendaryOverride) return false;
+  return bs.legendaryOverride[me] === regionId;
+}
+
+// Show the gate screen — kid is blocked, needs to ask Papa for override.
+function _battleShowLegendaryGate(regionId) {
+  // Lightweight inline overlay — no separate screen markup required.
+  const html = `
+    <div class="battle-legendary-gate-overlay" id="battle-legendary-gate">
+      <div class="battle-legendary-gate-card">
+        <div class="bl-gate-emoji">⛩️</div>
+        <h2>Legendary Gate</h2>
+        <p>Region 10's final boss can only be challenged by Trainers with at least one
+        <strong>Legendary Pokémon</strong> on their team.</p>
+        <p class="bl-gate-sub">Ask <strong>Papa</strong> to grant a one-time override
+        from the host battle panel.</p>
+        <button class="btn-secondary" onclick="document.getElementById('battle-legendary-gate').remove(); showMap();">
+          🗺️ Back to Map
+        </button>
+      </div>
+    </div>`;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html;
+  document.body.appendChild(wrap.firstElementChild);
+}
+
 // Build the initial battleState object for a region.
 function _battleInitState(regionId, boss) {
   return {
@@ -3494,6 +3578,10 @@ function _battleInitPlayerState(hp) {
     answeredThisRound: false,
     answerCorrect: null,
     fainted: false,
+    // Commit 3: battle abilities (one per Pokémon per battle).
+    abilitiesUsed: [],        // pokemon ids whose ability has fired
+    pendingAbility: null,     // ability declared THIS round, applied at resolve
+    pendingAbilityPoke: null, // pokemon id that declared it
   };
 }
 
@@ -3690,10 +3778,112 @@ async function _battleServeQuestion(bs) {
     document.getElementById('battle-hp-bar').classList.remove('enraged');
   }
 
+  // Commit 3: render the kid's battle-ability bar (declared pre-answer).
+  // Blocked entirely while Lockdown (R3 Klink enrage) is active.
+  const lockdownActive = bs.enraged
+    && BOSS_DATA[bs.regionId]?.enrage?.effect === 'block_all_abilities';
+  _battleRenderAbilityBar(bs, lockdownActive);
+
   // Start the battle timer (15s base + age modifier).
   const ageMod    = AGE_TIME_MOD[STATE.player?.ageGroup] || 0;
   const totalTime = 15 + ageMod;
   _battleStartTimer(totalTime);
+}
+
+// ── BATTLE ABILITY BAR (player side) ──────────────────────────
+// Renders one tappable button per owned Pokémon's battleAbility.
+// COMBO_TEAM_STRIKE is intentionally skipped here — it lives on the
+// between-round screen (Commit 4). Already-used abilities are greyed.
+// Lockdown disables the whole bar.
+function _battleRenderAbilityBar(bs, lockdownActive) {
+  const bar = document.getElementById('battle-ability-bar');
+  if (!bar) return;
+  const ps   = bs.playerStates[STATE.player.id];
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  if (!team.length) { bar.style.display = 'none'; return; }
+  const used = (ps && ps.abilitiesUsed) || [];
+  bar.style.display = 'flex';
+  if (lockdownActive) {
+    bar.innerHTML = `<div class="battle-ability-locked">🔒 Lockdown — abilities blocked this round</div>`;
+    return;
+  }
+  const buttons = team.map(p => {
+    const ability = p.battleAbility || 'NONE';
+    // COMBO_TEAM_STRIKE is handled on the between-round screen (Commit 4).
+    if (ability === 'NONE' || ability === null || ability === 'COMBO_TEAM_STRIKE') return '';
+    const isUsed = used.includes(p.id);
+    const label  = _battleAbilityLabel(ability);
+    return `
+      <button class="battle-ability-btn${isUsed ? ' used' : ''}"
+        ${isUsed ? 'disabled' : ''}
+        onclick="battleDeclareAbility('${escapeAttr(p.id)}')">
+        <span class="bab-emoji">${p.emoji || '🐾'}</span>
+        <span class="bab-ability">${label.icon} ${label.name}</span>
+        ${isUsed ? '<span class="bab-used-tag">used</span>' : ''}
+      </button>`;
+  }).filter(Boolean).join('');
+  bar.innerHTML = buttons || '<div class="battle-ability-empty">No battle abilities on your team yet.</div>';
+}
+
+// Human-readable label + icon for each battle ability.
+function _battleAbilityLabel(ability) {
+  const map = {
+    CRITICAL_HIT:      { icon:'💥', name:'Critical Hit', desc:'Your hit deals 2× damage' },
+    FREEZE_STUN:       { icon:'❄️', name:'Freeze',       desc:'Boss skips its attack' },
+    HEAL:              { icon:'💚', name:'Heal',         desc:'Restore 40% HP' },
+    PROTECT:           { icon:'🛡️', name:'Protect',      desc:'You take no damage this round' },
+    GUARD:             { icon:'🤝', name:'Guard',        desc:'Shield your lowest-HP teammate' },
+    SECOND_WIND:       { icon:'✨', name:'Second Wind',  desc:'Revive a fainted teammate' },
+    COMBO_TEAM_STRIKE: { icon:'⚡', name:'Team Strike',  desc:'Arm Team Strike for next round' },
+  };
+  return map[ability] || { icon:'⚡', name:ability, desc:'' };
+}
+
+// Kid taps a battle ability — declares it for THIS round, consumes it for
+// the rest of the battle. Writes the declaration into room.battleState.
+async function battleDeclareAbility(pokeId) {
+  if (_battleRoundAnswered) {
+    showToast('⚠️ Abilities are declared before answering');
+    return;
+  }
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const poke = team.find(p => p.id === pokeId);
+  if (!poke || !poke.battleAbility) return;
+  const ability = poke.battleAbility;
+  // COMBO_TEAM_STRIKE is not declarable here (Commit 4 handles it).
+  if (ability === 'COMBO_TEAM_STRIKE') return;
+  const label = _battleAbilityLabel(ability);
+  const code = STATE.roomCode;
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs  = room.battleState;
+    const pid = STATE.player.id;
+    // Lockdown guard (server-side re-check).
+    if (bs.enraged && BOSS_DATA[bs.regionId]?.enrage?.effect === 'block_all_abilities') {
+      showToast('🔒 Lockdown — abilities are blocked this round');
+      return;
+    }
+    if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
+    const myPs = bs.playerStates[pid];
+    if ((myPs.abilitiesUsed || []).includes(pokeId)) {
+      showToast(`⚠️ ${poke.name}'s ability is already used`);
+      return;
+    }
+    if (myPs.pendingAbility) {
+      showToast('⚠️ You already declared an ability this round');
+      return;
+    }
+    myPs.pendingAbility     = ability;
+    myPs.pendingAbilityPoke = pokeId;
+    myPs.abilitiesUsed      = [...(myPs.abilitiesUsed || []), pokeId];
+    room.battleState = bs;
+    room.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, room);
+    showToast(`${label.icon} ${poke.name} — ${label.name}! ${label.desc}`);
+    _battleRenderAbilityBar(bs, false);
+  } catch(e) { console.warn('[battleDeclareAbility]', e); }
 }
 
 // ── BATTLE TIMER ──────────────────────────────────────────────
@@ -3829,8 +4019,10 @@ function _battleResolveRound(bs) {
   // re-read SPEC 14G-6; only Sharpen and Nightmare buff boss damage).
   let damageMultiplier = teamStrike ? 3 : 1;
   let totalDamage = 0;
-  correctThisRound.forEach(() => {
-    const hit = Math.max(10, Math.round(bs.bossHp * 0.20));
+  correctThisRound.forEach(id => {
+    let hit = Math.max(10, Math.round(bs.bossHp * 0.20));
+    // CRITICAL_HIT: this kid's correct answer deals 2× damage.
+    if (players[id].pendingAbility === 'CRITICAL_HIT') hit *= 2;
     totalDamage += hit * damageMultiplier;
   });
   bs.bossHp = Math.max(0, bs.bossHp - totalDamage);
@@ -3845,6 +4037,24 @@ function _battleResolveRound(bs) {
     bs.enrageRoundsLeft--;
     if (bs.enrageRoundsLeft <= 0) bs.enraged = false;
   }
+
+  // --- Ability effects: heals & revives (resolve before boss attacks) ---
+  active.forEach(id => {
+    const ab = players[id].pendingAbility;
+    if (ab === 'HEAL') {
+      const heal = Math.round(players[id].maxHp * 0.40);
+      players[id].hp = Math.min(players[id].maxHp, players[id].hp + heal);
+    }
+    if (ab === 'SECOND_WIND') {
+      const downed = pids.find(x => players[x].fainted);
+      if (downed) {
+        players[downed].fainted = false;
+        players[downed].hp = Math.round(players[downed].maxHp * 0.50);
+      }
+    }
+  });
+  // Recompute active list — SECOND_WIND may have revived someone.
+  const activeAfterRevive = pids.filter(id => !players[id].fainted);
 
   // --- Boss attack phase ---
   // Pick a random non-fainted player to attack.
@@ -3862,30 +4072,57 @@ function _battleResolveRound(bs) {
     if (effect === 'harder_questions_plus_50')  baseDmg = Math.round(baseDmg * 1.5);
   }
 
+  // --- Ability effects: defenses (resolve before boss damage applied) ---
+  // FREEZE_STUN: any kid w/ correct answer + FREEZE_STUN ability declared
+  //   freezes the boss this round → boss attack is cancelled entirely.
+  // PROTECT: this kid takes 0 damage from boss this round.
+  // GUARD: a different kid (not self) absorbs all damage intended for any
+  //   ally this round. If multiple GUARDs declared, the last one wins
+  //   (declared list order). Lockdown enrage already blocked declares
+  //   pre-answer, so any pendingAbility seen here is legal.
+  const freezeStun = active.some(id =>
+    players[id].pendingAbility === 'FREEZE_STUN' && players[id].answerCorrect);
+  const protectIds = new Set(active.filter(id =>
+    players[id].pendingAbility === 'PROTECT'));
+  let guardId = null;
+  active.forEach(id => {
+    if (players[id].pendingAbility === 'GUARD') guardId = id;
+  });
+
   let targets = [];
-  if (active.length > 0) {
+  if (!freezeStun && activeAfterRevive.length > 0) {
     const effect = bs.enraged ? boss.enrage.effect : '';
     if (effect === 'attack_two_targets') {
       // Headbutt: pick up to 2 random kids.
-      const shuffled = active.slice().sort(() => Math.random() - 0.5);
-      targets = shuffled.slice(0, Math.min(2, active.length));
+      const shuffled = activeAfterRevive.slice().sort(() => Math.random() - 0.5);
+      targets = shuffled.slice(0, Math.min(2, activeAfterRevive.length));
     } else if (effect === 'target_lowest_hp') {
       // Foul Play: target kid with lowest HP.
-      const sorted = active.slice().sort((a,b) => players[a].hp - players[b].hp);
+      const sorted = activeAfterRevive.slice().sort((a,b) => players[a].hp - players[b].hp);
       targets = [sorted[0]];
     } else if (effect === 'highest_hp_double_dmg') {
       // Oblivion Wing: target highest HP kid, double damage.
-      const sorted = active.slice().sort((a,b) => players[b].hp - players[a].hp);
+      const sorted = activeAfterRevive.slice().sort((a,b) => players[b].hp - players[a].hp);
       targets = [sorted[0]];
       baseDmg = Math.round(baseDmg * 2);
     } else {
       // Default: 1 random target.
-      targets = [active[Math.floor(Math.random() * active.length)]];
+      targets = [activeAfterRevive[Math.floor(Math.random() * activeAfterRevive.length)]];
     }
-    // Apply damage to targets.
+    // Apply damage to targets — respecting PROTECT (self-immune) + GUARD
+    // (a designated ally absorbs damage routed to anyone else).
     targets.forEach(tid => {
-      players[tid].hp = Math.max(0, players[tid].hp - baseDmg);
-      if (players[tid].hp <= 0) players[tid].fainted = true;
+      let absorber = tid;
+      if (protectIds.has(tid)) {
+        // PROTECT'd kid takes nothing — unless a GUARD redirects to them?
+        // No: PROTECT is absolute self-immunity for the round.
+        return;
+      }
+      if (guardId && guardId !== tid && !players[guardId].fainted) {
+        absorber = guardId;
+      }
+      players[absorber].hp = Math.max(0, players[absorber].hp - baseDmg);
+      if (players[absorber].hp <= 0) players[absorber].fainted = true;
     });
   }
 
@@ -3893,6 +4130,8 @@ function _battleResolveRound(bs) {
   pids.forEach(id => {
     players[id].answeredThisRound = false;
     players[id].answerCorrect     = null;
+    players[id].pendingAbility    = null;
+    players[id].pendingAbilityPoke= null;
   });
   bs.teamStrikeDeclared = false;
 
@@ -3928,7 +4167,8 @@ function _battleResolveRound(bs) {
     bossHpAfter: bs.bossHp,
     teamStrike,
     targets,
-    bossDmg:     baseDmg,
+    bossDmg:     freezeStun ? 0 : baseDmg,
+    freezeStun,
     enraged:     bs.enraged,
   });
   bs.round++;
@@ -5134,13 +5374,14 @@ function copyRoomCodeFromBanner() {
 
 // ── Toast ────────────────────────────────────────────────────
 let _toastTimer = null;
-function showToast(msg) {
+function showToast(msg, duration) {
   const el = document.getElementById('host-landing-toast');
   if (!el) return;
   el.textContent = msg;
   el.style.display = 'block';
   if (_toastTimer) clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => { el.style.display = 'none'; }, 2200);
+  _toastTimer = setTimeout(() => { el.style.display = 'none'; },
+    typeof duration === 'number' ? duration : 2200);
 }
 
 // ── Small escape helpers (room codes are uppercase alnum, but be safe) ──
@@ -5841,10 +6082,25 @@ async function _hostRenderBattlePanel(code, room, el) {
   const readyCount  = roomPlayers.filter(p => players[p.id]).length;
   const allReady    = readyCount >= roomPlayers.length && roomPlayers.length > 0;
 
-  // Per-player status rows.
+  // Per-player status rows. For R10, also surface a Papa-override button
+  // for any kid who hasn't joined the battle yet AND doesn't hold a
+  // Legendary (i.e. they're stuck behind the gate).
+  const override = bs.legendaryOverride || {};
   const playerRows = roomPlayers.map(p => {
     const ps = players[p.id];
-    if (!ps) return `<div class="host-battle-player not-ready">⏳ ${escapeHTML(p.name)} — at gym</div>`;
+    if (!ps) {
+      const saveTeam = ((p.save && p.save.pokemon_team) || []);
+      const hasLeg = saveTeam.some(x => (x.rarity || '').toLowerCase() === 'legendary');
+      const overrideBtn = (bs.regionId === 10 && !hasLeg && override[p.id] !== 10)
+        ? `<button class="btn-secondary host-battle-override-btn"
+             onclick="hostGrantLegendary('${escapeAttr(code)}','${escapeAttr(p.id)}','${escapeAttr(p.name)}')">
+             ⛩️ Grant Legendary Override
+           </button>`
+        : (bs.regionId === 10 && override[p.id] === 10
+            ? `<span class="host-battle-override-granted">⛩️ override ✓</span>`
+            : '');
+      return `<div class="host-battle-player not-ready">⏳ ${escapeHTML(p.name)} — at gym ${overrideBtn}</div>`;
+    }
     const contrib = ps.correctThisBattle;
     const answered = ps.answeredThisRound ? '✅' : '⏳';
     const hp = ps.fainted ? '💀' : `HP ${ps.hp}`;
@@ -5903,6 +6159,22 @@ async function hostBattleStartRound(code) {
   room.updated_at = new Date().toISOString();
   await dbWriteRoom(code, room);
   showToast(`▶ Round ${room.battleState.round} started`);
+  renderHostDashboard();
+}
+
+// Papa grants a R10 Legendary-gate override for a specific kid. Logged
+// onto room.battleState.legendaryOverride[playerId] = regionId. The kid's
+// next tap of "Start Boss Fight" sees this and bypasses the gate.
+async function hostGrantLegendary(code, pid, name) {
+  if (!confirm(`Grant ${name || pid} a Legendary-gate override for Region 10?\n\nThis is logged — only do it if they tried hard for a Legendary and didn't catch one.`)) return;
+  const room = await dbReadRoom(code);
+  if (!room || !room.battleState) { showToast('⚠️ No battle in progress'); return; }
+  room.battleState.legendaryOverride = room.battleState.legendaryOverride || {};
+  room.battleState.legendaryOverride[pid] = 10;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  console.info(`[legendary-override] granted to ${pid} (${name}) for R10 at ${room.updated_at}`);
+  showToast(`⛩️ Override granted to ${name || pid}`);
   renderHostDashboard();
 }
 

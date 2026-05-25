@@ -3129,3 +3129,100 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 }
 .host-battle-player.not-ready { opacity: 0.45; }
 .host-battle-player.fainted   { color: #f87171; }
+
+/* ── Battle Ability Bar (Commit 3, SPEC Part 14G-4) ───────────── */
+.battle-ability-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 14px;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  justify-content: center;
+}
+.battle-ability-btn {
+  background: linear-gradient(180deg, #2d3748, #1a202c);
+  color: #fef3c7;
+  border: 2px solid rgba(254, 243, 199, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .12s, border-color .12s;
+  min-width: 110px;
+}
+.battle-ability-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: var(--gold);
+}
+.battle-ability-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.battle-ability-btn.used {
+  opacity: 0.4;
+  background: linear-gradient(180deg, #1a202c, #0f1419);
+  cursor: not-allowed;
+}
+.battle-ability-btn .bab-emoji   { display: block; font-size: 1.2rem; margin-bottom: 4px; }
+.battle-ability-btn .bab-ability { display: block; font-size: 0.78rem; }
+.battle-ability-btn .bab-used-tag {
+  display: block;
+  font-size: 0.65rem;
+  color: var(--gold);
+  font-weight: 800;
+  margin-top: 3px;
+}
+.battle-ability-locked {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #f87171;
+  padding: 10px;
+  width: 100%;
+}
+.battle-ability-empty {
+  text-align: center;
+  font-size: 0.78rem;
+  opacity: 0.55;
+  padding: 8px;
+  width: 100%;
+}
+
+/* ── Legendary Gate (Commit 3, SPEC Part 14G-7) ───────────────── */
+.battle-legendary-gate-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.battle-legendary-gate-card {
+  background: linear-gradient(180deg, #1a202c, #0f1419);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 30px 24px;
+  max-width: 480px;
+  text-align: center;
+}
+.bl-gate-emoji { font-size: 4rem; margin-bottom: 10px; }
+.battle-legendary-gate-card h2 { color: var(--gold); margin-bottom: 12px; }
+.battle-legendary-gate-card p  { opacity: 0.85; line-height: 1.6; margin-bottom: 10px; }
+.bl-gate-sub { font-size: 0.85rem; opacity: 0.7; }
+
+/* Papa override controls in host battle panel */
+.host-battle-override-btn {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.7rem;
+  padding: 4px 8px;
+}
+.host-battle-override-granted {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: 0.72rem;
+  color: var(--gold);
+  font-weight: 800;
+}
