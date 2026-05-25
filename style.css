@@ -2921,3 +2921,194 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   color: #fca5a5; font-weight: 700;
   min-height: 1em;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BATTLE SCREEN (SPEC Part 14G — Commit 1 scaffold)
+   ═══════════════════════════════════════════════════════════ */
+
+/* Header */
+.battle-header {
+  padding: 14px 20px 10px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.battle-region-label {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin-bottom: 8px;
+}
+.battle-vs-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.battle-villain-block,
+.battle-team-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.battle-team-block { justify-content: flex-end; }
+.battle-villain-emoji { font-size: 2.2rem; }
+.battle-villain-name {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--red, #ef4444);
+}
+.battle-vs-text {
+  font-size: 1.3rem;
+  font-weight: 900;
+  opacity: 0.5;
+}
+
+/* Shared boss HP bar */
+.battle-hp-section {
+  padding: 12px 20px;
+}
+.battle-hp-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+.battle-hp-bar-wrap {
+  height: 14px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 7px;
+  overflow: hidden;
+}
+.battle-hp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  border-radius: 7px;
+  transition: width 0.5s ease;
+}
+.battle-hp-bar.enraged {
+  background: linear-gradient(90deg, #7c3aed, #ef4444);
+}
+.battle-enrage-notice {
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f87171;
+}
+
+/* Round info row */
+.battle-round-info {
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  opacity: 0.75;
+}
+.battle-star-preview { color: var(--gold, #ffcb05); }
+
+/* Per-kid contribution trackers */
+.battle-contrib-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 20px;
+  flex-wrap: wrap;
+}
+.battle-contrib-card {
+  flex: 1;
+  min-width: 80px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+}
+.battle-contrib-card.answered { border-color: rgba(74,222,128,0.4); }
+.battle-contrib-card.fainted  { opacity: 0.45; }
+.battle-contrib-emoji { font-size: 1.4rem; }
+.battle-contrib-name  { font-size: 0.68rem; font-weight: 700; margin-top: 2px; }
+.battle-contrib-hp    { font-size: 0.7rem; color: #f87171; font-weight: 800; }
+.battle-contrib-hits  { font-size: 0.7rem; color: var(--gold, #ffcb05); font-weight: 800; }
+/* N=3 progress pips */
+.battle-contrib-pips  { display: flex; gap: 3px; justify-content: center; margin-top: 4px; }
+.battle-pip { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.15); }
+.battle-pip.filled { background: var(--gold, #ffcb05); }
+
+/* Controls row (pre-round) */
+.battle-controls {
+  padding: 12px 20px;
+  display: flex;
+  gap: 10px;
+}
+.battle-controls button { flex: 1; }
+#battle-team-strike-btn {
+  background: linear-gradient(135deg, #f97316, #ffcb05) !important;
+  color: #1a1a2e !important;
+}
+#battle-team-strike-btn.active {
+  box-shadow: 0 0 16px rgba(255,203,5,0.5);
+}
+
+/* Post-round result */
+.battle-round-result {
+  padding: 14px 20px;
+  text-align: center;
+}
+.battle-round-result button { margin-top: 10px; width: 100%; max-width: 300px; }
+
+/* Win screen */
+.battle-win {
+  padding: 30px 20px;
+  text-align: center;
+}
+.battle-win-emoji { font-size: 4rem; margin-bottom: 8px; }
+.battle-star-rating { font-size: 2rem; margin: 10px 0; }
+.battle-reward-offer {
+  margin: 16px 0;
+  padding: 14px;
+  background: rgba(255,203,5,0.08);
+  border: 1px solid rgba(255,203,5,0.3);
+  border-radius: 12px;
+}
+.battle-reward-offer h3 { margin: 0 0 8px; font-size: 1rem; }
+.battle-reward-poke-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+}
+.battle-reward-emoji { font-size: 2.2rem; }
+.battle-reward-info  { text-align: left; flex: 1; }
+.battle-reward-name  { font-weight: 900; font-size: 1rem; }
+.battle-reward-rarity { font-size: 0.72rem; opacity: 0.7; text-transform: uppercase; }
+.battle-reward-actions { display: flex; gap: 8px; margin-top: 10px; }
+.battle-reward-actions button { flex: 1; }
+
+/* Loss screen */
+.battle-loss {
+  padding: 30px 20px;
+  text-align: center;
+}
+.battle-loss-emoji { font-size: 3.5rem; margin-bottom: 8px; }
+.battle-loss button { margin-top: 10px; width: 100%; max-width: 300px; }
+
+/* Darkrai cameo overlay (shown after minor villain win in R3/R7) */
+.darkrai-cameo-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 999;
+  padding: 30px 24px;
+  text-align: center;
+}
+.darkrai-cameo-emoji { font-size: 5rem; margin-bottom: 12px; }
+.darkrai-cameo-overlay h2 { color: #a78bfa; font-size: 1.5rem; margin-bottom: 8px; }
+.darkrai-cameo-overlay p  { opacity: 0.8; line-height: 1.6; }
+.darkrai-cameo-overlay button { margin-top: 20px; }

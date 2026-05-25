@@ -488,6 +488,99 @@
     <div id="review-content"><!-- rendered by JS --></div>
   </div>
 
+  <!-- BATTLE SCREEN — boss fight (SPEC Part 14G). Populated by JS in Commit 2. -->
+  <div id="screen-battle" class="screen">
+    <div class="battle-header">
+      <div class="battle-region-label" id="battle-region-label">Region 1 — Kanto</div>
+      <div class="battle-vs-row">
+        <div class="battle-villain-block">
+          <div class="battle-villain-emoji" id="battle-villain-emoji">⚔️</div>
+          <div class="battle-villain-name" id="battle-villain-name">Pawniard</div>
+        </div>
+        <div class="battle-vs-text">VS</div>
+        <div class="battle-team-block" id="battle-team-block">
+          <!-- Kids' avatars rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared boss HP bar -->
+    <div class="battle-hp-section">
+      <div class="battle-hp-label">
+        <span id="battle-hp-name">Pawniard</span>
+        <span id="battle-hp-val">500 / 500</span>
+      </div>
+      <div class="battle-hp-bar-wrap">
+        <div class="battle-hp-bar" id="battle-hp-bar" style="width:100%"></div>
+      </div>
+      <div class="battle-enrage-notice" id="battle-enrage-notice" style="display:none">
+        ⚠️ <span id="battle-enrage-text"></span>
+      </div>
+    </div>
+
+    <!-- Round info -->
+    <div class="battle-round-info" id="battle-round-info">
+      <span id="battle-round-num">Round 1</span>
+      <span class="battle-star-preview" id="battle-star-preview"></span>
+    </div>
+
+    <!-- Player contribution trackers — one per kid, rendered by JS -->
+    <div class="battle-contrib-row" id="battle-contrib-row"></div>
+
+    <!-- Active question area (hidden until round starts) -->
+    <div class="battle-question-area" id="battle-question-area" style="display:none">
+      <div class="timer-container">
+        <div class="timer-bar-wrap"><div class="timer-bar" id="battle-timer-bar"></div></div>
+        <div class="timer-text" id="battle-timer-text">15</div>
+      </div>
+      <div class="question-card">
+        <div class="q-category" id="battle-q-category"></div>
+        <div class="q-text" id="battle-q-text"></div>
+      </div>
+      <div class="answers-grid">
+        <button class="ans-btn" id="bans0" onclick="battleAnswer(0)"><span class="ans-icon">▲</span><span class="ans-txt" id="bans0-txt"></span></button>
+        <button class="ans-btn" id="bans1" onclick="battleAnswer(1)"><span class="ans-icon">◆</span><span class="ans-txt" id="bans1-txt"></span></button>
+        <button class="ans-btn" id="bans2" onclick="battleAnswer(2)"><span class="ans-icon">●</span><span class="ans-txt" id="bans2-txt"></span></button>
+        <button class="ans-btn" id="bans3" onclick="battleAnswer(3)"><span class="ans-icon">■</span><span class="ans-txt" id="bans3-txt"></span></button>
+      </div>
+      <div class="feedback-bar" id="battle-feedback"></div>
+    </div>
+
+    <!-- Team Strike declare button (shown pre-round) -->
+    <div class="battle-controls" id="battle-controls" style="display:none">
+      <button class="btn-primary" id="battle-team-strike-btn" onclick="battleDeclareTeamStrike()">
+        ⚡ Team Strike!
+      </button>
+      <button class="btn-secondary" onclick="battleStartRound()">Start Round ▶</button>
+    </div>
+
+    <!-- Post-round result (shown after round resolves) -->
+    <div class="battle-round-result" id="battle-round-result" style="display:none">
+      <div id="battle-round-result-text"></div>
+      <button class="btn-primary" onclick="battleNextRound()">Next Round ▶</button>
+    </div>
+
+    <!-- Win screen (shown when boss HP = 0 AND all kids hit N=3) -->
+    <div class="battle-win" id="battle-win" style="display:none">
+      <div class="battle-win-emoji" id="battle-win-emoji">🏆</div>
+      <h2 id="battle-win-title">Victory!</h2>
+      <div class="battle-star-rating" id="battle-star-rating"></div>
+      <div id="battle-reward-offer" class="battle-reward-offer">
+        <!-- Reward Pokémon offer rendered by JS -->
+      </div>
+      <button class="btn-primary" onclick="battleFinish()">✅ Continue</button>
+    </div>
+
+    <!-- Loss screen (re-attempt) -->
+    <div class="battle-loss" id="battle-loss" style="display:none">
+      <div class="battle-loss-emoji">💔</div>
+      <h2>The villain escaped!</h2>
+      <p id="battle-loss-msg" class="result-msg failed"></p>
+      <button class="btn-primary" onclick="battleRetry()">🔄 Try Again</button>
+      <button class="btn-secondary" onclick="showMap()">🗺️ Back to Map</button>
+    </div>
+  </div>
+
   <!-- FINAL COMPLETE — shown when the player clears Region 10. -->
   <div id="screen-test-build-complete" class="screen">
     <div class="complete-hero">

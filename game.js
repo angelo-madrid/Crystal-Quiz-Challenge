@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
-// Phase 1: Core mechanics, Kanto Gym 1, Save system
+// v1.18: Battle engine scaffold — BOSS_DATA constants, BOSS_FIGHT phase wiring,
+//        startBossFight() stub. Full battle loop in Commit 2.
 // ═══════════════════════════════════════════════════════════
 
 // ── SUPABASE ────────────────────────────────────────────────
@@ -380,6 +381,60 @@ const MAX_PLAYERS = 5;
 // the last region (e.g. catch-pool exhaustion fallbacks).
 const MAX_PLAYABLE_REGION = 10;
 
+// ── BOSS DATA (SPEC Part 14G — R1–R10 constants) ─────────────
+// All numbers are TUNE-AT-PLAYTEST values. The single lever to adjust first
+// in UAT is BOSS_DAMAGE_PER_HIT (one enemy hit ≈ 35 dmg).
+const BOSS_DAMAGE_PER_HIT = 35;   // tuning knob — adjust this first in UAT
+
+const BOSS_DATA = {
+  1:  { villain:'Pawniard', emoji:'⚔️',  hp:500,  rewardId:'cleffa',
+        enrage:{ name:'Sharpen',      effect:'damage_plus_50',          rounds:2 } },
+  2:  { villain:'Cranidos', emoji:'🦕', hp:700,  rewardId:'spritzee',
+        enrage:{ name:'Headbutt',     effect:'attack_two_targets',      rounds:2 } },
+  3:  { villain:'Klink',    emoji:'⚙️',  hp:900,  rewardId:'jirachi',
+        enrage:{ name:'Lockdown',     effect:'block_all_abilities',     rounds:1 },
+        darkraiCameo: true },
+  4:  { villain:'Vullaby',  emoji:'🦅', hp:1200, rewardId:'celebi',
+        enrage:{ name:'Foul Play',    effect:'target_lowest_hp',        rounds:3 } },
+  5:  { villain:'Pancham',  emoji:'🐼', hp:1500, rewardId:'victini',
+        enrage:{ name:'Swagger',      effect:'damage_doubles',          rounds:2 } },
+  6:  { villain:'Rufflet',  emoji:'🦅', hp:2000, rewardId:'xerneas',
+        enrage:{ name:'Tailwind',     effect:'two_attacks_per_round',   rounds:2 } },
+  7:  { villain:'Zygarde',  emoji:'🐍', hp:2500, rewardId:'sarimanok',
+        enrage:{ name:"Order's Wrath",'effect':'block_team_strike',     rounds:2 },
+        darkraiCameo: true },
+  8:  { villain:'Kyurem',   emoji:'❄️',  hp:3500, rewardId:'mariang_makiling',
+        enrage:{ name:'Glaciate',     effect:'all_take_20_dmg',         rounds:2 } },
+  9:  { villain:'Yveltal',  emoji:'💀', hp:4500, rewardId:'mayari',
+        enrage:{ name:'Oblivion Wing',effect:'highest_hp_double_dmg',   rounds:2 } },
+  10: { villain:'Darkrai',  emoji:'🌑', hp:8000, rewardId:'bathala',
+        enrage:{ name:'Nightmare',    effect:'harder_questions_plus_50',rounds:2 } },
+};
+
+// Boss reward Pokémon — bench entries offered post-win (SPEC 14G-2).
+// These are NOT wild-catchable; they enter the normal team cap.
+// PH legendaries (R7–R10) ARE also wild-catchable in R10 — uniqueness
+// exception applies (multiple kids can hold the same reward).
+const BOSS_REWARD_POKEMON = {
+  cleffa:           { id:'cleffa',           name:'Cleffa',           emoji:'⭐', rarity:'rare',      type:'Fairy',  battleAbility:'COMBO_TEAM_STRIKE' },
+  spritzee:         { id:'spritzee',         name:'Spritzee',         emoji:'🌸', rarity:'rare',      type:'Fairy',  battleAbility:'HEAL' },
+  jirachi:          { id:'jirachi',          name:'Jirachi',          emoji:'✨', rarity:'legendary', type:'Steel',  battleAbility:'PROTECT' },
+  celebi:           { id:'celebi',           name:'Celebi',           emoji:'🍃', rarity:'legendary', type:'Grass',  battleAbility:'HEAL' },
+  victini:          { id:'victini',          name:'Victini',          emoji:'🔥', rarity:'legendary', type:'Fire',   battleAbility:'SECOND_WIND' },
+  xerneas:          { id:'xerneas',          name:'Xerneas',          emoji:'🦌', rarity:'legendary', type:'Fairy',  battleAbility:'COMBO_TEAM_STRIKE' },
+  sarimanok:        { id:'sarimanok',        name:'Sarimanok',        emoji:'🐦', rarity:'legendary', type:'Fire',   battleAbility:'CRITICAL_HIT' },
+  mariang_makiling: { id:'mariang_makiling', name:'Mariang Makiling', emoji:'🌿', rarity:'legendary', type:'Grass',  battleAbility:'HEAL' },
+  mayari:           { id:'mayari',           name:'Mayari',           emoji:'🌙', rarity:'legendary', type:'Psychic',battleAbility:'FREEZE_STUN' },
+  bathala:          { id:'bathala',          name:'Bathala',          emoji:'⚡', rarity:'legendary', type:'Dragon', battleAbility:'CRITICAL_HIT' },
+};
+
+// Minimum correct answers per kid to satisfy the win condition (SPEC 14G-3).
+// Bayanihan anti-carry mechanic — do NOT remove even if it seems strict in UAT.
+const BATTLE_MIN_CONTRIBUTION = 3;
+
+// Round budget for ⭐⭐⭐ star rating = target_rounds × this multiplier (SPEC 14G-8).
+const STAR_ROUND_BUDGET_MULT = 1.5;
+
 // ── REGION DATA ──────────────────────────────────────────────
 const REGIONS = [
   // v3.3 (SPEC Part 2): speedMax cut to ~20% of baseCrystals. Old per-region
@@ -527,7 +582,9 @@ let STATE = {
   pollInt: null,
   // settings
   soundOn: true,
-  musicOn: true
+  musicOn: true,
+  // Battle engine state (SPEC Part 14G — populated by startBossFight())
+  battle: null,   // null = no fight in progress; see startBossFight() for shape
 };
 
 // Default save structure
@@ -3337,9 +3394,12 @@ async function endGym() {
     nextBtn.textContent   = `Next Gym ▶`;
     nextBtn.onclick       = goNextGym;
   } else if (regionComplete) {
+    // SPEC Part 14G: after Gym 5 cleared, boss fight comes before regional catch.
+    // startBossFight() is built in Commit 2; for now the button is wired but the
+    // function shows a "coming soon" alert so Commit 1 is safe to ship alone.
     nextBtn.style.display = 'block';
-    nextBtn.textContent   = `🎯 Catch ${region.name} Pokemon`;
-    nextBtn.onclick       = () => startRegionalCatch(STATE.currentRegion);
+    nextBtn.textContent   = `⚔️ Fight the Villain!`;
+    nextBtn.onclick       = () => startBossFight(STATE.currentRegion);
   } else {
     // Failed gym 5 — nothing to advance to; user must redo via the map.
     nextBtn.style.display = 'none';
@@ -3350,6 +3410,31 @@ async function endGym() {
 
 function goNextGym() {
   startGym(STATE.currentRegion, STATE.currentGym + 1);
+}
+
+// ── BOSS FIGHT (SPEC Part 14G) ────────────────────────────────
+// Full implementation in Commit 2. This stub keeps Commit 1 safe —
+// the Gym 5 button is wired but clicking it shows a "coming soon"
+// notice rather than crashing.
+function startBossFight(regionId) {
+  // Guard: only R1–R10 are valid.
+  if (regionId < 1 || regionId > MAX_PLAYABLE_REGION) {
+    console.warn('[startBossFight] regionId out of range:', regionId);
+    showMap();
+    return;
+  }
+  const boss = BOSS_DATA[regionId];
+  if (!boss) { console.warn('[startBossFight] no BOSS_DATA for region', regionId); showMap(); return; }
+
+  // Commit 2 will replace this body entirely.
+  // For now, confirm and route to regional catch so the game isn't blocked.
+  const proceed = confirm(
+    `⚔️ ${boss.emoji} ${boss.villain} is waiting!\n\n` +
+    `Boss HP: ${boss.hp}\n` +
+    `Battle engine coming soon — for now, tapping OK goes straight to the Pokemon catch.\n\n` +
+    `(Remove this stub in Commit 2.)`
+  );
+  if (proceed) startRegionalCatch(regionId);
 }
 
 // ── POKEMON TEAM RENDER ───────────────────────────────────────
@@ -4167,7 +4252,7 @@ async function landingResumeRoom(code) {
   const room = await dbReadRoom(code);
   if (!room) { showToast('Room not found.'); return; }
   if (['PREGAME_CATCH','GYM_ACTIVE','GYM_COMPLETE','REGION_COMPLETE',
-       'REGION_CATCH','GAME_OVER','BREAK'].includes(room.phase)) {
+       'BOSS_FIGHT','REGION_CATCH','GAME_OVER','BREAK'].includes(room.phase)) {
     HOST.currentPhase  = room.phase;
     HOST.isPaused      = !!room.isPaused;
     HOST.archived      = !!room.archived;
@@ -4278,6 +4363,7 @@ const HOST_PHASES = {
   GYM_ACTIVE:       { icon:'⚡', name:'Gym In Progress',           desc:'Players are answering questions',               label:'LIVE'      },
   GYM_COMPLETE:     { icon:'🏅', name:'Gym Complete',              desc:'Review results before moving on',               label:'RESULTS'   },
   REGION_COMPLETE:  { icon:'🌟', name:'Region Complete',           desc:'Pokemon catch phase available',                 label:'REGION ✅' },
+  BOSS_FIGHT:       { icon:'⚔️', name:'Boss Fight',               desc:'Team battles the villain',                      label:'BATTLE'    },
   REGION_CATCH:     { icon:'🔴', name:'Regional Pokemon Catch',   desc:'Players are catching regional Pokemon',         label:'CATCHING'  },
   BREAK:            { icon:'💾', name:'Session Saved — On Break', desc:'Progress saved. Safe to close browsers.',       label:'BREAK'     },
   GAME_OVER:        { icon:'🏆', name:'Game Complete!',           desc:'Final standings and prize conversion',          label:'FINAL'     }
@@ -4884,6 +4970,7 @@ async function renderCol3Controls() {
     PREGAME_CATCH: 'Pre-Game Catch', REGION_SELECT: 'Region Select',
     GYM_ACTIVE: 'Playing', GYM_COMPLETE: 'Gym Complete',
     REGION_COMPLETE: 'Region Complete', REGION_CATCH: 'Regional Catch',
+    BOSS_FIGHT: 'Boss Fight',
     BREAK: 'Break', GAME_OVER: 'Game Over', lobby: 'Lobby (Waiting)',
   };
   const phaseName = niceMap[room.phase] || room.phase;
@@ -4892,7 +4979,7 @@ async function renderCol3Controls() {
   const transitions = {
     lobby:'PREGAME_CATCH', PREGAME_CATCH:'REGION_SELECT', REGION_SELECT:'GYM_ACTIVE',
     GYM_ACTIVE:'GYM_COMPLETE', GYM_COMPLETE:'GYM_ACTIVE',
-    REGION_COMPLETE:'REGION_CATCH', REGION_CATCH:'REGION_SELECT',
+    REGION_COMPLETE:'BOSS_FIGHT', BOSS_FIGHT:'REGION_CATCH', REGION_CATCH:'REGION_SELECT',
     BREAK:'GYM_ACTIVE', GAME_OVER:'GAME_OVER',
   };
   const next = transitions[room.phase] || room.phase;
@@ -5458,7 +5545,8 @@ async function hostNextPhase() {
     REGION_SELECT:   'GYM_ACTIVE',
     GYM_ACTIVE:      'GYM_COMPLETE',
     GYM_COMPLETE:    HOST.currentGym >= 5 ? 'REGION_COMPLETE' : 'GYM_ACTIVE',
-    REGION_COMPLETE: 'REGION_CATCH',
+    REGION_COMPLETE: 'BOSS_FIGHT',
+    BOSS_FIGHT:      'REGION_CATCH',
     REGION_CATCH:    'REGION_SELECT',
     BREAK:           HOST.currentPhase,
     GAME_OVER:       'GAME_OVER'
