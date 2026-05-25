@@ -2,13 +2,28 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.6   ·   LAST UPDATED: 2026-05-25          │
+│ DESIGN VERSION: v3.7   ·   LAST UPDATED: 2026-05-25          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
 │ — if it lags this number, CLAUDE.md is behind.               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**v3.7 (2026-05-25):** BATTLE SESSION (Part 14G — fully locked). Boss/villain casting
+(10 minor villains + Darkrai Big Boss R3/R7/R10 cameos, all from bench); boss reward
+Pokémon (one offered per beatable fight, 10 total: 6 bench + 4 PH legendaries; keep-or-
+release into normal team cap; only exception to uniqueness rule); battle structure (3v1
+shared HP bar, simultaneous questions, N=3 minimum contribution per kid, Team Strike 3×
+damage on all-correct); turn structure (simultaneous + random villain attack per round);
+boss HP scaling (R1 500→R10 8,000; tune at playtest); boss enrage abilities (trigger at
+50% HP, unique per boss; Darkrai Nightmare = harder questions + damage +50%); BATTLE-
+ability population (all 193 Pokémon assigned, thematic not rarity-based; 7 abilities:
+Critical Hit / Freeze-Stun / Heal / Protect / Guard / Second Wind-Revive / Combo-Team
+Strike); ALLY mechanic = battle-only (gym phase stays individual); collective-clean = ⭐
+star rating per fight (⭐⭐⭐ flawless / ⭐⭐ solid / ⭐ clear); R10 gate = every kid
+fields a Legendary (Papa override if short); in-game Legendary reminders at R5/R7/R8.
+Supersedes 14G placeholder.
 
 **v3.6 (2026-05-25):** PRIZE NUMBERS (Part 13I) — Effort Score formula (0–100 rate-
 based, age-fair), picks-per-effort (tight 2–4 band @ 40/60/80), team-tier thresholds
@@ -1611,13 +1626,312 @@ session.
   anti-farm guard ONLY at boss game-over (not general gym replay) — scope the exception
   narrowly at build so the crystal re-farm loophole stays closed.
 
-### 14G — STILL OPEN (boss build session)
+### 14G — BATTLE SESSION (v3.7 — FULLY LOCKED)
 
-- Trophy stats/rarity per boss (its own stat block; honor Part 10A guardrail).
-- BATTLE-ability population per Pokemon (battle power = HP/XP only, never rarity-gated).
-- Exact round-budget / collective-metric thresholds for the +50% bonus (Part 14C).
-- Boss/villain pokemon SET design from the 18-creature bench (Part 11).
-- Teamwork / ALLY: survives as a MOVES targeting option, or BATTLE-only? (Part 5/9.)
+> All items formerly listed as "STILL OPEN" are now locked below. Part 9 still owns the
+> duel structure and bayanihan guardrails; this section adds CASTING, BATTLE-ABILITY
+> POPULATION, TURN STRUCTURE, HP/BOSS STATS, and GATING.
+
+---
+
+#### 14G-1 — BOSS/VILLAIN CASTING (LOCKED)
+
+**Big Boss:** Darkrai — appears at R3 (unbeatable cameo), R7 (unbeatable cameo), R10
+(beatable FINAL SHOWDOWN). Three-act villain arc: haunts → terrifies → is defeated.
+
+**Minor villains + Boss Reward Pokémon (one offered per beatable fight):**
+
+| Region | Minor Villain | Boss Reward Pokémon | Reward source |
+|--------|-------------|-------------------|---------------|
+| R1 | Pawniard | Cleffa | Bench |
+| R2 | Cranidos | Spritzee | Bench |
+| R3 | Klink | Jirachi | Bench — **+ Darkrai unbeatable cameo (no reward)** |
+| R4 | Vullaby | Celebi | Bench |
+| R5 | Pancham | Victini | Bench |
+| R6 | Rufflet | Xerneas | Bench |
+| R7 | Zygarde | Sarimanok | PH legendary — **+ Darkrai unbeatable cameo (no reward)** |
+| R8 | Kyurem | Mariang-Makiling | PH legendary |
+| R9 | Yveltal | Mayari | PH legendary |
+| R10 | **Darkrai** (FINAL) | Bathala | PH legendary — apex reward |
+
+**Bench accounting (18 total):**
+
+| Creature | Role |
+|----------|------|
+| Darkrai | Big Boss villain (R3 cameo, R7 cameo, R10 final) |
+| Pawniard | Villain R1 |
+| Cranidos | Villain R2 |
+| Klink | Villain R3 |
+| Vullaby | Villain R4 |
+| Pancham | Villain R5 |
+| Rufflet | Villain R6 |
+| Zygarde | Villain R7 |
+| Kyurem | Villain R8 |
+| Yveltal | Villain R9 |
+| Cleffa | Reward R1 |
+| Spritzee | Reward R2 |
+| Jirachi | Reward R3 |
+| Celebi | Reward R4 |
+| Victini | Reward R5 |
+| Xerneas | Reward R6 |
+| Reshiram | Unused — future expansion |
+| Zekrom | Unused — future expansion |
+
+**PH legendary rewards (Sarimanok/Mariang-Makiling/Mayari/Bathala)** remain
+wild-catchable in R10 — boss reward copies are the uniqueness exception (see below).
+
+---
+
+#### 14G-2 — BOSS REWARD POKÉMON (LOCKED)
+
+Replaces the former "trophy Pokémon" / "bonus slot" mechanic entirely.
+
+- **One boss reward Pokémon offered** to every kid after each beatable boss fight
+- Kid chooses: **add to team** (must release one if at cap) or **pass**
+- Enters the **normal team cap** — no bonus slot, no separate stat block
+- If passed or released later → normal trade-in value applies (Part 12F)
+- **Only exception to the uniqueness rule** — multiple kids in the same room may hold
+  the same boss reward Pokémon. This is intentional: "earned together" is the framing.
+  All other uniqueness rules (183 wild roster) are unaffected.
+- Reward Pokémon are **not wild-catchable** (bench creatures); PH legendary rewards
+  remain wild-catchable in R10 but are also offerable as boss rewards (exception
+  already established above).
+
+**Rejected alternatives (do not revisit):**
+- Bonus slot: added build complexity, removed meaningful choice
+- Level-appropriate generic reward: forgettable, vending-machine feel
+- One shared trophy per team: forced "who deserves it" comparison — kills bayanihan
+- Fixed rarity: re-introduces rarity power ladder at boss level
+
+---
+
+#### 14G-3 — BATTLE STRUCTURE (LOCKED)
+
+**Format:** 3v1 — all kids attack one shared boss HP bar together.
+
+**Win condition (TWO gates, both required):**
+1. Boss HP reaches 0
+2. Every kid has landed **at least 3 correct answers** (minimum contribution — prevents
+   carrying; ensures every kid participates meaningfully)
+
+**Turn structure (one round):**
+1. Papa starts the round
+2. Kids declare abilities (optional; one per Pokémon per battle, mirrors gym phase)
+3. Questions served **simultaneously** to all kids (unique random question per kid,
+   same timer — mirrors gym phase rhythm)
+4. Timer ends → results resolve together:
+   - Correct answer → that kid's Pokémon deals damage to boss HP bar
+   - Wrong answer → no damage from that kid this round
+5. Boss attacks **one randomly selected kid** → their Pokémon takes damage
+6. Fainted Pokémon → teammates can use Guard/Second Wind on next round
+7. Check win condition; repeat if not met
+
+**Team Strike in battle:**
+- Any kid (or Papa) declares "Team Strike" before questions are served
+- All kids answer next question simultaneously
+- All correct → 3× normal combined damage (tunable at build)
+- Partial correct → normal damage per correct answerer, no combo bonus
+- Nothing lost on failure — no punishment for attempting teamwork
+
+**ALLY mechanic: BATTLE-ONLY (LOCKED)**
+All teamwork mechanics (Guard, Second Wind/Revive, Combo/Team Strike) exist exclusively
+in battle phase. Gym phase remains individual — personal mastery, personal XP, personal
+effort. Two phases are intentionally distinct: gym = personal growth, battle = bayanihan.
+
+---
+
+#### 14G-4 — BATTLE ABILITIES (LOCKED)
+
+8 battle abilities (from Part 9). Basic Attack is automatic (every correct answer).
+7 are assignable per Pokémon. **Guardrail (Part 10A preserved):** rarity does NOT
+determine battle power — assignment is THEMATIC, not power-based. HP/XP is the only
+power dial.
+
+**Thematic assignment rules:**
+- **Critical Hit** → Electric, Dragon, Fighting, Flying (fast, sharp, precise)
+- **Freeze/Stun** → Ghost, Psychic, Poison, Ice, Dark (disruptive, controlling)
+- **Heal** → Water, Grass, Fairy, Normal/gentle (nurturing, restorative)
+- **Protect** → Rock, Steel, Ground, Water/sturdy (defensive, armored)
+- **Guard** → Fighting, Normal/loyal, Steel (steadfast, protective)
+- **Second Wind/Revive** → Fire, Ghost, Psychic, Dragon (resilient, spiritual)
+- **Combo/Team Strike** → Normal, Fairy, Grass, Bug/social (cheerful, cooperative)
+
+**Full assignment (193 Pokémon — starters + R1–R10 regional):**
+
+*Starters (10):*
+Pikachu→Critical Hit · Charmander→Second Wind/Revive · Squirtle→Protect ·
+Bulbasaur→Heal · Eevee→Combo/Team Strike · Gengar→Freeze/Stun · Snorlax→Guard ·
+Alakazam→Freeze/Stun · Dratini→Critical Hit · Jigglypuff→Combo/Team Strike
+
+*R1 — Bug (18):*
+Caterpie→Heal · Weedle→Freeze/Stun · Wurmple→Heal · Kricketot→Combo/Team Strike ·
+Sewaddle→Heal · Scatterbug→Combo/Team Strike · Grubbin→Protect · Blipbug→Freeze/Stun ·
+Snom→Freeze/Stun · Spinarak→Freeze/Stun · Joltik→Critical Hit · Cutiefly→Combo/Team Strike ·
+Dewpider→Protect · Nincada→Guard · Volbeat→Guard · Illumise→Heal · Surskit→Protect ·
+Shelmet→Protect
+
+*R2 — Normal/Flying/Early (16):*
+Starly→Critical Hit · Skwovet→Combo/Team Strike · Rookidee→Critical Hit · Yungoos→Guard ·
+Wooloo→Heal · Oddish→Heal · Bellsprout→Freeze/Stun · Seedot→Combo/Team Strike ·
+Zubat→Freeze/Stun · Glameow→Combo/Team Strike · Mawile→Protect · Sableye→Freeze/Stun ·
+Machop→Guard · Geodude→Protect · Litwick→Second Wind/Revive · Gothita→Freeze/Stun
+
+*R3 — Grass/Fire/Water/Poison (18):*
+Lotad→Heal · Cottonee→Combo/Team Strike · Hoppip→Combo/Team Strike · Sunkern→Heal ·
+Petilil→Heal · Bounsweet→Combo/Team Strike · Growlithe→Second Wind/Revive ·
+Vulpix→Second Wind/Revive · Ponyta→Critical Hit · Psyduck→Freeze/Stun · Krabby→Protect ·
+Tentacool→Freeze/Stun · Litten→Critical Hit · Popplio→Heal · Rowlet→Second Wind/Revive ·
+Cyndaquil→Critical Hit · Totodile→Guard · Chikorita→Heal
+
+*R4 — Starters/Fighting/Ground (18):*
+Koffing→Freeze/Stun · Ekans→Freeze/Stun · Cubone→Guard · Mudkip→Protect ·
+Treecko→Critical Hit · Chimchar→Critical Hit · Piplup→Protect · Turtwig→Guard ·
+Snivy→Freeze/Stun · Tepig→Critical Hit · Oshawott→Guard · Chespin→Guard ·
+Fennekin→Second Wind/Revive · Froakie→Critical Hit · Rockruff→Protect · Shinx→Critical Hit ·
+Buneary→Combo/Team Strike · Jangmo-o→Critical Hit
+
+*R5 — Water/Electric/Dragon/Super (23):*
+Tympole→Heal · Chewtle→Protect · Buizel→Critical Hit · Mareep→Critical Hit ·
+Phanpy→Guard · Slugma→Second Wind/Revive · Numel→Protect · Larvitar→Critical Hit ·
+Bagon→Critical Hit · Beldum→Protect · Gible→Critical Hit · Mienfoo→Guard ·
+Karrablast→Combo/Team Strike · Ferroseed→Protect · Axew→Critical Hit · Aron→Protect ·
+Trapinch→Guard · Feebas→Second Wind/Revive · Swinub→Freeze/Stun · Togepi→Heal ·
+Budew→Heal · Sneasel→Freeze/Stun · Joltik(R6)→Critical Hit
+
+*R6 — Psychic/Ghost (16):*
+Munna→Freeze/Stun · Abra→Freeze/Stun · Meowth→Combo/Team Strike · Gastly→Freeze/Stun ·
+Misdreavus→Second Wind/Revive · Shuppet→Freeze/Stun · Duskull→Guard ·
+Phantump→Second Wind/Revive · Frillish→Heal · Yamask→Second Wind/Revive ·
+Drifloon→Second Wind/Revive · Haunter→Freeze/Stun · Solosis→Freeze/Stun ·
+Wynaut→Combo/Team Strike · Natu→Critical Hit · Elgyem→Freeze/Stun
+
+*R7 — Electric/Steel/Fighting/Legendary (19):*
+Skitty→Combo/Team Strike · Skiddo→Heal · Dedenne→Combo/Team Strike ·
+Magikarp→Second Wind/Revive · Riolu→Guard · Zorua→Freeze/Stun · Honedge→Protect ·
+Magnemite→Critical Hit · Elekid→Critical Hit · Magby→Second Wind/Revive ·
+Gligar→Critical Hit · Rhyhorn→Protect · Tangela→Heal · Porygon→Freeze/Stun ·
+Ralts→Second Wind/Revive · Mewtwo→Freeze/Stun · Lugia→Guard · Deoxys→Critical Hit ·
+Xatu→Second Wind/Revive
+
+*R8 — Ice/Rock/Fossil/Ghost (16):*
+Snover→Heal · Cubchoo→Heal · Vanillite→Freeze/Stun · Cryogonal→Freeze/Stun ·
+Spheal→Protect · Bergmite→Protect · Snorunt→Freeze/Stun · Spiritomb→Second Wind/Revive ·
+Skorupi→Freeze/Stun · Croagunk→Guard · Lickitung→Combo/Team Strike · Tyrunt→Critical Hit ·
+Amaura→Protect · Yanma→Critical Hit · Murkrow→Freeze/Stun · Heracross→Guard
+
+*R9 — Dark/Dragon/Late Legendaries (19):*
+Stunky→Freeze/Stun · Onix→Protect · Fletchling→Critical Hit · Giratina→Second Wind/Revive ·
+Articuno→Freeze/Stun · Zapdos→Critical Hit · Moltres→Second Wind/Revive ·
+Raikou→Critical Hit · Entei→Second Wind/Revive · Suicune→Heal · Latias→Second Wind/Revive ·
+Latios→Critical Hit · Ho-Oh→Second Wind/Revive · Rayquaza→Critical Hit · Kyogre→Heal ·
+Groudon→Guard · Arceus→Guard · Dialga→Protect · Palkia→Critical Hit
+
+*R10 — Philippine (18):*
+Philippine-Tarsier→Combo/Team Strike · Palawan-Peacock-Pheasant→Combo/Team Strike ·
+Philippine-Eagle→Critical Hit · Tamaraw→Guard · Philippine-Crocodile→Protect ·
+Carabao→Guard · Visayan-Warty-Pig→Combo/Team Strike · Cloud-Rat→Heal ·
+Bakunawa→Critical Hit · Minokawa→Critical Hit · Sarimanok→Second Wind/Revive ·
+Mariang-Makiling→Heal · Mariang-Sinukuan→Heal · Tikbalang→Guard · Sarangay→Guard ·
+Diwata→Second Wind/Revive · Bathala→Second Wind/Revive · Mayari→Second Wind/Revive
+
+⚠️ **BUILD NOTE:** exact count reconciliation against pokemon.json IDs is a Claude Code
+task — the thematic assignments above are the locked design; Claude Code matches them to
+the actual JSON entries. Any Pokémon not listed above inherits the thematic rule for its
+primary type.
+
+---
+
+#### 14G-5 — HP, DAMAGE & BOSS STATS (LOCKED — tune at playtest)
+
+**Player HP:** carried over directly from gym phase (Part 8 XP/HP model — same bar,
+no reset). Full HP reset on boss re-attempt (loss wipes all damage, everyone starts fresh).
+
+**Boss HP per region:**
+
+| Region | Boss | HP |
+|--------|------|----|
+| R1 | Pawniard | 500 |
+| R2 | Cranidos | 700 |
+| R3 | Klink | 900 |
+| R4 | Vullaby | 1,200 |
+| R5 | Pancham | 1,500 |
+| R6 | Rufflet | 2,000 |
+| R7 | Zygarde | 2,500 |
+| R8 | Kyurem | 3,500 |
+| R9 | Yveltal | 4,500 |
+| R10 | Darkrai | 8,000 |
+
+**Damage tuning knob:** one boss hit ≈ 35 damage (from Part 8 — single lever to
+lengthen/shorten all duels). Player damage ≈ 20% of current Pokémon HP per correct answer.
+Team Strike = 3× normal damage on all-correct round.
+
+---
+
+#### 14G-6 — BOSS ENRAGE ABILITIES (LOCKED)
+
+Every boss gains a signature ability when HP drops to **50%**. Lasts 2–3 rounds maximum.
+Always survivable — never a hard wall.
+
+| Region | Boss | Enrage Ability | Effect | Duration |
+|--------|------|---------------|--------|----------|
+| R1 | Pawniard | **Sharpen** | Damage +50% | 2 rounds |
+| R2 | Cranidos | **Headbutt** | Attacks 2 random kids instead of 1 | 2 rounds |
+| R3 | Klink | **Lockdown** | All kids' abilities blocked | 1 round |
+| R4 | Vullaby | **Foul Play** | Targets lowest HP kid instead of random | 3 rounds |
+| R5 | Pancham | **Swagger** | Damage doubles | 2 rounds |
+| R6 | Rufflet | **Tailwind** | 2 attacks per round | 2 rounds |
+| R7 | Zygarde | **Order's Wrath** | Team Strike blocked | 2 rounds |
+| R8 | Kyurem | **Glaciate** | All Pokémon take 20 damage regardless of answer | 2 rounds |
+| R9 | Yveltal | **Oblivion Wing** | Highest HP kid takes double damage | 2 rounds |
+| R10 | Darkrai | **Nightmare** | Harder questions + damage +50% | 2 rounds |
+
+**Darkrai exception:** Nightmare is the only ability that combines two effects (question
+difficulty + damage boost). Final boss privilege. Papa override (Part 14F) exists if any
+kid is short a Legendary — no kid sits out the finale.
+
+---
+
+#### 14G-7 — LEGENDARY GATING & REMINDERS (LOCKED)
+
+**Boss entry gates:**
+- R1–R9 minor villains: **no minimum requirement** — any team composition can fight
+- R10 Darkrai FINAL: **every kid must field a Legendary Pokémon**
+  - Papa override: if any kid is short, Papa can gift a Legendary (host tool, one-time
+    emergency use, logged) — no kid sits out the finale
+  - Papa override is a safety net, not a workaround — the Legendary requirement is the
+    design intention
+
+**In-game Legendary reminders (Papa dashboard + player notification):**
+
+| Trigger | Message |
+|---------|---------|
+| End of R5 | "Legendary Pokémon start appearing from here — you'll need one for the final battle!" |
+| End of R7 | "Darkrai is getting closer. Make sure you catch a Legendary before Region 10!" |
+| End of R8 | "⚠️ Final warning — you need a Legendary Pokémon to face Darkrai in Region 10!" |
+
+Papa sees all three reminders on the host dashboard to reinforce verbally.
+
+---
+
+#### 14G-8 — COLLECTIVE-CLEAN STAR RATING (LOCKED)
+
+Replaces the formerly open "collective-clean thresholds" from Part 14C. The three
+separate metrics (flawless/full-team/round-efficiency) collapse into one **Battle Star
+rating** per boss fight — immediately understandable to kids.
+
+| Stars | Condition |
+|-------|-----------|
+| ⭐⭐⭐ | Flawless — no faints + every kid hit N=3 + within round budget |
+| ⭐⭐ | Solid — no faints + every kid hit N=3 |
+| ⭐ | Clear — boss defeated, anything goes |
+
+**Round budget:** target rounds × 1.5 (generous; tune at playtest).
+Target rounds = boss HP ÷ expected team damage per round.
+Expected damage = average kid damage × number of kids × ~70% accuracy.
+
+**Star accumulation:** stars persist across all boss fights. Average star rating at each
+team prize milestone (3/6/10 boss defeats) gates the quality of the shared team prize
+(Part 13P). Papa sees live star rating on host dashboard during each fight.
 
 -----
 
