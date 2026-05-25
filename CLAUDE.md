@@ -2,10 +2,11 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.5.0   ·   LAST UPDATED: 2026-05-24         │
-│ SYNCED TO SPEC: v3.2 (library DATA caught up to v3.2; engine │
-│   still reads the old shape — game.js wiring is the next pass)│
-│ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.2)       │
+│ BUILD VERSION: v0.5.0   ·   LAST UPDATED: 2026-05-25         │
+│ SYNCED TO SPEC: v3.3 (design only — economy v3.3 is DESIGNED │
+│   & ahead of the build; library DATA is at v3.2; engine still│
+│   reads the old shape — game.js wiring is the next build pass)│
+│ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.3)       │
 │   — all design decisions/principles/mechanics/region themes  │
 │   live there. THIS file = build state only; it must not      │
 │   restate design. If "Synced to SPEC" < the SPEC's version,  │
@@ -31,7 +32,7 @@
 | Appreciating-asset XP/HP model | ⬜ designed | SPEC Part 3, 8 |
 | MOVES (ELIMINATE/CLOCK/SWAP/EXTRA SHOT/CLUE/TIME TRAVEL) | ⬜ designed | SPEC Part 5, 11 |
 | Battle system / bosses | ⬜ designed | SPEC Part 9 |
-| Economy (redeem/catch cost/trade-in) | ⬜ next session | SPEC Part 10E, 11 |
+| Economy (earn model, ball/redeem/trade-in, cap growth, persistence) | ⬜ designed v3.3 | SPEC Part 12 |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
 

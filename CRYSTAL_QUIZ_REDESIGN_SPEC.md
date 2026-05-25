@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.2   ·   LAST UPDATED: 2026-05-24          │
+│ DESIGN VERSION: v3.3   ·   LAST UPDATED: 2026-05-25          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
@@ -10,6 +10,12 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**v3.3 (2026-05-25):** ECONOMY session — Path B earning (per-gym, accuracy-driven),
+rarity-based pokeball ladder (replaces region-based), redeem-value model, trade-in
+numbers, pity softener, **cap GROWS with player level 3→4→5** (supersedes the v3.2
+"cap=3 locked"), upgrade-ladder progression spine (3 Legendaries by R10 for bosses),
+prize-store backlog, **crystal persistence = lifetime wallet + redeem-and-burn, NO
+cash-out (12I)**. Supersedes v3.2.
 **v3.2 (2026-05-24):** catch mechanics (9 principles), snake-draft shared-exclusive
 pool, team cap 3, cosmetic evolution (A1), 183-line library v2.0, Philippine R10,
 document hygiene + versioning. Supersedes v3.1 (rarity-only, same day).
@@ -264,7 +270,8 @@ forces forward; host pause freezes each kid’s question timer. Schema: add
 
 ## PART 7 — TEAM CAP & RELEASE  *(v3.2 — cap reasoning locked)*
 
-- **Cap = 3 *(LOCKED, supersedes the earlier "4")*.** Set by the catch-mechanics
+- **Cap = 3 *(⚠️ SUPERSEDED by v3.3 Part 12E — cap now GROWS 3→4→5 with player
+  level; see there)*.** [Original v3.2 reasoning retained below for history.] Set by the catch-mechanics
   principles (Part 11, Principle 4). Earlier this session we reasoned toward 4
   (deep growth + flex slot); the user then set 3 as a tighter investment balance.
   3 is humane *because* of the trade-in model (release isn't a loss), and it
@@ -511,13 +518,12 @@ pattern that made a UAT kid cry.)
 3. **BATTLE-ability slot** (deferred) — populate per Pokemon when boss mechanics
    are designed, honoring the 10A rich-get-richer guardrail.
 
-### 10E — STILL OPEN (next session = ECONOMY, now unblocked)
+### 10E — RESOLVED in v3.3 (see PART 12 — ECONOMY)
 
-- Redeem value per rarity/level under XP-growth (old baseValue = catchCost ×
-  rarityPremium needs rework).
-- Catch cost per rarity/region (does old pokeball ladder R1 300…R10 10000 hold?).
-- Part 7 release/refund rework (hold-vs-release is now a real choice).
-- Final 100-vs-103 count trim; starter redeem-value confirm (Part 3D).
+- ~~Redeem value per rarity/level under XP-growth~~ → Part 12D.
+- ~~Catch cost per rarity/region~~ → Part 12C (rarity-based; old region ladder dead).
+- ~~Part 7 release/refund rework~~ → Part 12F.
+- ~~Starter redeem-value confirm~~ → 0, Part 12D. Final 100-vs-103 trim → still parked.
 
 -----
 
@@ -554,8 +560,8 @@ Legendary 2500 (~50%). Expected crystals-to-catch ranges ~59 (Basic) → ~5000
 (Legendary). OPTIONAL pity-softener (easier Q bank after N consecutive misses) —
 flagged for playtest.
 
-**PRINCIPLE 4 — Team cap = 3 (LOCKED; SUPERSEDES the earlier "4" in Part 7).**
-A kid holds up to 3 pokemon at any time. The trade-in model (Principle 7) is what
+**PRINCIPLE 4 — Team cap *(⚠️ SUPERSEDED by v3.3 Part 12E — cap GROWS 3→4→5 with
+player level)*.** [v3.2 reasoning retained:] A kid holds up to 3 pokemon at any time. The trade-in model (Principle 7) is what
 makes 3 humane — releasing isn't a loss. To catch a 4th, must release one.
 
 **PRINCIPLE 5 — Gym ability use: NO COOLDOWN; each pokemon's ability fires ONCE
@@ -583,8 +589,8 @@ catch chance comes after Gym 1 once the kid has earned crystals to buy balls.
 
 **PRINCIPLE — Catch timing (LOCKED):** catch (a) pre-game with the 1 free ball;
 (b) after every completed gym, using own crystals, no limit on balls bought
-(crystals are the gate); (c) always bounded by cap of 3 — exceed only by
-releasing.
+(crystals are the gate); (c) always bounded by the team cap (grows 3→4→5 with
+player level, Part 12E) — exceed only by releasing.
 
 **PRINCIPLE 7 — Trade-in on release (LOCKED structure; numbers pending economy).**
 "Cherished car" model: release returns a DISCOUNTED crystal value, BOOSTED by how
@@ -701,7 +707,7 @@ The "catch a DEFEATED boss's signature pokemon as a unique trophy" mechanic is O
 THE TABLE for the boss session — if adopted, such a creature is a SEPARATE
 addition (e.g. a 30th+ legendary) entering a collection ONLY via boss defeat,
 never wild-catchable, so uniqueness + the 183 stay intact. Open for boss session:
-multiplayer claim rules, stats, whether it counts vs the cap of 3.
+multiplayer claim rules, stats, whether it counts vs the team cap (3→4→5, Part 12E).
 
 **POOL SIZE — ~18 per region / ~180 regional (LOCKED direction; exact tiering
 TBD).** Exclusive sharing means the region must supply ALL 5 kids' catches +
@@ -714,6 +720,185 @@ buffer only needs to protect the contested tier, not the whole region.
 Sourcing: ~180 needed; ~110 existing + ~79 sourceable commons = ~189 candidates,
 so it's curate-not-invent. (Supersedes the 100-count / 10-per-region direction
 that assumed a personal pool.)
+
+-----
+
+## PART 12 — ECONOMY (v3.3 — LOCKED)
+
+> Settles the numbers deferred from Parts 3, 7, 10E, and 11 (P3/P7). Anchored to
+> the LIVE earn-rate discovered in game.js this session, not the stale SPEC
+> assumptions. Read with the progression spine below — the numbers exist to serve
+> ONE loop: collect → grow → upgrade-tier → end with 3 Legendaries for the bosses.
+
+### 12A — THE PROGRESSION SPINE (why the economy exists)
+
+The crystal sink IS the upgrade ladder. A kid's intended arc:
+
+- **R1–2:** Fill the (initially 3) slots with Basics/Holos — cheap balls, instant
+  ownership. Grow them via gym ability-use (XP).
+- **R3–6:** Level gate opens Rare → Super. Kid MAY trade in a grown lower-tier
+  (boosted trade-in value) to help fund a higher catch — OR keep favorites and
+  catch into a newly-unlocked slot (see cap growth, 12E). Both paths valid.
+- **R7–10:** L5 reached, Legendaries appear in the regional pool. Kid works toward
+  a 3-Legendary core. Needed for cool-factor AND because the R10 boss showdown is
+  beatable only with high-XP/HP (Part 9) — Legendaries start in the top HP band,
+  so the upgrade path IS the boss-prep path. Same decision, two payoffs.
+
+The economy serves TWO masters: (1) the upgrade engine above, (2) real-world
+payout (peso conversion at 100💎 = ₱1, plus the Prize Store — see backlog).
+
+### 12B — EARNING (Path B — per-gym, accuracy-driven; LOCKED)
+
+> **SUPERSEDES the live per-question award loop in game.js.** The live code awards
+> `baseCrystals + speedBonus` on EVERY correct answer, which rewards volume/speed —
+> against the north star. Path B awards ONCE per gym, accuracy-driven, so the badge
+> multiplier (mastery) is the main lever.
+
+- At gym end: `earned = round(baseCrystals × (correct/10)) + speedBonus`, then apply
+  the badge multiplier if passed (8/10 ×1.0 · 9/10 ×1.5 · 10/10 ×2.0, from Part 1).
+- Speed bonus stays capped at 20% of base (Part 2); correct answers only; TIME-ability
+  cap preserved (originalTimeLimit).
+- **Display-only "+💎" per question** is allowed for moment-to-moment feel-good
+  feedback, but it is COSMETIC — the real crystals settle at gym-end on the formula
+  above. (Best of both: delight without rewarding rushing.)
+- Realistic per-region totals (per-gym model): R1 ~100–220/gym → R10 ~1,500–3,000/gym.
+
+### 12C — POKEBALL LADDER (rarity-based; LOCKED — replaces region-based)
+
+> **SUPERSEDES the live region-based `pokeball` field (R1 300 … R10 10000).** Cost
+> now tracks RARITY (the thing you're buying), not region. The old region ladder is
+> dead — remove it alongside the other dead economy code (12F).
+
+| Rarity     | Ball cost | Catch rate | Expected cost-to-catch |
+|------------|-----------|------------|------------------------|
+| Basic      | 50        | ~85%       | ~59                    |
+| Holo       | 150       | ~80%       | ~188                   |
+| Rare       | 400       | ~70%       | ~571                   |
+| Super Rare | 1,000     | ~60%       | ~1,667                 |
+| Legendary  | 2,500     | ~50%       | ~5,000                 |
+
+Confirms Part 11 Principle 3's recommended ladder. The ball is a "bet" whose stakes
+scale with the prize. Higher tier = pricier ball + harder catch-question.
+
+### 12D — REDEEM VALUE (peso payout; LOCKED)
+
+`redeemValue = baseValue × (1 + xpRatio × 0.5)` where xpRatio ∈ [0,1] = how grown.
+Fully grown = base × 1.5. Caps below ball cost (no buy→grow→redeem profit exploit).
+
+| Rarity     | Base | Fully grown (×1.5) |
+|------------|------|--------------------|
+| Basic      | 20   | 40                 |
+| Holo       | 80   | 120                |
+| Rare       | 200  | 300                |
+| Super Rare | 500  | 750                |
+| Legendary  | 1,200| 1,800              |
+
+- **Basic dropped to 20** (from a candidate 30) to keep clear daylight below the 50
+  ball cost — kills any near-break-even catch-and-redeem loop on Basics.
+- **Starter redeem = 0 (LOCKED, confirms Part 3D).** The free starter can never be
+  cashed out — it's a companion, not currency.
+- Legendary 1,800 grown is the deliberate finale payoff (Part 12 goal: redeem matters).
+
+### 12E — TEAM CAP GROWS WITH PLAYER LEVEL (LOCKED — SUPERSEDES v3.2 cap=3)
+
+> **SUPERSEDES Part 7 / Part 11 Principle 4 "cap = 3 LOCKED."** A fixed cap of 3
+> forced a false choice: keep a beloved early Pokemon OR field Legendaries, never
+> both. Growing the cap makes "grow-and-keep" and "chase Legendaries" BOTH true.
+
+| Player Level | Reached ~ | Cap | Why the bump lands here          |
+|--------------|-----------|-----|----------------------------------|
+| L1           | R1 start  | 3   | Fill all 3 with Basics instantly |
+| L2           | ~R2       | 3   | Hold; learn to grow what you have|
+| L3           | ~R4       | 4   | First Rare unlocks — room to add |
+| L4           | ~R6–7     | 4   | Hold; deepen investment          |
+| L5           | ~R7+      | 5   | Legendaries + bosses — keep 2 favorites AND field a 3-Legendary core |
+
+- Expansions land exactly where upgrade pressure spikes (L3 = Rare appears, L5 =
+  Legendary + serious bosses). Flat at L2/L4 so each bump is earned, not a giveaway.
+- **5 slots always shown**; future slots greyed "🔒 Reach Level N" (reuses the
+  existing locked-goal pattern — visible goal, never denial).
+- **Consequence (monitor):** with more room to KEEP, kids release less → spend fewer
+  crystals re-buying → accumulate more → more flows to peso/prize payout. Fine (more
+  payout = happier kids), but it makes CATCH COST the primary sink. Keep the Legendary
+  ball genuinely expensive (2,500) so late-game still has a savings goal. Release is
+  now a STRATEGY (consolidate / cash in), not a tax — which keeps releases rare and
+  protects the shared pool (satisfies P7's starve-the-pool watch-item from a new angle).
+
+### 12F — TRADE-IN ON RELEASE (numbers; LOCKED — confirms Part 11 P7)
+
+Base 40% of ball cost (ungrown) → up to 80% (fully grown). Never exceeds ball cost.
+
+| Released (fully grown 80%) | You get | Next-tier ball | Trade-in covers |
+|----------------------------|---------|----------------|-----------------|
+| Basic (50)                 | 40      | Holo 150       | ~27%            |
+| Holo (150)                 | 120     | Rare 400       | ~30%            |
+| Rare (400)                 | 320     | Super 1,000    | ~32%            |
+| Super (1,000)              | 800     | Legendary 2,500| ~32%            |
+
+Consistent ~30% head start per tier jump — a real boost, but the kid still earns the
+remaining ~70% through gym play. Rewards the upgrade without trivializing it.
+
+### 12G — PITY SOFTENER (LOCKED)
+
+After **3 consecutive misses on the SAME Pokemon**, the next catch-question for it
+draws from one tier easier. At Legendary's 50% rate, 3-in-a-row is ~12.5% — unlucky
+but not rare; without the softener that's a ~5,000-crystal RNG sink. The softener
+fires exactly when bad luck genuinely hurts. Protects the emotionally-sensitive kid
+(north star) without making catches free.
+
+### 12I — CRYSTAL PERSISTENCE POLICY (LOCKED — model A + C)
+
+> Made EXPLICIT this session (was implicit in the build). Validated against UAT
+> ledger PEPE12. NOTE: the "Papa bonus — From Game 1" lump (16,601) seen in that
+> ledger was a ONE-TIME manual UAT credit for first-version testers — NOT a design
+> feature. Ignore it; it does not represent carryover policy.
+
+**Policy = A (lifetime wallet) + C (redeem-and-burn), NO cash-out:**
+
+- **A — Lifetime wallet.** Crystals persist across games, tied to the permanent
+  6-char Trainer ID (canonical balance = `player_saves.data.total_crystals`). Never
+  auto-reset between games. This is what the live build already does — no change to
+  the persistence mechanism itself.
+- **C — Redeem-and-burn.** The ONLY way crystals leave the wallet is conversion into
+  real prizes via the PRIZE STORE. Redemption SUBTRACTS from balance (reuses the
+  existing `redeem_request` ledger flow). 
+- **NO PESO CASH-OUT.** The old 100💎 = ₱1 straight peso conversion is RETIRED as the
+  payout path. Crystals are arcade-style tickets — spendable ONLY on Prize Store
+  items, never exchanged for cash. (Peso *equivalence* may still inform internal
+  prize pricing, but kids don't redeem for money.)
+
+**Budget control moves to the PRIZE STORE, not the earning economy.** Because the
+wallet is lifetime + carries over, the spend side is where liability is bounded —
+via (1) prize pricing (crystal cost per item = the real budget dial), (2) item /
+crystal EXPIRY (prevents unbounded lifetime accumulation), (3) store settling /
+leveling. All deferred to the prize-mechanics pass (user-authored).
+
+**Why A+C over a per-game reset:** cleaner separation of concerns — the EARNING side
+rewards learning honestly and lets kids own their lifetime total (no arbitrary
+zeroing of hard-won crystals); the SPENDING side bounds budget. Expiry (not reset)
+is what defuses the unbounded-accumulation risk humanely.
+
+⚠️ **This makes the Prize Store load-bearing for budget**, not just a nice-to-have —
+without it (and its expiry rules) there's no crystal sink and no payout path. Elevate
+its priority accordingly when the prize pass is scheduled.
+
+**PESO VISIBILITY — split (LOCKED):** kids must NEVER see a peso figure (crystals are
+arcade tickets, no money framing). Papa keeps a private peso readout to price prizes
+against real-world value.
+- **REMOVE peso from all PLAYER UI:** player dashboard wallet (`pdc-peso`), player
+  Crystal Wallet screen (`wallet-peso`). (Redeem form already shows crystals only.)
+- **KEEP peso on all HOST UI:** account-list cards (`ac-peso`), pending-redeem
+  display, host ledger modal (`lm-peso`), host redeem queue (`hrq-peso`).
+- ⚠️ Stale framing to fix in the prize pass: the player redeem flow still says
+  "peso credit / end-of-day payout" — reframe to "redeem at the Prize Store" once the
+  store exists (no cash-out per this policy).
+
+### 12H — STILL OPEN / DEFERRED FROM ECONOMY
+
+- **Final 100-vs-103 roster count trim** (Part 10C) — cosmetic, do at library polish.
+- **HP/XP exact growth curve** (Part 8 numbers) — the magnitude dial; its own pass.
+- **Prize Store + crystal/item EXPIRY** — now budget-load-bearing (see 12I); the
+  redemption path AND the accumulation-control lever. User-authored next. See backlog.
 
 -----
 
@@ -764,14 +949,36 @@ Q: Philippine national hero? → José Rizal
   all R10 PH creatures; (b) confirm validation report (counts, no dups, move
   legality); (c) confirm the push.
 
-**🟢 NEXT SESSION — Economy (unblocked, large):**
-- Redeem value per rarity/level under XP-growth (rework baseValue formula).
-- Pokeball cost ladder — finalize numbers (Part 11 P3 ratios: Basic 50 →
-  Legendary 2500; confirm vs real crystal earn-rates).
-- Trade-in value on release — finalize numbers (Part 11 P7: base 40% → 80% grown).
-- Starter redeem-value confirm (0).
-- Catch-phase pity-softener (easier Q bank after N misses) — decide / playtest.
-- TUNE so releases stay RARE (else "gone forever" starves the pool — Part 11 P7).
+**✅ DONE — Economy (v3.3, 2026-05-25 — see PART 12, validated vs UAT ledger PEPE12):**
+- Earning: Path B (per-gym, accuracy-driven) — supersedes live per-question loop.
+  VERIFIED: cuts the UAT runaway ~7× (strong kid ₱1,184 → ~₱166 by R6).
+- Pokeball ladder: rarity-based (Basic 50 → Legendary 2500) — replaces region-based.
+- Redeem value: base 20/80/200/500/1200, ×1.5 fully grown; starter = 0.
+- Trade-in: 40% → 80% grown (~30% next-tier coverage per jump).
+- Pity softener: 3 consecutive misses on the same pokemon → one tier easier.
+- Cap GROWS 3→4→5 with player level (supersedes v3.2 cap=3) — enables grow-and-keep
+  AND chase-Legendaries; release now a strategy, keeps releases rare (protects pool).
+- Persistence (12I): lifetime wallet + redeem-and-burn, NO peso cash-out; Prize Store
+  is the sole payout path + the budget lever (pricing/expiry).
+- Peso visibility (12I): REMOVE from player UI, KEEP on host UI.
+- Full-game crystal estimate (gym only, no bosses): ~20k (struggling) → ~60k (strong).
+
+**💰 ECONOMY BACKLOG (deferred from the economy session — own passes):**
+- **BOSS CRYSTALS.** Crystal bonus for defeating each mini-boss (R1–R9) and the R10
+  final boss. WORKING PLACEHOLDERS (not locked — set in the boss session): mini-boss
+  = 5× that region's baseCrystals (R1 500 … R9 5,750; ~22k total); final boss ≈ 15k.
+  These flatten the strong/struggling gap (everyone who wins gets the same) — good for
+  bayanihan. Lock real numbers alongside boss mechanics (Part 9). Interacts with the
+  ⚔️ battle-dependent backlog below.
+- **PRIZE STORE + MECHANICS (budget-load-bearing — see 12I).** Sole payout path; NO
+  cash-out. Owns: prize catalog w/ crystal costs (the real budget dial), item/crystal
+  EXPIRY (controls lifetime accumulation), store settling/leveling, redeem-request flow
+  (reuse existing `redeem_request` ledger + host approval — already built), stock
+  handling. Also reframe the stale player redeem copy ("peso credit / payout" →
+  "redeem at Prize Store"). User-authored, dedicated pass; elevated priority.
+- **HP/XP growth curve** (Part 8 numbers) — the battle-magnitude dial; needed before
+  battle tuning. Own pass.
+- **Final 100-vs-103 roster trim** (Part 10C) — cosmetic; do at library polish.
 
 **🟣 EVOLUTION build-out (cosmetic A1 — Principle 10):**
 - Stage art per line (3-stage lines need 3 sprites each; reserved evolved forms
@@ -804,6 +1011,8 @@ Q: Philippine national hero? → José Rizal
   it doesn't frustrate early-L5 kids.
 
 **🅿️ PARKED (smaller passes):**
+- **🎁 Prize Store → moved to 💰 ECONOMY BACKLOG above** (it's budget-load-bearing,
+  not a smaller pass).
 - **Diwata → specific named being?** R10 "Diwata" is a general term; consider a
   named entity (e.g. Tala, star goddess — completes a celestial trio w/ Mayari +
   Bakunawa). Minor cultural-polish item.
@@ -841,6 +1050,10 @@ Q: Philippine national hero? → José Rizal
 - **Remove superseded code/data:** old 3/5 region-level trigger; old Part 4
   badge-threshold gating (0–6/7–16/17–29/30+); MULTIPLY/DOUBLE_OR_NOTHING; STEAL;
   FREEZE-others; consume-on-use in useAbility(); dead TIER_BASE/TIER_SPEED_MAX.
+- **Remove (v3.3 economy):** the region-based `pokeball` cost field (R1 300…R10
+  10000) → replaced by rarity-based ladder (Part 12C); `badgeMin` per region
+  (superseded by 8/10 accuracy badge); `pokeballs: 3` start → 1 (Principle 8); the
+  per-question crystal award in showQuestionResult() → per-gym settle (Part 12B).
 
 ## KEY CODE FACTS (verified — from v2, still relevant)
 
