@@ -3,13 +3,20 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ BUILD VERSION: v0.6.0   ·   LAST UPDATED: 2026-05-25         │
-│ SYNCED TO SPEC: v3.3 (economy v3.3 LIVE — Part 12 implemented;│
-│   library DATA also v3.3-compatible; engine caught up)        │
-│ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.3)       │
+│ SYNCED TO SPEC: v3.6 (economy Part 12 is BUILT @ v0.6.0;     │
+│   prize v3.4-6 + boss v3.5-6 are DESIGNED & ahead of build;  │
+│   ⚠️ v3.6 REMOVED boss crystals — v0.6.0 build may still     │
+│   award them (verify/strip at next build, see status note);  │
+│   library DATA is at v3.2; remaining redesign engine work is │
+│   the next build passes — see status table)                 │
+│ DESIGN AUTHORITY: CRYSTAL_QUIZ_REDESIGN_SPEC.md (v3.6)       │
 │   — all design decisions/principles/mechanics/region themes  │
 │   live there. THIS file = build state only; it must not      │
 │   restate design. If "Synced to SPEC" < the SPEC's version,  │
 │   the redesign is ahead of this build (expected for now).    │
+│ TODO/BACKLOG: BACKLOG.md (single source for pending work).   │
+│ MANIFEST: FILES.md. (4-home model: SPEC=design · CLAUDE=     │
+│   build state · BACKLOG=todo · FILES=manifest.)              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -25,15 +32,32 @@
 |---|---|---|
 | Multiplayer core, rooms, ledger, dashboards, rejoin | ✅ LIVE | (this file) |
 | Pokemon library v2.0 (183 lines, evolution, PH R10) | ✅ LIVE | SPEC Part 10–11 |
-| Catch mechanics (snake draft, cap 3, pokeball bet) | ⬜ designed | SPEC Part 11 |
+| Catch mechanics (snake draft, cap grows 3→4→5, pokeball bet) | ⬜ designed* | SPEC Part 11, 12E |
 | Cosmetic evolution (A1) | ⬜ designed | SPEC Part 11 P10 |
 | Unified player-level rarity gate | ⬜ designed | SPEC Part 4 |
 | Appreciating-asset XP/HP model | ⬜ designed | SPEC Part 3, 8 |
 | MOVES (ELIMINATE/CLOCK/SWAP/EXTRA SHOT/CLUE/TIME TRAVEL) | ⬜ designed | SPEC Part 5, 11 |
 | Battle system / bosses | ⬜ designed | SPEC Part 9 |
-| Economy (earn model, ball/redeem/trade-in, cap growth, persistence) | ✅ LIVE | SPEC Part 12 |
+| Economy (earn model, ball/redeem/trade-in, cap growth, persistence) | ✅ LIVE v0.6.0 | SPEC Part 12 |
+| Prize Store & bayanihan mechanics (effort/team/floor; 5-tier incl. boss-gated TEAM prize; TIER VOUCHER redemption w/ printable PNG + code) | ⬜ designed v3.6 (mechanics + real ₱800–1,200/kid budget locked; team prize = sponsored mystery gift; vouchers redeemed for real cards at store; specific cards = sourcing) | SPEC Part 13 |
+| Boss mechanics (freq/reward/trophy/team-prize) — NO boss crystals (removed v3.6) | ⬜ designed v3.6 | SPEC Part 14 |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
+
+> *⚠️ **VERIFY at next build start:** the v0.6.0 economy push (Part 12) shipped the
+> crystal NUMBERS (earn/ball/redeem/trade-in/cap-growth/pity/persistence). Confirm with
+> Claude Code exactly how much of the surrounding CATCH FLOW (snake draft UI, draft
+> order, cap-slot rendering) actually shipped vs. is still the old flow — the table
+> rows for catch mechanics / rarity gate / XP model may need flipping to ✅ or 🔄 once
+> confirmed. Also confirm the economy build hit its ~7× earn-reduction validation
+> target (strong kid ~₱166 by R6, not the UAT ₱1,184).
+>
+> *⚠️ **BOSS-CRYSTAL MISMATCH (v3.6 design change):** the SPEC removed boss crystal
+> payouts entirely (Part 14B — bosses now reward the boss-gated TEAM PRIZE + trophy, not
+> crystals). IF any boss-crystal award logic shipped or exists in the build, it must be
+> STRIPPED to match the SPEC. The economy is now GYM-ONLY (verified still affords the
+> Pokemon ladder). Leveling is badge-driven and UNAFFECTED either way. Confirm no boss
+> `bonus` crystal rows are written on boss defeat.
 
 > **Phase 1 + Phase 2 complete** — engine wired to age-split question
 > banks, random per-kid draw, full Pokemon library with all 10 ability
@@ -383,45 +407,83 @@ on the three-column dashboard**. There is no separate landing /
 - Rarity tiers scale ability power: common, rare, super, legendary
 - Age-neutral
 
-## Build Phases
-- Phase Zero: docs + restructure/split/age-tune question library + full
-  Pokemon library + validation
-- Phase 1: engine vertical slice (Regions 1-2 playable) + UAT
-- Phase 2: unlock Regions 3-10 + UAT
-- Phase 3: polish (prize screen, animations, sound) + UAT
-- Phase 4: live dress rehearsal
+## Build Phases — HISTORICAL (retired; superseded by Tracks A/B/C in BACKLOG.md)
 
-## Phase 3 Backlog
+> The old "Phase Zero–4" build roadmap is RETIRED as of 2026-05-25 — it was largely
+> complete (docs, library, all regions playable, economy shipped) and its numbering
+> collided with the newer planning workflow. The current workflow uses **TRACKS** (A:
+> Design · B: Architecture/file-mgmt · C: Sequenced build), tracked in **BACKLOG.md**.
+> Recorded here only for historical context:
+> - Phase Zero: docs + question library + full Pokemon library + validation ✅
+> - Phase 1: engine vertical slice (R1-2) + UAT ✅
+> - Phase 2: unlock Regions 3-10 + UAT ✅ (all regions playable)
+> - Phase 3: polish (prize screen, animations, sound) — *live items moved to BACKLOG.md*
+> - Phase 4: live dress rehearsal — *moved to BACKLOG.md → Ops/Convention prep*
 
-### REMAINING PHASE 3 ITEMS
+## Backlog → see BACKLOG.md
 
-- **Prize screen / GAME_OVER podium** — crystal-to-peso conversion
-  summary, unused-Pokemon level bonus. Needed to display final
-  results to kids after Region 10 clear (today they land on a
-  generic "Game Complete" screen).
-
-- **Animations, sound, leaderboard polish.**
-
-### PHASE 4 CHECKLIST (before live event)
-
-- **Morning of convention**: delete all test rows from `player_saves`,
-  `rooms`, `crystal_ledger` in Supabase using the
-  `player_identity_clean_slate` migration as template.
-
-- **Optimize `gengar.png`**: export at 512×512 to reduce from
-  1.42 MB to ~350 KB. No visible difference at 130px display
-  size. Do before dress rehearsal.
-
-- **Full dress rehearsal with real kids.**
-
-- **Tag `v1.0.0`.**
+> **All pending work now lives in `BACKLOG.md`** (the single TODO source — design + build
+> + ops). The former "Phase 3 Backlog" (prize screen/podium, animations/sound/leaderboard
+> polish) and "Phase 4 checklist" (test-row purge, gengar.png optimization, dress
+> rehearsal, v1.0.0 tag) are migrated there under BUILD backlog + Ops/Convention-prep.
+> Add pending work to BACKLOG.md, not here. CLAUDE.md keeps only BUILD STATE + the
+> Track-B architecture plan (above).
 
 ## Versioning Rule
 Increment a file's version + date in FILES.md on every change. Bump
 CLAUDE.md version when a phase completes. Semantic versioning: 0.x.x in
 development, 1.0.0 at launch.
 
-## Git Workflow — Multi-Machine
+## ARCHITECTURE & FILE MANAGEMENT — PHASE 2 PLAN (planned, NOT yet executed)
+
+> Recorded 2026-05-25. This is the agreed THREE-PHASE plan + the architecture/file
+> reorganization to document and execute. Design-only items live in the SPEC; this is
+> BUILD/architecture state, so it lives here. NONE of this is built yet.
+
+**The three-phase plan (agreed):**
+- **Phase 1 — finish ALL design backlog (design-only, no code).** ~COMPLETE: economy,
+  prize store (Part 13, fully done), HP/XP, boss reward/trophy. Remaining = the 14G
+  battle session + real card sourcing (own sessions).
+- **Phase 2 — document game ARCHITECTURE here + plan the file reorg (THIS section).**
+- **Phase 3 — Claude drafts a SEQUENCED, low-risk, piecemeal build work-order for Claude
+  Code; then commit/push.** ALL code work deferred to here (avoids build-into-monolith-
+  then-split risk). User wants ONE consolidated doc push at end of Phase 1, then separate
+  pushes for Phase 2 / Phase 3.
+
+**7-CATEGORY FILE MODEL (target organization):**
+1. **Source-of-truth** — `CRYSTAL_QUIZ_REDESIGN_SPEC.md` (design), `CLAUDE.md` (build).
+2. **Library/data** — `pokemon.json`, `questions-junior.json`, `questions-senior.json`.
+3. **UX/presentation** — `index.html`, `style.css`.
+4. **Logic/engine** — `game.js` (CURRENTLY a 5,938-line MONOLITH — biggest scaling risk).
+5. **Ledger/economy** — the crystal/redeem/voucher logic (currently inside game.js).
+6. **Infrastructure/schema** — `MIGRATIONS.md` + Supabase schema.
+7. **Creative-collaterals** — art/assets (incl. evolution sprites, voucher PNGs).
+
+**game.js MODULE SPLIT (the big one — Phase 3, its own tested commit):**
+- Split the monolith via multiple `<script>` tags (NO bundler needed — preserves global
+  scope; index.html currently loads one `<script src="game.js">`). Proposed modules:
+  `core.js` / `ledger.js` / `player-ui.js` / `catch.js` / `wallet.js` / `host-ui.js` /
+  `gameplay.js`. Section banners in game.js already map roughly to these (identity/ledger
+  ~136, player dashboard ~898, regional catch ~2125, crystal wallet ~2681, host dashboard
+  ~3960–5570). CSS already separated (style.css). Split = its own commit, tested.
+
+**FILE-HYGIENE actions (do BEFORE the split — zero-risk first):**
+- **Create `/archive/`** and move stale/scaffolding files out of root: `POKEMON_LIBRARY_v2.md`,
+  the `CLAUDE_CODE_PROMPT_*.md` files, `questions.json` (archived 590-source dead weight).
+- **Create `/assets/` tree** (needed before evolution art + voucher PNGs land).
+- FILES.md manifest is already strong (v1.29) — update it after the reorg.
+
+**PROCESS GAPS to address (flagged, not yet solved):**
+- **No Supabase data backup** — export before the convention.
+- **No test/live env separation** — currently one environment.
+
+⚠️ **REPO PATH DISCREPANCY (verify):** the Git Workflow section below says the repo is at
+`~/Desktop/CrystalQuiz/Crystal-Quiz-Challenge`, but working notes indicate `~/dev/Crystal-
+Quiz-Challenge` (a Desktop copy reportedly VANISHED once — Desktop may be cloud-synced,
+which corrupts git). CONFIRM the true local path and ensure it's NOT in any cloud-sync
+folder. Reconcile this section's path with reality at next session start.
+
+
 This project is developed across more than one machine. To keep everything in
 sync, treat git as the source of truth and follow these rules strictly:
 

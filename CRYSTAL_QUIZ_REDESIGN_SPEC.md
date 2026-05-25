@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.3   ·   LAST UPDATED: 2026-05-25          │
+│ DESIGN VERSION: v3.6   ·   LAST UPDATED: 2026-05-25          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
@@ -10,6 +10,47 @@
 └─────────────────────────────────────────────────────────────┘
 ```
 
+**v3.6 (2026-05-25):** PRIZE NUMBERS (Part 13I) — Effort Score formula (0–100 rate-
+based, age-fair), picks-per-effort (tight 2–4 band @ 40/60/80), team-tier thresholds
+(Bronze 0 / Silver ~90 / Gold ~160), placeholder shelf prices (8k/20k/40k, tune vs
+real inventory), per-game-day SHELF-STOCK refresh as the budget bound (crystals persist
+per 12I; PRIZES/stock are what expire). Recognition HONORS (13K — cosmetic, mixed
+performance+character; excellence seen not paid). Tier→category map + pick-spending
+(13L — 1 pick = any unlocked tier you can afford; picks don't bank). SKU framework
+(13M — per-SKU fields + tier composition rules + Gold-stock fairness; items/prices =
+DESIGN pass). Real-peso budget model (13N — formula + tier→card-market mapping + raw-
+only/Gold-cap discipline; card costs plug in). Pokémon TCG API integration (13O — build
+scope: hybrid cache+refresh, auto-by-band eligibility + host filters + fulfilment veto,
+fulfilment checklist; store = catalog+tracker, host buys locally). 5th TEAM PRIZE BONUS
+tier (13P — boss-gated 3/6/10, ONE shared prize, crystals-free) + SIMPLIFICATION to
+host-assigned gifts. BOSS CRYSTALS REMOVED (14B — bosses reward team prize + trophy, not
+crystals; leveling unaffected, gym-only economy still affords the Pokemon ladder).
+Formulas locked;
+REAL BUDGET LOCKED (13Q — ₱800–1,200/kid cards (raised from ₱500, restores singles-lean:
+Gold = real ex ~₱600); TEAM prize = grandparent-SPONSORED, NO host budget; tiers Floor 15/
+Bronze 50/Silver 250/Gold 600, Gold=1-pick-max, planning-ceiling not hard cap; 3-kid run
+≈₱2,400 cards). TIER VOUCHER model (13R — crystals buy Bronze/Silver/Gold tier vouchers
+not cards directly; consolidate-or-spread agency; change persists; printable PNG keepsake
+w/ unique anti-copy code; redeemed for real card at store later; two-gate preserved).
+Supersedes v3.5.
+**v3.6 release/categories update:** TEAM PRIZE = MYSTERY GIFT (13P — NO category choice/
+menu/vote/tap; offering a choice on a SHARED prize creates kid-vs-kid winners&losers, the
+exact dynamic the design removes). Trophy VISIBLE as PROGRESSION during play; end-of-game
+BIG SHARED-SCREEN REVEAL (confetti + 3→6→10 journey + "Mystery Team Prize"); no screen
+interaction beyond the celebration. HIGHEST-TIER-ONLY; gift ideally SPONSORED (e.g.
+grandparents → STEM set). COLLAPSES the earlier 5-category menu + pick/tap/vote machinery.
+**v3.5 (2026-05-25):** BOSS MECHANICS & CRYSTALS (Part 14) — closes the last economy
+input. 10 winnable fights (R1–9 minor + R10 final) + R3/R7 unbeatable cameos; reward =
+crystals + unique trophy pokemon (effort-points excluded to protect prize fairness);
+flat base (5× region) + up to +50% COLLECTIVE bonus (no individual speed); full-game
+range ~57k–116k crystals/kid. PRIZE PARITY LOCKED (14E/13E): fixed-price shelves +
+earned picks → crystal gap is irrelevant to prize fairness. Supersedes v3.4.
+**v3.4 (2026-05-25):** PRIZE STORE & BAYANIHAN mechanics (Part 13) — solves the UAT
+social problem (crystal-comparison, age-fairness complaints, money-as-motivator).
+Effort-not-score (age-fair blend A40/B35/C25/D0), team unlocks shelf tiers, 50/50
+team/individual, one-currency two-gates (effort unlocks / crystals buy), guaranteed
+finish-floor, no money framing, fair spend order (gap-closing all shelves + one-pick-
+per-round on Gold). Supersedes v3.3.
 **v3.3 (2026-05-25):** ECONOMY session — Path B earning (per-gym, accuracy-driven),
 rarity-based pokeball ladder (replaces region-based), redeem-value model, trade-in
 numbers, pity softener, **cap GROWS with player level 3→4→5** (supersedes the v3.2
@@ -24,12 +65,14 @@ appreciating-asset, battle system.
 **Purpose:** Complete design decisions from the post-UAT redesign. Carry into
 fresh Claude Code sessions, one feature at a time.
 
-> **📐 SOURCE OF TRUTH (read this first):** THIS SPEC owns all DESIGN (decisions,
-> principles, mechanics, region themes, backlog). CLAUDE.md owns BUILD STATE
-> (tech stack, conventions, git workflow, what's implemented) and POINTS here for
-> design — it must NOT duplicate design content. When they could conflict, the
-> SPEC wins on design, CLAUDE.md wins on "what's actually live." See the Document
-> Hygiene section below.
+> **📐 SOURCE OF TRUTH (read this first) — 4-HOME MODEL (v3.6):** THIS SPEC owns all
+> DESIGN (decisions, principles, mechanics, region themes). **CLAUDE.md** owns BUILD STATE
+> (tech stack, conventions, git workflow, what's implemented + the Track-B architecture
+> plan). **BACKLOG.md** owns the TODO list (all pending work — design + build + ops; the
+> single source for "what's left"). **FILES.md** owns the MANIFEST (current file versions).
+> Each points to the others; none duplicates another's content. When they could conflict,
+> SPEC wins on design, CLAUDE.md wins on "what's live," BACKLOG.md wins on "what's pending."
+> See Document Hygiene below.
 
 > **DESIGN PHILOSOPHY (north star):** The point of the game is LEARNING. Every
 > mechanic must reward answering correctly over rushing, teach without
@@ -53,9 +96,12 @@ prevents recurrence.
 
 ### Who owns what (no overlap)
 - **THIS SPEC = DESIGN.** All locked decisions, principles, mechanics, the rarity
-  grid, catch system, region themes (incl. R10 = Philippine), evolution rules,
-  the backlog. If a design decision isn't here, it doesn't exist. Cross-session
-  brain.
+  grid, catch system, region themes (incl. R10 = Philippine), evolution rules.
+  If a design decision isn't here, it doesn't exist. Cross-session brain. (The
+  BACKLOG moved OUT to BACKLOG.md as of v3.6 — see below.)
+- **BACKLOG.md = TODO.** The single source of truth for all pending work (design +
+  build + ops). Was formerly split between SPEC + CLAUDE.md (caused drift); now its
+  own home. Add pending items THERE, not here.
 - **CLAUDE.md = BUILD STATE.** Tech stack, file structure, git workflow,
   conventions, and a short STATUS section (version + implemented-vs-designed). It
   REFERENCES the SPEC for design ("themes per SPEC Part 10C") and never restates
@@ -66,7 +112,8 @@ prevents recurrence.
   that go stale on the next decision. Regenerate freely; never a source of truth.
 
 ### Refresh checklist — on every major design change
-1. **SPEC** — ALWAYS. Record the decision + reasoning; update CHANGE LOG + backlog.
+1. **SPEC** — ALWAYS for design. Record the decision + reasoning; update CHANGE LOG.
+   (Backlog updates go to **BACKLOG.md** now, not here.)
 2. **CLAUDE.md** — only its STATUS line, and only if implementation state changed
    (e.g. "designed" → "live"). Never copy design details in.
 3. **Live data/code** — only when actually built, via Claude Code.
@@ -315,6 +362,20 @@ Super ~75% · Legendary top.
 **XP climb:** “use ability + answer correctly” → ~+5–10 HP, climbs within current
 band to ceiling. **Effort closes the rarity gap** (a well-used Basic can rival a
 fresh Rare — protects the hard-working kid).
+
+**XP CURVE (v3.6 — LOCKED):**
+- **1 XP event = use a MOVE ability AND answer that question correctly** (Part 11 P6).
+- **~10 XP events climb a full band** (start-position → band top). Achievable in ~1
+  region of active use (5 gyms × ~3 ability uses, when correct). Tunable constant.
+- **xpRatio ∈ [0,1]** = `min(1, xpEvents/10)`. Position in band =
+  `startRatio + (1−startRatio) × xpRatio`, where startRatio is the rarity start (below).
+  HP = `bandLow + (bandHigh−bandLow) × position`.
+- **HP gain per event** ≈ band-width ÷ 10 (L1 ~4 → L5 ~13 HP/event — scales with band).
+- **Verified — effort closes the gap:** a fully-grown Basic (xpRatio 1 → band top) BEATS
+  a fresh Rare (xpRatio 0 → 50% of band) at EVERY level (e.g. L5: grown Basic 550 vs
+  fresh Rare 485). The hard-working kid's care literally out-muscles a luckier catch.
+- **redeemValue / tradeIn (Part 12) read this same xpRatio** — so growth raises both
+  battle power AND cash-in value from one effort track. No separate dials.
 **Damage tuning knob:** one enemy hit ≈ 35 dmg (sets the survivable-misses
 column). Single lever to lengthen/shorten all duels.
 ⚠️ **Tuning watch:** low level → low HP → low attack = struggling kid is doubly
@@ -902,6 +963,664 @@ against real-world value.
 
 -----
 
+## PART 13 — PRIZE STORE & BAYANIHAN MECHANICS (v3.4 — LOCKED)
+
+> Solves the UAT social problem, NOT just payout. UAT pain: kids compared crystals/
+> pesos instead of learning; lower performers complained the game was rigged toward
+> older kids (who naturally score higher); "what card can I buy" crowded out the
+> learning. This part realigns the REWARD layer around effort, team, and unlockable
+> prizes — and completes 12I (crystals → prizes only, no money framing).
+
+### 13A — THREE PRINCIPLES (the design contract)
+
+1. **PRIZES TRACK EFFORT, NOT RAW SCORE** — age-fair by construction, so older kids
+   don't keep "winning."
+2. **THE TEAM UNLOCKS THE STORE** — individual comparison is redirected into a shared
+   team goal; a strong kid LIFTS THE SHELF for everyone instead of beating peers.
+3. **PRIZES ARE THE MOTIVATOR, NOT MONEY** — kids see unlockable prizes as goals;
+   pesos never appear in the kid's mental model (completes 12I peso-visibility split).
+
+### 13B — ARCHITECTURE: ONE CURRENCY (crystals), TWO GATES (LOCKED)
+
+No second currency. Crystals (the economy we built in Part 12) remain the single
+spend currency. The store separates two concerns:
+- **EFFORT METRICS unlock ACCESS** (which shelf tiers are open) — team-driven, age-fair.
+- **CRYSTALS buy the ITEM** within an unlocked shelf — individual, already earned.
+
+So: *effort unlocks the shelf (team), crystals buy off it (individual).* This delivers
+the 50/50 team/individual split (13D) without a confusing 2nd number, and it keeps the
+Part 12 crystal economy meaningful (crystals now fund BOTH Pokemon AND prizes). Crystal
+totals NO LONGER determine prize QUALITY — team effort does — which is what defuses the
+comparison (the thing kids compared no longer decides who gets the better prize).
+
+### 13C — EFFORT METRIC (age-fair blend, LOCKED)
+
+Each kid earns **Effort Score** from a blend (NOT raw accuracy/speed — that was the
+sole driver of the "older kids always win" complaint, so it's dropped to 0):
+
+| Wt  | Ingredient            | Rewards                          | Age-fairness        |
+|-----|-----------------------|----------------------------------|---------------------|
+| 40% | Personal improvement  | Beating your OWN past gym scores | Fully age-fair      |
+| 35% | Badges / passing      | Hitting 8/10 (the mastery bar)   | Age-fair (same bar) |
+| 25% | Learning engagement   | Reading "Did You Know"; CLUE use | Fully age-fair      |
+| 0%  | Raw accuracy / speed  | (DROPPED — drove the unfairness) | —                   |
+
+A 9-yo who passes 8/10 and improves earns the SAME effort credit as a 13-yo who does
+the same. Excellence is still rewarded (badges), but it's a bar anyone can clear, not
+a race the oldest wins.
+
+### 13D — 50/50 TEAM / INDIVIDUAL SPLIT (LOCKED)
+
+Each kid's Effort Score splits:
+- **50% → shared TEAM POOL.** Team total unlocks shelf TIERS (Bronze → Silver → Gold)
+  that EVERYONE shops. A strong kid's effort lifts the shelf for the whole team.
+- **50% → personal access** within unlocked shelves (their own pick eligibility).
+
+When a younger kid complains "he scored higher," the true answer becomes: "half his
+effort unlocked the Gold shelf FOR YOU — and your own improvement is yours to spend."
+Comparison is redirected from kid-vs-kid to team-vs-goal. Dovetails with the battle
+system's bayanihan guardrails (Part 9) — same social design, same direction.
+
+### 13E — THE SPEND (FORK 1 — LOCKED v3.5: fixed-price shelves + earned picks)
+
+> **REVISED in v3.5** (parity decision, was crystal-quantity spend). The individual
+> lever is now EARNED PICKS, not crystal-pile size — so a strong kid's bigger crystal
+> balance does NOT buy more/better prizes than a struggling teammate. See 14E for why.
+
+- Team effort unlocks shelf tiers (Bronze/Silver/Gold) — shared by all. **The team
+  tier is what gates prize QUALITY** (age-fair, per 13B/13C).
+- **Items are FIXED-PRICE within a shelf** (every Bronze item = same cost, every Silver
+  = same, every Gold = same; higher tiers modestly pricier mostly to require having
+  progressed/saved a little). Crystals are the TRANSACTION, NOT a quality lever — raw
+  crystal volume no longer translates into prize advantage. This is what makes 13B's
+  "two gates" truly independent: effort = access, crystals = the purchase.
+- **Each kid gets a LIMITED number of PICKS**, and picks are the real individual lever —
+  EARNED via effort (more effort → more picks), NOT bought with a bigger crystal pile.
+  (Exact picks-per-effort mapping: 13I / open.)
+- Preserves AGENCY (kids still choose their OWN items off the shared shelves) while
+  killing the checkout-comparison (same shelves, same prices, fair pick count).
+- **Fair pick order (unchanged):** Guardrail A — gap-closing order on ALL shelves
+  (lowest-effort kid picks first, snake-reverses); Guardrail B — one-pick-per-round on
+  the GOLD shelf only (anti-sweep on the scarce tier). Bronze/Silver no per-round cap.
+- Rejected alternatives (14E): per-kid crystal spend cap (makes earned crystals feel
+  fake); flatten bosses further (treats a symptom — gap is mostly gym-driven); keep the
+  raw-crystal gap (leaves comparison half-solved).
+
+> **v3.6 — the SPEND is now implemented via TIER VOUCHERS (see 13R).** Crystals buy
+> Bronze/Silver/Gold VOUCHERS (tier entitlements), not cards directly; vouchers are
+> redeemed for a real card of that tier later at the store. "Picks" become "how many
+> vouchers a kid can afford" — same individual lever, cleaner implementation. The
+> two-gate rule still holds: team effort UNLOCKS a tier, crystals BUY its voucher.
+
+### 13F — GUARANTEED FLOOR (FORK 2 — LOCKED: finish-floor prize for everyone)
+
+Every kid who FINISHES the game gets a guaranteed small prize (sticker, common card,
+participation pack), regardless of performance or team total. Everything above the
+floor is team-unlocked + crystal-bought. The floor is DIGNITY (no kid leaves empty-
+handed — the cry-moment the north star forbids); the shelves are the GAME (effort
+still drives the meaningful rewards). A large guaranteed prize would make effort
+meaningless — keep the floor SMALL.
+
+### 13G — NO MONEY FRAMING (completes 12I)
+
+- Kids see PRIZES as goals ("unlock the Gold shelf", "the holo booster") with effort/
+  crystal requirements — never a peso figure (player peso UI already removed, 12I).
+- Papa keeps the private peso readout (host UI, 12I) to price the store's real-world
+  contents against budget. Internal pricing MAY use peso-equivalence; kids never see it.
+
+### 13H — BUDGET CONTROL (the store is the liability lever — from 12I)
+
+Because the wallet is lifetime/carryover (12I), the store bounds total prize cost via:
+- **Shelf pricing** (crystal cost per item = the real budget dial).
+- **Tier thresholds** (how much team effort unlocks Gold = how generous the day is).
+- **Item / crystal EXPIRY** (prevents unbounded lifetime accumulation; user-authored).
+- **Stock limits** per prize.
+Reuse the existing `redeem_request` ledger + host-approval flow (already built) for
+the actual prize claim. Reframe the stale player redeem copy ("peso credit / payout"
+→ "redeem at Prize Store").
+
+### 13I — PRIZE NUMBERS (v3.6 — LOCKED; placeholder prices pending real inventory)
+
+> Closes the prize-numbers pass. Formulas + structure LOCKED; the absolute crystal
+> PRICES are placeholders (tunable constants) until real card inventory + budget are
+> known — swap the numbers, keep the logic. Anchored to the Part 14D balanced economy
+> (~54k–94k spendable crystals/kid).
+
+**Effort Score (0–100, age-fair blend A40/B35/C25/D0):** each component normalized to
+0–100 by RATE (not total — so a kid who reached only R6 isn't penalized vs a finisher):
+- **Improvement (40%):** % of measured gyms where the kid beat their own prior best
+  (or beat the band baseline on first attempts). Measured vs SELF → age-fair.
+- **Badges (35%):** badges earned ÷ badges attempted ×100. Same 8/10 bar for all ages.
+- **Engagement (25%):** ("Did You Know" boxes read + CLUE uses) ÷ opportunities ×100.
+- `EffortScore = 0.40×improvement + 0.35×badges + 0.25×engagement`.
+
+**Picks-per-effort (individual lever; LOCKED tight 2–4 band):**
+| Effort Score | Picks |
+|--------------|-------|
+| Finished (any)| 1 (the guaranteed floor, 13F) |
+| ≥ 40         | 2     |
+| ≥ 60         | 3     |
+| ≥ 80         | 4     |
+A struggling-but-improving kid clears 40 easily (improvement is vs self). Realistic
+spread is 2–4 picks — the strong kid earns 1–2 more, NOT a landslide. Combined with
+fixed pricing, this caps how much the performance gap can express at the store.
+
+**Team-tier thresholds (shelf unlocks; team pool = Σ each kid's 50% team-half, 13D):**
+For ≤5 kids, max team pool ≈ 250; realistic ~120–200.
+| Shelf  | Team pool | Meaning                                   |
+|--------|-----------|-------------------------------------------|
+| Bronze | 0 (always)| floor always stocked                      |
+| Silver | ~90       | most kids engaged/improving               |
+| Gold   | ~160      | team genuinely pulling together (bayanihan)|
+
+**Fixed shelf prices (PLACEHOLDER crystals — tune vs real inventory):**
+| Shelf  | Price/item | Parity check                                          |
+|--------|-----------|--------------------------------------------------------|
+| Bronze | 8,000     | every kid affords several                              |
+| Silver | 20,000    | every finisher affords 2–3                             |
+| Gold   | 40,000    | even the STRUGGLING kid (~54k) affords 1 IF team unlocked it |
+⚠️ **Parity guarantee:** quality is TEAM-gated, not wallet-gated — a weaker kid is
+never priced out of a shelf the team unlocked. This is the 14E parity model in numbers.
+
+**EXPIRY (LOCKED — crystals persist, PRIZES expire; fully consistent with 12I):**
+Crystals NEVER expire — full lifetime wallet (12I unchanged). Instead the bound sits on
+the PRIZE side: **the store's shelf STOCK refreshes per game-day** — each day offers
+that day's inventory; unclaimed items are gone the next day; fresh stock appears. This
+caps daily prize liability to ONE day's available stock no matter how large a kid's
+hoarded balance is (a 200k-crystal kid still can't exceed the day's shelf). Arcade-
+authentic (the prize counter restocks; you can't redeem yesterday's display). Optional
+booth rule: a claimed prize has a physical pickup window (logistics, not economy).
+⚠️ This is what carries the 14E accumulation-control load — the SHELF, not the wallet,
+is the bounded thing.
+
+### 13K — RECOGNITION HONORS (v3.6 — LOCKED; excellence seen, not paid)
+
+> Resolves the worked-example finding: a strong kid can ace every badge yet land LAST
+> on Effort Score (because improvement+engagement are 65% of it and a high performer has
+> little room to improve). The prize mechanics SHOULD stay effort/team-driven (that's
+> the whole point) — but "invisible excellence" risks demotivating the high performer.
+> Honors let excellence be SEEN without letting it PAY.
+
+- **End-of-game HONORS = cosmetic/social recognition ONLY.** Never grant crystals,
+  picks, or any prize advantage — the moment they do, they re-import the comparison
+  problem the store was built to kill.
+- **MIX performance + character honors** so recognition spreads across the kinds of kids
+  (not a rebuilt leaderboard). Examples (final set TBD): "Top Trainer" (most badges /
+  cleanest runs — the high performer's moment), "Most Improved" (biggest improvement
+  vs self — the struggling kid's moment), "Team Heart / Most Helpful" (most teammate
+  revives/assists in battle — the bayanihan kid's moment).
+- **Why this fits:** the strong kid's mastery already pays in the CRYSTAL economy (more
+  crystals → better Pokemon → stronger battle team, Part 12/8) — honors add a moment of
+  PRIDE on top, without more loot than the struggling kid. Turns "who got the best
+  prize" (comparison) into "we each shone at something" (belonging) — bayanihan.
+- Rejected: widen the pick band (dilutes the effort-not-mastery thesis); nudge mastery
+  into Effort Score (re-imports the age-unfairness). Keep prize mechanics as-is; add
+  honors alongside.
+
+### 13L — WHAT KIDS GET: TIER→CATEGORY MAP + PICK-SPENDING (v3.6 — LOCKED)
+
+> The reward STRUCTURE (a mechanic). The specific SKUs that fill each category = the
+> parked DESIGN pass (needs real inventory). This locks the *kind* of reward per tier
+> and *how a pick spends*.
+
+**Tier → prize-CATEGORY ladder (kind of reward, not specific items):**
+| Shelf  | Unlock          | Price  | Prize CATEGORY (class of reward)                    |
+|--------|-----------------|--------|------------------------------------------------------|
+| Floor  | finish the game | free (1 floor pick) | Participation: sticker / single common / token |
+| Bronze | always open     | 8,000  | Common: common cards, basic packs, small toys        |
+| Silver | team pool ~90   | 20,000 | Uncommon: better packs, foil/uncommon singles, mid toys |
+| Gold   | team pool ~160  | 40,000 | Chase: booster box, holo/rare chase card, premium item |
+Each tier is a meaningfully better CLASS, gated by team effort (quality) + bought with
+crystals (transaction). Specific items per class = DESIGN pass.
+
+**PICK-SPENDING (LOCKED — "1 pick = 1 item, any unlocked tier you can afford"):**
+- A pick = grab ONE item off ANY shelf the team has unlocked AND the kid can afford.
+  A kid with 3 picks + Silver unlocked might take 1 Silver + 2 Bronze, or 3 Bronze, or
+  save crystals for 1 Silver — their CHOICE (agency preserved, the Fork-1 goal).
+- Rejected: tier-specific picks (rigid, creates dead picks, confusing for 9-yos);
+  save-picks-across-days (contradicts the daily shelf refresh / reopens the stockpile
+  budget hole).
+- **Picks don't bank** — use them on THIS day's shelves or they're gone (consistent with
+  daily stock refresh, 13I). Closes the loop with the expiry decision.
+- **Three fairness levers stay intact:** TIER = quality (team-gated) · PICKS = quantity
+  (effort-gated, 2–4) · CRYSTALS = cost (must afford). Max freedom WITHIN those bounds.
+
+**Worked conversion (what a kid walks away with):**
+- Struggling (~54k, 3 picks, Silver unlocked): ~1 Silver + 2 Bronze — a real handful.
+- Strong (~94k, 3 picks, same unlock): same QUALITY shelves; picks cap the haul → not a
+  landslide despite more crystals.
+- Team pushed to GOLD: even the ~54k struggler affords 1 Gold chase item — bayanihan
+  payoff made concrete (team effort, not wallet size, put Gold in reach for everyone).
+
+### 13M — SKU FRAMEWORK / TEMPLATE (v3.6 — LOCKED structure; items TBD in DESIGN pass)
+
+> The TEMPLATE real inventory drops into — fields + composition rules, NOT specific
+> items. Specific SKUs + real prices + budget math = the DESIGN pass (needs user's real
+> card inventory + per-day budget). This locks the STRUCTURE so that pass is fill-in-
+> the-blanks, not from-scratch.
+
+**SCOPE — CARDS FIRST (v3.6 decision).** Launch the prize store with ONE category:
+**Pokemon CARDS**. Cards are the native convention reward and scale naturally across
+all tiers (common → pack → foil → holo/box), so they work standalone — de-risks the
+build (one category to wire) and proves the loop before expanding. Books, toys,
+privilege/experience prizes, and Pokemon merch are the DOCUMENTED EXPANSION PATH (add
+later as new SKUs — same tiers, same rules, just more `category` values). When expanding,
+favor MIX-WITHIN-TIER (every tier has ≥1 of each type, so no kid's preferred category is
+locked behind an unreachable tier) and consider privilege prizes for the Floor (free,
+unlimited stock, high status value). Snacks = venue-dependent, not core. Avoid a lone
+grand-prize raffle item (re-creates the comparison problem) — if a marquee prize is
+wanted, frame it as a SHARED TEAM prize (bayanihan).
+
+**Card tier ladder (the cards-first starting shape):**
+| Tier   | Card SKU type                                   |
+|--------|--------------------------------------------------|
+| Floor  | 1 single common card (guaranteed)                |
+| Bronze | small pack / a few common–uncommon singles       |
+| Silver | better booster pack / foil or uncommon single    |
+| Gold   | holo/chase single / premium pack / booster box   |
+(Nice resonance: card rarity common→holo mirrors in-game Basic→Legendary — a Gold chase
+card can FEEL like catching a Legendary. Lean into this thematically at real-SKU time.)
+
+**Per-SKU fields:**
+- `name` — the item · `tier` (Floor/Bronze/Silver/Gold) · `crystalPrice` (fixed per
+  tier; Floor free) · `realCost` (peso cost to host — HOST-ONLY, never shown to kids,
+  ties to 12I peso visibility) · `stock` (qty per game-day; the daily-refresh count) ·
+  `category` (= "card" for now; book/toy/merch/privilege later — display grouping).
+
+**Tier composition rules:**
+| Tier   | Distinct SKUs | Stock depth each | Why                                          |
+|--------|---------------|------------------|----------------------------------------------|
+| Floor  | 2–3           | high (≥ all kids)| everyone finishes & claims → never runs out  |
+| Bronze | 4–6           | medium           | workhorse shelf; variety = real choice       |
+| Silver | 3–4           | lower            | aspirational but reachable                   |
+| Gold   | 2–3           | scarce (1–2 each)| chase items; scarcity is the point (13E Gold guard) |
+
+**CRITICAL fairness constraint:** **Gold STOCK ≥ the number of kids likely to afford
+it.** If 5 kids unlock Gold but only 2 Gold items exist total, 3 kids watch the prize
+vanish — the cry-moment the whole design kills. Prefer FEWER distinct Gold SKUs with
+MORE copies over many one-off Golds that strand kids. General principle: VARIETY lower
+in the tiers (browse & choose), DEPTH where contention happens (no lock-out) — the
+SKU-level expression of the bayanihan fairness used everywhere else.
+
+**DESIGN-pass fills (13J):** the actual CARD list per tier, real `crystalPrice` (swap
+8k/20k/40k placeholders), `realCost` per item, `stock` counts vs per-day budget + kid
+count, and the Layer-2 budget math (how much peso value each tier holds; daily payout
+sustainability). Then the books/toys/privilege expansion as a follow-on.
+
+### 13N — REAL-PESO BUDGET MODEL (v3.6 — formula LOCKED; card costs to plug in)
+
+> Grounds the prize budget in real Pokemon-card market economics (user's Collectr-aligned
+> rarity/price data). The FORMULA + the spending levers are locked; the absolute peso
+> figures are illustrative until real Collectr export costs are plugged in.
+
+**Formula:** `daily_cost = Σ_tiers [ total_kids × claims_per_kid(tier) × your_cost(tier) ]`
+where `total_kids = kids_per_day × games_per_day`.
+
+**Tier → real card mapping (raw/ungraded; USD→PHP @ ~58, adjust):**
+| Tier   | Card type                       | ~USD raw | ~PHP |
+|--------|----------------------------------|----------|------|
+| Floor  | Bulk/Common                      | $0.20    | ~12  |
+| Bronze | Common–Uncommon                  | $0.75    | ~44  |
+| Silver | Non-holo Rare / entry holo       | $3.50    | ~203 |
+| Gold   | Holo Rare / LOW Ultra Rare       | $8–20    | ~460–1,160 |
+
+**Illustrative 5-kid day:** ~₱2,820 at entry Gold ($14) → scales with Gold richness
+(see curve). **Gold dominates spend** → Gold is THE budget lever.
+
+**GOLD TIER DIRECTION (v3.6 — user chose RICHER GOLD, stocked for all):** Gold is a
+RICHER tier (better cards across the board), STOCKED FOR ALL who reach it (honors the
+13M no-stranding rule). User accepts the higher budget this implies. Budget curve (5-kid
+day, raw cards, USD→PHP @58):
+| Gold card | Total/day | /kid  |
+|-----------|-----------|-------|
+| $14       | ~₱2,820   | ~564  |
+| $25       | ~₱4,100   | ~819  |
+| $40       | ~₱5,840   | ~1,167|
+| $60       | ~₱8,160   | ~1,631|
+| $100 (SAR)| ~₱12,800  | ~2,559|
+
+⚠️ **STOCK COST vs SPEND COST (key for capital planning):** "stocked for all" means you
+must HOLD Gold inventory ≥ the kids who could reach it (e.g. 5), even though only ~2
+typically CLAIM. At $40/card: ~₱4,640 SPENT but ~₱11,600 of inventory HELD upfront.
+Unclaimed cards aren't lost (roll forward), but cash-on-hand > daily giveaway. This is
+the real price of the no-stranding fairness guarantee.
+
+**Refinement levers:** (1) Gold card cost (headline); (2) Gold claim rate via crystal
+price + TEAM-THRESHOLD (raise Gold's team bar ~160→~180 → fewer unlocks → lower average
+cost without cheapening the prize); (3) stock-for-all vs stock-for-likely (stock for ~3
+realistic buyers instead of all 5 → less capital, small stranding risk on a rare full-
+Gold-team day). Raw/ungraded still recommended (graded = 10–100× per user's data).
+
+**The three spend levers:** (1) your per-card sourcing cost; (2) claims-per-kid (driven
+by crystal price + pick count); (3) tier-unlock rate (driven by effort thresholds —
+gentlest lever, tied to team performance not a visible price hike).
+
+**TO FINALIZE (needs user):** real Collectr per-card costs at each tier; kids/games per
+day; target daily budget ceiling. Then swap illustrative costs → real, confirm the day
+fits budget, and tune Gold if over.
+
+### 13O — POKÉMON TCG API INTEGRATION (v3.6 — BUILD SCOPE; Phase 3)
+
+> Scopes how the store sources card data/prices. Build-scope (Phase 3), recorded here
+> with the prize design. User confirmed: PH market price ≈ TCGplayer price converted to
+> PHP, so the API's market price IS a valid cost basis (not just a reference).
+
+**Source:** Pokémon TCG API (`api.pokemontcg.io/v2`). Free API key from
+`dev.pokemontcg.io`, sent via `X-Api-Key` header. ⚠️ Key is a SECRET — env var / not in
+client code or git (same posture as Supabase keys). Provides card identity (name, set,
+rarity, image) + market price (TCGplayer USD → ×FX → PHP).
+
+**The store is a CATALOG + REDEMPTION TRACKER, not a storefront.** It does NOT buy cards.
+A kid picks an eligible card; the HOST then buys it from a local marketplace and hands it
+over.
+
+**Locked build decisions:**
+- **Price freshness = HYBRID (cache + on-demand refresh).** Host pulls a price snapshot
+  at setup; the day runs off the cache (no live calls during play — venue wifi can't be
+  trusted; snapshot matches the per-day shelf model 13I). Host can REFRESH prices on
+  demand (e.g. between days or if a price looks stale). Cache card IMAGES too (store must
+  work offline mid-event).
+- **Eligibility = AUTO-BY-PRICE-BAND + host FILTERS + fulfilment VETO** (open catalog,
+  bounded). ANY card whose PHP price falls in a tier's band is eligible BY DEFAULT — kids
+  browse a huge, exciting selection (the "open catalog" goal). Two guardrails protect the
+  host from an unfulfillable pick, working at different stages:
+  - **FILTERS (upfront prevention):** host sets bounds on what's eligible BEFORE kids see
+    it — e.g. recent sets only (last N years), a local-availability threshold, a blocklist
+    (exclude specific cards/sets), raw-only. Shapes the catalog so bad picks aren't offered.
+  - **VETO (fulfilment recovery):** the rare card that's in-band + in-filter but turns out
+    genuinely unsourceable that day → host can offer the kid an EQUIVALENT SWAP (same tier).
+    Stays rare BECAUSE filters do the heavy lifting, so kids almost never experience it →
+    choice still feels real.
+  (Rejected pure auto-by-band: a kid could redeem a card the host can't source locally →
+  broken promise, the thing the design avoids everywhere. Filters+veto keeps it open AND
+  safe — same belt-and-suspenders as gap-closing order + Gold one-pick-per-round.)
+- **Auto-tiering:** a card lands in Floor/Bronze/Silver/Gold by its PHP price vs the SKU
+  bands (13M). Host reviews, can override.
+- **Fulfilment = host-only PHP buy-price + CHECKLIST per redemption** (claimed → bought →
+  handed over), with optional marketplace link/note. Reuses the existing `redeem_request`
+  ledger row (add fulfilment-status fields). Solves the busy-convention "which cards do I
+  still owe?" tracking problem.
+- **Peso stays HOST-ONLY** (12I): kids see card image + name + crystal price; never PHP.
+
+**Build caution:** third-party dependency + rate limits → pull ONCE at setup, cache,
+never live-call at redemption. Cache the card IMAGES too (or the store breaks offline).
+
+### 13P — 5th TIER: TEAM PRIZE BONUS (v3.6 — LOCKED) + SIMPLIFICATION
+
+> **SIMPLIFICATION (v3.6):** step back from the card-only API rabbit hole. Tiers hold
+> HOST-ASSIGNED GIFT PRIZES (host decides what's on each shelf — cards or anything else).
+> The Pokémon TCG API auto-tiering (13O) becomes an OPTIONAL future build aid, NOT core.
+> Core model: 4 crystal-bought tiers (Floor/Bronze/Silver/Gold) of assigned gifts + this
+> 5th boss-gated team tier.
+
+**The 5th tier — TEAM PRIZE BONUS (v3.6 — MYSTERY-PRIZE model, LOCKED):**
+- **Trigger = BOSS-DEFEAT COUNT, HIGHEST-TIER-ONLY:** 3 bosses → small · 6 → medium · 10
+  → grand. ONE prize at the HIGHEST tier reached (10 → grand REPLACES small/mid, not
+  stacked). The tier tells the SPONSOR what scale of gift to provide; the in-game UI SHOWS
+  the journey (passed 3 and 6) for motivation.
+- **What = ONE shared MYSTERY prize the team receives TOGETHER.** **(v3.6 KEY DECISION:
+  it's a MYSTERY gift — NO category choice, NO menu, NO kid/host selection.)** Rationale:
+  offering kids a CHOICE on a SHARED prize creates a decision → winners & losers → the
+  exact comparison/fight dynamic the whole design engineers OUT, on the one prize meant to
+  be pure togetherness. A mystery prize removes the decision entirely — nothing to argue
+  about, everyone receives it together, more magical AND simpler.
+- **Cost = NONE to the host (crystals-free AND grandparent-SPONSORED).** Beating bosses is
+  the only price for the kids. The physical gift is SPONSORED (e.g. grandparents sponsor a
+  STEM set) — NO host budget line at all (v3.6 decision). Sponsor decides the gift + scale;
+  the boss tier (3/6/10) just signals rough scale. Folds family into bayanihan. Gift
+  guidance for the sponsor: SHAREABLE/collective + kid-appropriate + scaled to tier.
+- **Quality scales with the collective-clean metrics** (flawless / full-team / round-
+  efficiency, Part 14) feeding the 3/6/10 thresholds.
+
+**RELEASE MODEL + UX (v3.6 — LOCKED; "progression + end surprise"):**
+- **During play:** the trophy is VISIBLE but framed as PROGRESSION — "defeating bosses
+  unlocks higher levels," the in-game POINT. Kids chase bosses to ADVANCE THE GAME
+  (intrinsic), NOT to shop. The gift is NOT dangled as a mid-game carrot.
+- **End of game → BIG SHARED-SCREEN REVEAL:** on a shared/projected screen the whole team
+  watches together — confetti, the trophy, the 3→6→10 JOURNEY, the tier earned, then
+  "🏆 Your team earned the MYSTERY TEAM PRIZE!" Pure surprise; the collective-gasp moment.
+- **No screen interaction needed beyond the celebration** — because it's a mystery, there's
+  nothing to pick/vote/tap. The physical gift (e.g. the sponsored STEM set) is then handed
+  over. (This COLLAPSES the earlier category-menu + pick/tap/vote machinery — all removed.)
+- **Why better:** keeps intrinsic motivation front and center; reward is a surprise bonus;
+  no "can I have it now"; and critically NO kid-vs-kid decision on a shared prize. On-theme
+  with the north star (reward learning/play, not loot-chasing).
+- **Fulfilment:** host hands over the one shared gift after the run. Reuses the
+  `redeem_request` ledger with a TEAM flag (just records WHICH tier was earned + handed
+  over — no choice to log).
+- ⚠️ **DEPENDENCY:** this tier requires the BOSS SYSTEM to be built (Part 14 / 14G battle
+  session). Designable now; buildable only after bosses exist. Sequences after battle work.
+- **Ties prize store ↔ battle system** — the only tier that does. Replaces the removed
+  boss crystal bonus (Part 14B) as the boss reward, and relocates the bayanihan equalizer
+  from crystals into a shared prize.
+
+### 13Q — REAL CARD SKU PRICES + BUDGET (v3.6 — LOCKED: ₱800–1,200/kid; team = sponsored)
+
+> **LOCKED real budget — supersedes placeholder shelf prices in 13I (those were CRYSTAL
+> prices; these are real PESO costs) and the illustrative figures in 13N.**
+> Target: **₱800–1,200/kid (cards). TEAM prize = grandparent-SPONSORED, NO host budget**
+> (consistent with the mystery-gift model, 13P — sponsor decides scale; boss tier 3/6/10
+> just signals rough scale). Singles-lean (kids pick the Pokémon they love). Real card
+> prices May 2026, raw/ungraded, USD→PHP @ ~58.
+
+**Tuned tier prices (PESO cost to host — HOST-ONLY per 12I):**
+| Tier       | Card SKU (singles-lean)                    | ~PHP | Notes                  |
+|------------|--------------------------------------------|------|------------------------|
+| Floor      | current-set common single                  | ~15  | guaranteed, deep stock |
+| Bronze     | uncommon / reverse-holo single             | ~50  | workhorse              |
+| Silver     | popular holo single (~$3–5)                | ~250 | chosen, character-driven |
+| Gold       | nicer holo / low-end ex (~$8–12)           | ~600 | real chosen ex; **MAX 1 Gold pick/kid** |
+| Team Bonus | grandparent-SPONSORED mystery gift         | —    | NOT in host budget (13P) |
+
+> The higher budget restores the SINGLES-LEAN vision: Gold can hold a real chosen ex
+> (~₱600), not the ₱250 compromise the old ₱500 cap forced.
+
+**Budget enforcement (LOCKED — ₱800–1,200 is a PLANNING CEILING, not a hard cap; overflow
+allowed):** kids land where their EFFORT takes them — struggling/solid kids who only reach
+Silver land UNDER the range (~₱315–550) and that's FINE (they got what their picks earned;
+the range is an upper planning bound, not a floor). Kids who reach Gold land in-range
+(~₱900–1,150). A maxed 4-pick kid may hit ~₱1,350 — allowed overflow (self-limiting:
+bounded by earned picks + unlocked tiers + Gold-1-pick cap). Same philosophy as the prior
+₱500 guide — no checkout wall; rewards high effort.
+
+**Full 3-kid run ≈ ₱2,400 typical in CARDS** (~₱788/kid avg in a mixed team), budget
+~₱3,000–3,600 to absorb overflow if multiple kids reach Gold. **Team prize is OFF the
+host's books** (grandparent-sponsored), so total host cost ≈ the cards only.
+
+**Cost concentration / levers (from 13N):** Floor+Bronze trivial (~₱300/run); GOLD is now
+the dominant lever (~₱600/card). To go richer: raise Gold or add a 2nd Gold pick. To go
+leaner: lower Gold or tighten tier-access (effort thresholds).
+
+**Still TBD (DESIGN/sourcing):** the specific named cards filling each tier (the ~₱250
+Silver "popular holo," the ~₱600 Gold "low-end ex") — anchored via the 13O API + local
+sourcing. Team mystery gift = sponsor's choice. Structure + budget LOCKED; specific cards
+= sourcing.
+
+### 13R — TIER VOUCHER MODEL + REDEMPTION (v3.6 — LOCKED)
+
+> How the SPEND actually works (refines 13E) and how a kid's prize is released. Crystals
+> buy TIER VOUCHERS, not cards directly; vouchers redeem for a real card LATER at the
+> store. Replaces "buy a specific card in-app" with a voucher layer — decouples earning
+> from sourcing, makes the prize a tangible keepsake, and keeps every fairness gate.
+
+**The voucher model:**
+- **Vouchers = tier entitlements:** BRONZE / SILVER / GOLD, each with a different CRYSTAL
+  cost (Bronze cheapest → Gold dearest). A voucher entitles the kid to "a [tier] card,"
+  redeemed for the actual Pokémon they choose later at the real store within that tier.
+- **Consolidate OR spread (the agency):** a kid can buy MULTIPLE low-tier vouchers (e.g. 2
+  Bronze) OR save/consolidate crystals into ONE high-tier voucher (e.g. 1 Gold). Their
+  call — "two cards now or one better card." This IS the individual lever (replaces the
+  "2–4 picks" framing of 13E with purchasable vouchers; number of vouchers falls out of
+  what they can afford).
+- **Change PERSISTS (12I lifetime wallet):** leftover crystals after buying vouchers are
+  KEPT and roll forward to future game rounds. (Corrects an earlier "no change/all burned"
+  phrasing — change IS kept, consistent with the redeem-and-burn-per-voucher persistence.)
+- **TWO-GATE preserved (13B):** a kid can buy a Gold voucher ONLY IF (a) the TEAM's effort
+  unlocked the Gold tier AND (b) the kid has the crystals. Crystals never bypass the effort
+  gate — effort = tier ACCESS, crystals = buying the voucher within it. (A crystal-rich kid
+  on a low-effort team still can't buy Gold.)
+
+**Voucher as physical keepsake (the fun layer):**
+- Vouchers have DESIGNED artwork (Bronze/Silver/Gold PNGs — user-supplied) the kid can
+  PRINT — a tangible trophy they hold even before redeeming. On-theme, collectible.
+- **Anti-copy via unique code:** each voucher carries a UNIQUE game-issued code/ID. The
+  IN-APP voucher (ledger-tracked) is the SOURCE OF TRUTH; Papa verifies the code at
+  redemption. Printing extra PNG copies is harmless — redemption is against the unique
+  in-app voucher, redeemed once. (Print = souvenir; code = validity.)
+
+**Redemption flow (per kid):**
+1. End of run: kid's screen shows CRYSTALS + UNLOCKED TIERS (crystal costs only, NO pesos
+   — 12I).
+2. Kid BUYS voucher(s) — spends crystals on Bronze/Silver/Gold tier vouchers (within
+   unlocked tiers); change persists.
+3. Kid gets the voucher(s) in-app (unique code) + can print the PNG keepsake.
+4. WHEN READY (at the real store / sourcing moment), kid gives the voucher to Papa and
+   picks the actual card of that tier they want (the Pokémon they love).
+5. Papa VERIFIES the code, buys that card from the real market, hands it over, and marks
+   the voucher REDEEMED/BURNED in-app (reuses the `redeem_request` ledger). One voucher =
+   one redemption; burned after use.
+
+**Why this is better:** no speculative upfront inventory (Papa buys only what's redeemed);
+kid still gets "the Pokémon they love" (chosen at redemption); the spend becomes a tangible
+keepsake; earning and sourcing are cleanly decoupled; all fairness gates intact.
+
+- Real prize inventory + per-game-day budget → swap placeholder prices for real ones.
+- Multiplayer: how the team pool syncs live on the host dashboard; whether kids see a
+  team progress bar DURING play (motivational) or only at the store.
+- Exact "measured gym" + "opportunity" definitions for the Effort Score normalizer
+  (engine detail — pin at build).
+
+-----
+
+## PART 14 — BOSS MECHANICS & CRYSTALS (v3.5 — LOCKED)
+
+> Closes the last open input to the crystal economy (boss-crystal payouts were
+> placeholders in Part 12 / economy backlog). Builds ON Part 9 (battle system, already
+> locked) — this part adds FREQUENCY, REWARD STRUCTURE, and CRYSTAL NUMBERS, not a
+> re-design of combat. Part 9 still owns the duel structure, 8 battle abilities, and
+> bayanihan guardrails.
+
+### 14A — FREQUENCY (LOCKED)
+
+- **10 winnable boss fights:** one minor villain at the end of each region R1–R9
+  (9 fights) + the R10 Pilipinas FINAL SHOWDOWN (1 fight).
+- **2 scripted-loss cameos:** the Big Boss appears at R3 and R7 as UNBEATABLE (Part 9
+  villain arc) — these are scripted losses that build dread/hype. They award NO
+  crystals and are layered ON TOP of those regions' normal minor villain.
+- So: R3 and R7 each have a beatable minor villain (crystals) AND an unbeatable cameo
+  (no crystals, story beat).
+
+### 14B — REWARD STRUCTURE (v3.6 — REVISED: no boss crystals)
+
+> **SUPERSEDES the v3.5 "crystals + trophy" reward.** Boss crystals are REMOVED. Beating
+> bosses now unlocks the **TEAM PRIZE BONUS** (the prize store's 5th tier, see Part 13P)
+> + the unique trophy Pokemon. Rationale: a shared boss-gated prize is more thematically
+> coherent (beat bosses together → a shared trophy, not more spending money) and moves
+> the bayanihan equalizer from crystals into the shared prize.
+
+Beating a boss rewards:
+- **TEAM PRIZE BONUS progress** — boss-defeat COUNT drives the prize store's 5th tier
+  (3 bosses = small, 6 = medium, 10 = grand shared prize). Crystals-free; the ONLY path
+  to this tier is collective combat victory. See Part 13P.
+- **Unique catchable TROPHY Pokemon** — the Part 11 "catch a defeated boss's signature
+  pokemon" mechanic: UNIQUE, never wild-catchable, bonus slot (14F), everyone-gets-a-copy.
+- **NO crystals.** (Affordability check: the Pokemon catch/upgrade ladder remains
+  affordable on gym-crystals alone — even a struggling kid (~19.6k gym-only) can build a
+  team of 3 and chase a Legendary. Boss crystals were generous padding, not load-bearing.)
+- **NO effort points** (would undo prize age-fairness — unchanged reasoning).
+
+### 14C — BOSS-DEFEAT TRACKING (replaces crystal numbers)
+
+No crystal payout. The build tracks **boss-defeat COUNT per team** (which feeds the Team
+Prize Bonus tier, Part 13P) and the **collective-clean metrics** (flawless / full-team /
+round-efficiency) — which now gate the QUALITY of the team prize (3/6/10 thresholds),
+not a crystal bonus. Collective metrics still matter; they just reward the shared prize,
+not crystals. (The old per-boss crystal table is REMOVED.)
+
+### 14D — FULL-GAME ECONOMY (v3.6 — gym crystals only)
+
+> **SUPERSEDES the v3.5 gym+boss table.** With boss crystals removed, the crystal
+> economy is GYM-ONLY.
+
+| Kid        | Full-game crystals (gym only) | Pokemon ladder affordable? |
+|------------|-------------------------------|----------------------------|
+| Struggling | ~19,644                       | ✅ team of 3 + a Legendary  |
+| Solid      | ~26,775                       | ✅ comfortably              |
+| Strong     | ~59,708                       | ✅ 3 Legendaries (~15k)     |
+
+⚠️ **Gap consequence:** without the flat boss base equalizing things, the strong-vs-
+struggling CRYSTAL gap re-widens toward ~3× (was compressed to ~2× by boss crystals).
+This is FINE — the prize store's fairness comes from EFFORT (team unlocks tiers, picks
+are effort-gated), NOT crystals (13B/14E), so a wider crystal gap does NOT re-open prize
+unfairness. The bayanihan equalizer now lives in the boss-gated TEAM PRIZE (shared,
+collective) instead of in boss crystals — arguably cleaner.
+
+**SPENDING-POWER LEVER (v3.6 — DECIDED):** considered re-adding boss crystals for "more
+crystals to spend." DECIDED AGAINST — bosses stay crystal-free (keeps the clean gyms→
+crystals / bosses→shared-prize separation). NOTE the common misconception: boss crystals
+would NOT help kids reach higher prize TIERS — tiers are EFFORT-gated, crystals only buy
+WITHIN an unlocked tier (13B two-gates). So if more spending power is wanted, the clean
+lever is **raising GYM earn-rates** (lifts EVERY kid, preserves the separation) — NOT
+boss crystals. And if easier shelf ACCESS is wanted, the lever is **lowering effort
+thresholds** (Silver ~90 / Gold ~160), not crystals at all. Hold all three steady until
+playtest data says which (if any) needs adjusting — don't preemptively inflate.
+
+### 14E — PRIZE-STORE PARITY (LOCKED v3.5)
+
+The ~54k-vs-94k spendable-crystal gap means that IF shelf items were priced in raw
+crystals, the strong kid would simply afford more/better — partially re-opening the
+comparison problem at checkout (gap-closing pick order, 13E, stops sweeping but not the
+affordability gap). **RESOLUTION (LOCKED): fixed-price-per-shelf + limited EARNED
+picks** (see revised 13E). The TEAM TIER gates prize QUALITY (age-fair, per 13B);
+crystals are just the transaction, not a quality lever; the individual lever is "how
+many PICKS you earned (via effort)," NOT "how big your crystal pile is." This makes the
+crystal gap economically irrelevant to prize fairness — a 94k kid and a 54k kid on the
+same team shop the same shelves at the same prices with effort-earned pick counts.
+Rejected: per-kid spend cap (makes earned crystals feel fake); flatten bosses more
+(symptom, not cause); keep the gap (half-solved). 
+
+⚠️ **Consequence for the crystal sink:** with prizes fixed-price + pick-limited,
+crystals are LESS consumed by prizes than a raw-crystal store would consume. The
+Pokemon economy (Part 12 catch/upgrade) becomes the PRIMARY crystal sink; the prize
+store is a secondary, bounded sink. Lifetime accumulation (12I) is then controlled
+mainly by EXPIRY (13I) — reconfirm expiry rules carry this load in the prize-numbers
+session.
+
+### 14F — TROPHY & RE-ATTEMPT (v3.6 — LOCKED)
+
+**Trophy Pokemon (LOCKED):**
+- **BONUS SLOT — does NOT count against the team cap (3–5).** Pure reward; a kid is
+  never forced to release a favorite to hold a trophy. Self-limiting: trophies come
+  only FROM boss wins, so a kid can't stack them before the fights that matter.
+- **EVERYONE who fought gets their OWN copy** (bayanihan-consistent). Rejected: single
+  shared trophy (forces "who deserves it" comparison — the thing the redesign kills);
+  final-blow-only (rewards the strong carry, re-imports unfairness). The trophy is a
+  SHARED TEAM MEMORY ("we all beat Bakunawa, we all carry his mark"). This is the ONE
+  intentional exception to species-uniqueness — fine, because trophies are a separate
+  non-wild-catchable class (Part 11 boss set ≠ the 183 roster) and "earned together"
+  is a feature, not a violation.
+- Trophy creatures need their OWN stat block (separate from wild roster) — boss build.
+
+**Boss-loss re-attempt (LOCKED):**
+- **Re-attempt + optional "train more" gym replay.** On a boss game-over: framed
+  collectively ("the villain got away — train together and try again!"), immediately
+  re-attemptable (extends Part 9), PLUS an optional quick gym replay to grow HP/XP
+  before re-fighting — so a stuck team has a real lever to get stronger. Rejected: pure
+  forward-only (can trap a team in a loss loop); auto-scale boss down (undercuts the
+  achievement, feels patronizing). ⚠️ The train-more replay touches forward-only +
+  anti-farm guard ONLY at boss game-over (not general gym replay) — scope the exception
+  narrowly at build so the crystal re-farm loophole stays closed.
+
+### 14G — STILL OPEN (boss build session)
+
+- Trophy stats/rarity per boss (its own stat block; honor Part 10A guardrail).
+- BATTLE-ability population per Pokemon (battle power = HP/XP only, never rarity-gated).
+- Exact round-budget / collective-metric thresholds for the +50% bonus (Part 14C).
+- Boss/villain pokemon SET design from the 18-creature bench (Part 11).
+- Teamwork / ALLY: survives as a MOVES targeting option, or BATTLE-only? (Part 5/9.)
+
+-----
+
 ## CONTENT CREATION BACKLOG (deferred — Regions 1–2 pilot first)
 
 **Shared pipeline:** “Did You Know” + CLUE are authored TOGETHER — one research
@@ -940,95 +1659,22 @@ Q: Philippine national hero? → José Rizal
 
 -----
 
-## DESIGN BACKLOG (future passes — NOT this build)
+## DESIGN BACKLOG → MOVED TO BACKLOG.md (v3.6 — information-architecture cleanup)
 
-**⏳ IN PROGRESS (Claude Code applying now):**
-- **Library v2.0 push** — `CLAUDE_CODE_PROMPT_v2_FINAL.md` running in Claude Code:
-  183 evolution-line roster, two-commit (docs + data), PH-themed R10, bench.
-  ON RETURN: (a) review the emoji/type Claude Code assigned to new base forms +
-  all R10 PH creatures; (b) confirm validation report (counts, no dups, move
-  legality); (c) confirm the push.
-
-**✅ DONE — Economy (v3.3, 2026-05-25 — see PART 12, validated vs UAT ledger PEPE12):**
-- Earning: Path B (per-gym, accuracy-driven) — supersedes live per-question loop.
-  VERIFIED: cuts the UAT runaway ~7× (strong kid ₱1,184 → ~₱166 by R6).
-- Pokeball ladder: rarity-based (Basic 50 → Legendary 2500) — replaces region-based.
-- Redeem value: base 20/80/200/500/1200, ×1.5 fully grown; starter = 0.
-- Trade-in: 40% → 80% grown (~30% next-tier coverage per jump).
-- Pity softener: 3 consecutive misses on the same pokemon → one tier easier.
-- Cap GROWS 3→4→5 with player level (supersedes v3.2 cap=3) — enables grow-and-keep
-  AND chase-Legendaries; release now a strategy, keeps releases rare (protects pool).
-- Persistence (12I): lifetime wallet + redeem-and-burn, NO peso cash-out; Prize Store
-  is the sole payout path + the budget lever (pricing/expiry).
-- Peso visibility (12I): REMOVE from player UI, KEEP on host UI.
-- Full-game crystal estimate (gym only, no bosses): ~20k (struggling) → ~60k (strong).
-
-**💰 ECONOMY BACKLOG (deferred from the economy session — own passes):**
-- **BOSS CRYSTALS.** Crystal bonus for defeating each mini-boss (R1–R9) and the R10
-  final boss. WORKING PLACEHOLDERS (not locked — set in the boss session): mini-boss
-  = 5× that region's baseCrystals (R1 500 … R9 5,750; ~22k total); final boss ≈ 15k.
-  These flatten the strong/struggling gap (everyone who wins gets the same) — good for
-  bayanihan. Lock real numbers alongside boss mechanics (Part 9). Interacts with the
-  ⚔️ battle-dependent backlog below.
-- **PRIZE STORE + MECHANICS (budget-load-bearing — see 12I).** Sole payout path; NO
-  cash-out. Owns: prize catalog w/ crystal costs (the real budget dial), item/crystal
-  EXPIRY (controls lifetime accumulation), store settling/leveling, redeem-request flow
-  (reuse existing `redeem_request` ledger + host approval — already built), stock
-  handling. Also reframe the stale player redeem copy ("peso credit / payout" →
-  "redeem at Prize Store"). User-authored, dedicated pass; elevated priority.
-- **HP/XP growth curve** (Part 8 numbers) — the battle-magnitude dial; needed before
-  battle tuning. Own pass.
-- **Final 100-vs-103 roster trim** (Part 10C) — cosmetic; do at library polish.
-
-**🟣 EVOLUTION build-out (cosmetic A1 — Principle 10):**
-- Stage art per line (3-stage lines need 3 sprites each; reserved evolved forms
-  need art too). Biggest asset cost.
-- Catch-screen evolution PREVIEW ("Charmander → ✨Charizard") — required for
-  price legibility; build it.
-- game.js: render owned creature's stage by PLAYER level; per-kid re-render.
-
-**🔴 STRUCTURAL — own session:**
-- **TIME TRAVEL** — reopening completed gyms cascades into badge recalc, re-gating,
-  ledger reopen, anti-farm guard, multiplayer sync. Most complex build.
-
-**⚔️ BATTLE-dependent (waiting on boss mechanics):**
-- **Boss/villain pokemon set** — design from the BENCH (18 displaced incl.
-  Reshiram/Zekrom/Kyurem/Darkrai etc.); separate from the 183 (Part 11). Decide
-  the "catch a defeated boss's signature pokemon" trophy mechanic.
-- Populate deferred **BATTLE ability** per Pokemon (rich-get-richer guardrail:
-  battle power = HP/XP only, never rarity-gated).
-- Battle frequency / boss mechanics design.
-- **Teamwork / ALLY:** survives in MOVES as a targeting option, or BATTLE-only?
-- **Region 1 re-attempt path** for boss game-over vs forward-only.
-
-**🟡 WATCH-ITEMS (locked but monitor in playtest):**
-- **Post-gym rescue coverage gap:** EXTRA SHOT/TIME TRAVEL live only on Rare+, so
-  low-level/struggling kids can't field a post-gym rescue. May need a baseline
-  retry for all (Part 11 MOVE TIMING note).
-- **Draft pacing / host complexity:** turn-order, whose-turn UI, pass handling,
-  soft timer — all new to Papa's dashboard; verify it doesn't drag (Part 11 P9).
-- **R7 legendaries = 3** (below the ≥5 buffer) — intentional on-ramp; watch that
-  it doesn't frustrate early-L5 kids.
-
-**🅿️ PARKED (smaller passes):**
-- **🎁 Prize Store → moved to 💰 ECONOMY BACKLOG above** (it's budget-load-bearing,
-  not a smaller pass).
-- **Diwata → specific named being?** R10 "Diwata" is a general term; consider a
-  named entity (e.g. Tala, star goddess — completes a celestial trio w/ Mayari +
-  Bakunawa). Minor cultural-polish item.
-- Additional HP parameters (user has more — HP growth model).
-- Combination system (old 5e — star tiers combine abilities) — full pass.
-- Persistence/comeback bonus (forward-only bounce-back).
-- "Most Supportive Trainer" helping milestone.
-- Teaching-moment crystal trickle / personal-best / collection milestones.
-
-**📝 CONTENT (deferred until R1–2 pilot):**
-- "Did You Know" + CLUE authoring pipeline → scale to ~1,458 entries.
-
-**🔧 HYGIENE:**
-- **CLAUDE.md was STALE this session** — it lacked R10's Philippine theme (caught
-  late). Before next session, sync the latest repo CLAUDE.md so design decisions
-  aren't built on outdated state. Check for other missing region themes/decisions.
+> **The backlog now lives in its own file: `BACKLOG.md` — the single source of truth for
+> ALL pending work (design + build + ops).** It was previously scattered between here and
+> CLAUDE.md, which caused drift. Per the 4-home model (SPEC=design · CLAUDE=build state ·
+> BACKLOG=todo · FILES=manifest), pending work is its own information type with its own
+> home. Do NOT re-add backlog lists here — add them to BACKLOG.md.
+>
+> What was here (economy DONE, boss/prize status, evolution, TIME TRAVEL, battle-session
+> items, watch-items, parked items, content pipeline, hygiene) is all migrated to
+> BACKLOG.md under its NOW / Design / Build / Ops / Watch / Flags / Done sections.
+>
+> The **DROPPED** list and the **build-implementation notes** below stay here for now
+> (KEY BUILD FLAGS / KEY CODE FACTS / SUGGESTED BUILD ORDER are arguably CLAUDE.md/build
+> material — flagged as migration candidates for the consolidated cleanup, not moved this
+> session to avoid scope creep).
 
 ## DROPPED (do not build)
 
