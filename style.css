@@ -3226,3 +3226,63 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   color: var(--gold);
   font-weight: 800;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BATTLE BETWEEN-ROUND SUMMARY (Commit 4)
+   ═══════════════════════════════════════════════════════════ */
+.battle-enrage-warn {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.45);
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #f87171;
+  line-height: 1.5;
+}
+.battle-ts-armed {
+  margin: 10px 0;
+  padding: 8px 12px;
+  background: rgba(255,203,5,0.15);
+  border: 1px solid rgba(255,203,5,0.5);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--gold, #ffcb05);
+  text-align: center;
+}
+.battle-ts-arm-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(135deg, #f97316, #ffcb05) !important;
+  color: #1a1a2e !important;
+  font-weight: 900 !important;
+}
+.battle-ts-hint {
+  font-size: 0.74rem;
+  opacity: 0.7;
+  text-align: center;
+  margin-top: 4px;
+}
+.battle-ready-waiting {
+  text-align: center;
+  font-weight: 800;
+  color: #4ade80;
+  padding: 8px 0;
+}
+/* Host battle panel live/ready states */
+.host-battle-live {
+  margin-top: 8px;
+  padding: 6px;
+  text-align: center;
+  font-weight: 800;
+  color: #4ade80;
+  font-size: 0.85rem;
+}
+.host-battle-ready-status {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  opacity: 0.75;
+  text-align: center;
+}

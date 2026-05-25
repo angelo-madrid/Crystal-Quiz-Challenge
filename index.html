@@ -556,10 +556,11 @@
          between-round screen in Commit 4 (COMBO_TEAM_STRIKE). -->
     <div class="battle-controls" id="battle-controls" style="display:none"></div>
 
-    <!-- Post-round result (shown after round resolves) -->
+    <!-- Post-round result (shown after round resolves). The Ready button +
+         Team Strike arm button + enrage warning are rendered inside
+         #battle-round-result-text by _battleShowRoundSummary (Commit 4). -->
     <div class="battle-round-result" id="battle-round-result" style="display:none">
       <div id="battle-round-result-text"></div>
-      <button class="btn-primary" onclick="battleNextRound()">Next Round ▶</button>
     </div>
 
     <!-- Win screen (shown when boss HP = 0 AND all kids hit N=3) -->

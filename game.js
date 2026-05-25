@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.21: Kid-managed round flow — Papa starts Round 1 only,
+//        rounds auto-chain on last-kid Ready; COMBO_TEAM_STRIKE armed between rounds;
+//        enrage warnings on summary; host watch-only + force-next fallback.
 // v1.20: Battle Commit 3 — 6 battle abilities (CRITICAL_HIT / FREEZE_STUN
 //        / HEAL / PROTECT / GUARD / SECOND_WIND) declared pre-answer +
 //        applied in _battleResolveRound; R10 Legendary gate + Papa override
@@ -3561,6 +3564,8 @@ function _battleInitState(regionId, boss) {
     enraged: false,
     enrageRoundsLeft: 0,
     teamStrikeDeclared: false,
+    teamStrikeArmedBy: null,    // Commit 4: playerId who armed TS for next round
+    readyForNext: [],           // Commit 4: player ids ready to start next round
     playerStates: {},
     roundLog: [],
     outcome: null,
@@ -3682,13 +3687,17 @@ async function _battlePollTick() {
     }
 
     // Round ended (roundActive flipped back to false after we answered).
-    const ps = bs.playerStates[STATE.player.id];
+    const summaryVisible = document.getElementById('battle-round-result').style.display !== 'none';
     const roundJustResolved = !bs.roundActive
       && bs.round === _battleLastRoundSeen
       && _battleRoundAnswered
-      && document.getElementById('battle-round-result').style.display === 'none'
+      && !summaryVisible
       && bs.outcome === null;
     if (roundJustResolved) {
+      _battleShowRoundSummary(bs);
+    } else if (!bs.roundActive && summaryVisible && bs.outcome === null) {
+      // Keep the summary's ready count + Team Strike state live as teammates
+      // tap Ready / arm Team Strike on their own devices.
       _battleShowRoundSummary(bs);
     }
   } catch(e) { console.warn('[_battlePollTick]', e); }
@@ -4160,7 +4169,8 @@ function _battleResolveRound(bs) {
     return;
   }
 
-  // Round done — log it + advance counter. Papa starts next round.
+  // Round done — log it + advance counter. Kids ready-up to start the next
+  // round (Commit 4 — no Papa gate after Round 1).
   bs.roundLog.push({
     round:       bs.round,
     damage:      totalDamage,
@@ -4172,7 +4182,10 @@ function _battleResolveRound(bs) {
     enraged:     bs.enraged,
   });
   bs.round++;
-  bs.roundActive = false;  // Papa must tap Start Round again.
+  bs.roundActive = false;     // next round serves when all kids tap Ready
+  bs.readyForNext = [];       // reset the ready set for the new summary
+  // teamStrikeDeclared was consumed this round; arming for the NEXT round
+  // happens via battleArmTeamStrike() on the summary screen.
 }
 
 // ── STAR RATING (SPEC 14G-8) ─────────────────────────────────
@@ -4193,6 +4206,10 @@ function _battleComputeStars(bs) {
 }
 
 // ── ROUND SUMMARY (player side) ───────────────────────────────
+// Shown after a round resolves. The strategy huddle: damage recap, boss HP,
+// enrage warning for NEXT round, a Team Strike arm button (if the kid owns a
+// COMBO_TEAM_STRIKE Pokémon), and a Ready button. When the last active kid
+// taps Ready, the next round auto-serves.
 function _battleShowRoundSummary(bs) {
   _battleHideAllPanels();
   const log = bs.roundLog[bs.roundLog.length - 1];
@@ -4201,30 +4218,149 @@ function _battleShowRoundSummary(bs) {
   const myHp = ps ? ps.hp : '?';
   const myContrib = ps ? ps.correctThisBattle : 0;
   const bossHpPct = Math.round((bs.bossHp / bs.bossMaxHp) * 100);
-  const dmgText = log.teamStrike ? `⚡ TEAM STRIKE! ${log.damage} dmg (3×)` : `${log.damage} dmg dealt`;
+  const dmgText = log.teamStrike
+    ? `⚡ TEAM STRIKE! ${log.damage} dmg (3×)`
+    : `${log.damage} dmg dealt`;
+  const freezeNote = log.freezeStun ? '<br>❄️ Boss was frozen — no attack!' : '';
+
+  // Enrage warning for the NEXT round (so kids can plan).
+  let enrageWarn = '';
+  if (bs.enraged && bs.enrageRoundsLeft > 0) {
+    const boss = BOSS_DATA[bs.regionId];
+    enrageWarn = `
+      <div class="battle-enrage-warn">
+        ⚠️ ${boss?.villain || 'Boss'} is enraged! Next round: <b>${boss?.enrage?.name || 'special move'}</b>
+        — ${_battleEnrageDescription(bs.regionId)}
+      </div>`;
+  }
+
+  // Team Strike status / arm button.
+  const myFainted = ps && ps.fainted;
+  const iAmReady  = (bs.readyForNext || []).includes(STATE.player.id);
+  let teamStrikeBlock = '';
+  if (bs.teamStrikeDeclared) {
+    teamStrikeBlock = `<div class="battle-ts-armed">⚡ Team Strike is ARMED for next round — everyone answer correctly!</div>`;
+  } else {
+    // Show the arm button only if the kid owns an unused COMBO_TEAM_STRIKE Pokémon
+    // and Order's Wrath (R7) isn't blocking it.
+    const blockTs = bs.enraged
+      && BOSS_DATA[bs.regionId]?.enrage?.effect === 'block_team_strike';
+    const team = (STATE.save && STATE.save.pokemon_team) || [];
+    const used = (ps && ps.abilitiesUsed) || [];
+    const tsPoke = team.find(p => p.battleAbility === 'COMBO_TEAM_STRIKE' && !used.includes(p.id));
+    if (tsPoke && !blockTs && !myFainted) {
+      teamStrikeBlock = `
+        <button class="btn-secondary battle-ts-arm-btn" onclick="battleArmTeamStrike('${escapeAttr(tsPoke.id)}')">
+          ⚡ Arm Team Strike (${tsPoke.emoji} ${escapeHTML(tsPoke.name)})
+        </button>
+        <div class="battle-ts-hint">All correct next round → 3× damage. Coordinate with your team!</div>`;
+    } else if (blockTs) {
+      teamStrikeBlock = `<div class="battle-ts-hint">⚠️ Team Strike is blocked by the boss next round.</div>`;
+    }
+  }
+
+  // Ready button / waiting state.
+  const readyCount = (bs.readyForNext || []).length;
+  const activeCount = Object.values(bs.playerStates).filter(p => !p.fainted).length;
+  const readyBlock = iAmReady
+    ? `<div class="battle-ready-waiting">✅ You're ready — waiting for teammates (${readyCount}/${activeCount})…</div>`
+    : `<button class="btn-primary" onclick="battleReadyUp()">Ready ▶ (${readyCount}/${activeCount})</button>`;
 
   document.getElementById('battle-round-result-text').innerHTML = `
     <div style="font-size:1rem;font-weight:800;margin-bottom:8px">Round ${log.round} complete</div>
     <div style="opacity:0.85;font-size:0.85rem;line-height:1.7">
-      ${dmgText}<br>
+      ${dmgText}${freezeNote}<br>
       Boss HP: ${bs.bossHp} / ${bs.bossMaxHp} (${bossHpPct}%)<br>
-      Your HP: ${myHp}<br>
+      Your HP: ${myFainted ? '💀 Fainted' : myHp}<br>
       Your contributions: ${myContrib} / ${BATTLE_MIN_CONTRIBUTION} needed
       ${myContrib >= BATTLE_MIN_CONTRIBUTION ? ' ✅' : ' ⏳'}
-    </div>`;
+    </div>
+    ${enrageWarn}
+    ${teamStrikeBlock}
+    <div style="margin-top:12px">${readyBlock}</div>`;
   document.getElementById('battle-round-result').style.display = 'block';
 }
 
-// Called from onclick="battleNextRound()" — hides summary, shows waiting.
-function battleNextRound() {
-  _battleHideAllPanels();
-  const boss = BOSS_DATA[STATE.currentRegion];
-  const ctrl = document.getElementById('battle-controls');
-  ctrl.style.display = 'flex';
-  ctrl.innerHTML = `
-    <div style="width:100%;text-align:center;padding:10px 0;opacity:0.7;font-size:0.9rem;font-weight:700">
-      ⏳ Waiting for Papa to start the next round…
-    </div>`;
+// Kid taps "Ready ▶" on the summary — adds them to bs.readyForNext. When the
+// LAST active kid readies, flips roundActive = true so the next round serves
+// to everyone (mirrors how the last answer resolves a round). Commit 4.
+async function battleReadyUp() {
+  const code = STATE.roomCode;
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs  = room.battleState;
+    const pid = STATE.player.id;
+    if (bs.outcome !== null) return;           // fight over
+    if (bs.roundActive) return;                // next round already started
+
+    if (!Array.isArray(bs.readyForNext)) bs.readyForNext = [];
+    if (!bs.readyForNext.includes(pid)) bs.readyForNext.push(pid);
+
+    // All active (non-fainted) players ready? → start the next round.
+    const activeIds = Object.keys(bs.playerStates).filter(id => !bs.playerStates[id].fainted);
+    const allReady  = activeIds.length > 0 && activeIds.every(id => bs.readyForNext.includes(id));
+    if (allReady) {
+      bs.roundActive  = true;
+      bs.readyForNext = [];
+    }
+
+    room.battleState = bs;
+    room.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, room);
+
+    // Local UI: re-render the summary so the ready count updates, OR if the
+    // round just started, the next poll tick will serve the question.
+    if (!bs.roundActive) {
+      _battleShowRoundSummary(bs);
+    } else {
+      // Reset answered flag so the poll serves the new round to us.
+      _battleRoundAnswered = false;
+    }
+  } catch(e) { console.warn('[battleReadyUp]', e); }
+}
+
+// Kid arms Team Strike for the NEXT round via a COMBO_TEAM_STRIKE Pokémon.
+// Consumes that Pokémon's battle ability. Sets bs.teamStrikeDeclared = true
+// so the next round's all-correct check applies 3× damage. Commit 4.
+async function battleArmTeamStrike(pokeId) {
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const poke = team.find(p => p.id === pokeId);
+  if (!poke || poke.battleAbility !== 'COMBO_TEAM_STRIKE') return;
+  const code = STATE.roomCode;
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs  = room.battleState;
+    const pid = STATE.player.id;
+    if (bs.outcome !== null || bs.roundActive) return;
+
+    // Order's Wrath block (R7).
+    if (bs.enraged && BOSS_DATA[bs.regionId]?.enrage?.effect === 'block_team_strike') {
+      showToast('⚠️ Team Strike is blocked by the boss next round');
+      return;
+    }
+    if (bs.teamStrikeDeclared) { showToast('⚡ Team Strike is already armed'); return; }
+
+    if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
+    const myPs = bs.playerStates[pid];
+    if ((myPs.abilitiesUsed || []).includes(pokeId)) {
+      showToast(`⚠️ ${poke.name}'s ability is already used`);
+      return;
+    }
+    myPs.abilitiesUsed = [...(myPs.abilitiesUsed || []), pokeId];
+    bs.teamStrikeDeclared = true;
+    bs.teamStrikeArmedBy  = pid;
+
+    room.battleState = bs;
+    room.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, room);
+
+    showToast(`⚡ ${poke.name} armed Team Strike for next round!`);
+    _battleShowRoundSummary(bs);
+  } catch(e) { console.warn('[battleArmTeamStrike]', e); }
 }
 
 // ── WIN SCREEN ────────────────────────────────────────────────
@@ -6111,7 +6247,14 @@ async function _hostRenderBattlePanel(code, room, el) {
   }).join('');
 
   const outcome = bs.outcome;
-  const canStart = allReady && !bs.roundActive && outcome === null;
+  // Commit 4: Papa only starts ROUND 1. After that, rounds are kid-paced
+  // (last kid taps Ready → next round auto-serves). The host keeps a manual
+  // "Force Next Round" fallback for disconnect recovery.
+  const isFirstRound = bs.round === 1 && (bs.roundLog || []).length === 0;
+  const canStartRound1 = allReady && !bs.roundActive && outcome === null && isFirstRound;
+  const canForceNext   = !bs.roundActive && outcome === null && !isFirstRound;
+  const readyCount2    = (bs.readyForNext || []).length;
+  const activeCount2   = Object.values(players).filter(p => !p.fainted).length;
 
   el.innerHTML = `
     <div class="col3-section-label">⚔️ BOSS FIGHT — R${bs.regionId}</div>
@@ -6135,11 +6278,22 @@ async function _hostRenderBattlePanel(code, room, el) {
       : outcome === 'loss'
       ? `<div style="color:#f87171;font-weight:900;margin:10px 0">💔 Loss — players can retry</div>`
       : ''}
-    <button class="btn-primary" style="width:100%;margin-top:8px"
-      ${canStart ? '' : 'disabled style="opacity:0.4"'}
-      onclick="hostBattleStartRound('${escapeAttr(code)}')">
-      ▶ Start Round ${bs.round}
-    </button>
+    ${canStartRound1
+      ? `<button class="btn-primary" style="width:100%;margin-top:8px"
+           onclick="hostBattleStartRound('${escapeAttr(code)}')">
+           ▶ Start the Battle! (Round 1)
+         </button>`
+      : ''}
+    ${bs.roundActive && outcome === null
+      ? `<div class="host-battle-live">🟢 Round ${bs.round} live — kids answering…</div>`
+      : ''}
+    ${canForceNext
+      ? `<div class="host-battle-ready-status">⏳ Between rounds — ${readyCount2}/${activeCount2} kids ready</div>
+         <button class="btn-secondary" style="width:100%;margin-top:6px"
+           onclick="hostBattleForceNextRound('${escapeAttr(code)}')">
+           ▶ Force Next Round (if a kid dropped)
+         </button>`
+      : ''}
     ${outcome !== null
       ? `<button class="btn-secondary" style="width:100%;margin-top:6px"
            onclick="hostBattleEndFight('${escapeAttr(code)}')">
@@ -6159,6 +6313,24 @@ async function hostBattleStartRound(code) {
   room.updated_at = new Date().toISOString();
   await dbWriteRoom(code, room);
   showToast(`▶ Round ${room.battleState.round} started`);
+  renderHostDashboard();
+}
+
+// Disconnect-recovery fallback (Commit 4): if a kid drops mid-summary and
+// never taps Ready, the team is stuck waiting. Papa can force the next round.
+// Normal flow is kid-paced (last Ready tap auto-starts); this is the escape hatch.
+async function hostBattleForceNextRound(code) {
+  const room = await dbReadRoom(code);
+  if (!room || !room.battleState) return;
+  const bs = room.battleState;
+  if (bs.roundActive) { showToast('Round already active'); return; }
+  if (bs.outcome !== null) { showToast('Fight already over'); return; }
+  bs.roundActive  = true;
+  bs.readyForNext = [];
+  room.battleState = bs;
+  room.updated_at  = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(`▶ Forced Round ${bs.round}`);
   renderHostDashboard();
 }
 
