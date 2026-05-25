@@ -131,6 +131,15 @@
   pre-game; AUDIT the other phase screens (gym, regional catch, boss fight) for
   the same re-entry pattern during UAT — confirm reconnect always routes to the
   correct CURRENT state, never a completed one.
+- ABILITY ECONOMY (v1.22): code now matches SPEC v3 appreciating-asset model
+  (was still running dead v2 consume-on-use). Watch at UAT: does HP growth feel
+  rewarding? Is +band/10 per use noticeable? Is one-use-per-gym too slow vs the
+  Part 8 curve (which assumed ~3/gym)? Removing the per-gym limit is the lever.
+- CATCH-BETWEEN-GYMS (v1.22): more catches/region than the region-end economy
+  assumed (up to 5 catch screens/region vs 1). Watch ball economy + team-fill
+  speed + strong/struggling gap at UAT.
+- Pre-game catch + regional catch both build `newPokemon` — confirm BOTH stamp
+  `hp` via `computeHp` (v1.22 Change 3G) so no Pokémon has undefined HP in battle.
 
 ---
 

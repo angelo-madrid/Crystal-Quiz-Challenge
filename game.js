@@ -1,5 +1,9 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.22: Instant abilities (no popup); catch between gyms (rarity-by-level
+//        per Part 4); abilities NON-CONSUMING + XP-growth on use+correct
+//        (Part 3B/8) — removed dead consume-on-use splice; HP grows
+//        +band/10 per XP event; HP_BANDS + RARITY_START_RATIO locked.
 // v1.21.1 HOTFIX: pre-game catch re-entry trap closed (already-has-starter
 //                 → skip to map); catch-card "undefined" ability labels fixed.
 // v1.21: Kid-managed round flow — Papa starts Round 1 only,
@@ -346,6 +350,43 @@ const REDEEM_BASE     = { basic:  20, holo:  80, rare: 200, super:  500, legenda
 // Cap GROWS with player level (Part 12E). Render 5 slots always; lock future ones.
 const TEAM_CAP_BY_LEVEL = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 5 };
 const MAX_TEAM_CAP      = 5;
+
+// SPEC Part 8 — HP bands by player level (low→high). LOCKED defaults, retunable.
+const HP_BANDS = {
+  1: [100, 140],
+  2: [150, 210],
+  3: [220, 300],
+  4: [310, 410],
+  5: [420, 550],
+};
+// SPEC Part 4 — rarity start-position within the band (a Rare is born at 50%
+// of its level band; a Legendary at 100%, etc.).
+const RARITY_START_RATIO = {
+  basic: 0.0, holo: 0.25, rare: 0.50, super: 0.75, 'super rare': 0.75,
+  legendary: 1.0, 'ultra rare': 1.0,
+};
+// SPEC Part 8 — HP from level + rarity start + accumulated xpRatio.
+function computeHp(poke) {
+  const lvl   = Number(poke.level) || 1;
+  const band  = HP_BANDS[lvl] || HP_BANDS[1];
+  const start = RARITY_START_RATIO[(poke.rarity || 'basic').toLowerCase()] ?? 0;
+  const ratio = xpRatioOf(poke);
+  const position = start + (1 - start) * ratio;     // never below rarity start
+  return Math.round(band[0] + (band[1] - band[0]) * position);
+}
+// SPEC Part 8 — award one XP event (use MOVE + correct). +0.1 xpRatio,
+// ~10 events climb a full band. Recomputes hp. Returns HP gained (for toast).
+function awardXpEvent(poke) {
+  if (!poke) return 0;
+  const before = computeHp(poke);
+  const curRatio = xpRatioOf(poke);
+  const newRatio = Math.min(1, curRatio + 0.1);
+  poke.xpRatio = newRatio;
+  poke.xp = Math.round(newRatio * (poke.xpCap || 100));   // keep xp field in sync
+  poke.hp = computeHp(poke);                              // store grown HP
+  const gained = poke.hp - before;
+  return gained > 0 ? gained : 0;
+}
 // Pity softener — 3 consecutive misses on the same Pokemon → next catch
 // question one tier easier (Part 12G).
 const PITY_MISS_THRESHOLD = 3;
@@ -481,6 +522,23 @@ function currentPlayerLevel() {
 function currentTeamCap() {
   return TEAM_CAP_BY_LEVEL[currentPlayerLevel()] || 3;
 }
+
+// SPEC Part 4 access ladder: which rarities a kid may catch at their level.
+const RARITY_RANK = {
+  basic: 1, holo: 2, rare: 3,
+  super: 4, 'super rare': 4,
+  legendary: 5, 'ultra rare': 5,
+};
+const LEVEL_MAX_RARITY_RANK = { 1: 1, 2: 2, 3: 3, 4: 4, 5: 5 };  // L1→Basic … L5→Legendary
+function canCatchRarity(rarity) {
+  const rank = RARITY_RANK[(rarity || 'basic').toLowerCase()] || 1;
+  return rank <= (LEVEL_MAX_RARITY_RANK[currentPlayerLevel()] || 1);
+}
+// Friendly label of the top rarity catchable at the kid's level (for hints).
+function _rarityLabelForLevel() {
+  const lvl = currentPlayerLevel();
+  return ({ 1: 'Basic', 2: 'Holo', 3: 'Rare', 4: 'Super Rare', 5: 'Legendary' })[lvl] || 'Basic';
+}
 function ballCostForRarity(rarity) {
   const key = (rarity || 'basic').toLowerCase();
   return BALL_COST[key] !== undefined ? BALL_COST[key] : BALL_COST.basic;
@@ -613,6 +671,10 @@ let STATE = {
   gymAnswerLog: [],
   abilityUsedThisGym: false,
   pendingAbilityPokemon: null,
+  // v1.22 (SPEC Part 3B/8): Pokémon whose ability was used THIS question.
+  // If the kid then answers correctly, awardXpEvent grows its HP (appreciating
+  // asset). Cleared on wrong answer + at the start of each new question.
+  pendingXpPokemon: null,
   // 1.5: single-question modifiers set by an ability, consumed on next answer
   pendingMods: { multiplier: 1, doubleOrNothing: false, retry: false, shield: false },
   // multiplayer
@@ -2166,7 +2228,14 @@ function showCatchResult(caught) {
     // Add to team — MAX 1 POKEMON, waive remaining pokeballs.
     // We spread the full pokemon.json record (preserves rarity, baseValue,
     // abilityEffect, type) and add the runtime fields level + caughtAt.
-    const newPokemon = { ...poke, level: 1, caughtAt: 'pregame', roomCode: STATE.roomCode || null };
+    const newPokemon = {
+      ...poke,
+      level: 1,
+      xp: 0, xpCap: 100, xpRatio: 0,       // appreciating-asset XP track (Part 3C)
+      caughtAt: 'pregame',
+      roomCode: STATE.roomCode || null,
+    };
+    newPokemon.hp = computeHp(newPokemon);  // SPEC Part 8: starting HP from level+rarity
     PREGAME_STATE.caughtPokemon.push(newPokemon);
     STATE.save.pokemon_team = PREGAME_STATE.caughtPokemon;
     // Waive all remaining pokeballs
@@ -2353,7 +2422,9 @@ function renderRegionalCatch() {
     : '—';
 
   // Phase 1 step 1.4: 10 catchable region Pokemon with race-rule greyout.
-  const regionPokemon = getRegionalList(region.id);
+  // SPEC Part 4 (v1.22): pool gated by the kid's rarity-by-level access ladder
+  // — a level-1 kid only sees Basic offerings; a level-5 kid sees everything.
+  const regionPokemon = getRegionalList(region.id).filter(p => canCatchRarity(p.rarity));
   const caughtIds = getCaughtPokemonIds();
   const caughtBy  = getCaughtByMap();
   const rarityBadge = { common:'⚪', rare:'💎', super:'🌟', legendary:'👑' };
@@ -2627,6 +2698,7 @@ function showRegionalCatchResult(caught) {
       caughtAt: `region${s.region.id}`,
       roomCode: STATE.roomCode || null,
     };
+    newPokemon.hp = computeHp(newPokemon);  // SPEC Part 8: starting HP from level+rarity
     s.caughtPokemon.push(newPokemon);
     if (!STATE.save.pokemon_team) STATE.save.pokemon_team = [];
     STATE.save.pokemon_team.push(newPokemon);
@@ -2686,6 +2758,17 @@ async function finishRegionalCatch() {
   // SPEC Part 14G-7: in-game Legendary reminders at R5/R7/R8 if the kid
   // hasn't caught one yet. Fires once per region (idempotent).
   _maybeShowLegendaryReminder(justFinished && justFinished.id);
+
+  // v1.22: if the region isn't finished yet, this was a between-gyms catch
+  // (gym 1–4 → catch → continue). Route the kid back to the gym-complete
+  // screen so they can tap Next Gym ▶. Region-end catches keep the
+  // original map destination.
+  const regionSave = STATE.save.regions?.[STATE.currentRegion];
+  const regionDone = (regionSave?.gymsCompleted || []).length >= 5;
+  if (!regionDone) {
+    showScreen('screen-gym-complete');
+    return;
+  }
 
   showMap();
 }
@@ -3156,6 +3239,8 @@ function loadQuestion() {
   STATE.answered = false;
   // 1.5: clear any ability modifiers left over from the previous question.
   STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
+  // v1.22: fresh question, no Pokémon ability used yet (XP marker resets).
+  STATE.pendingXpPokemon = null;
 
   const q = STATE.currentQData[STATE.currentQ];
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
@@ -3307,11 +3392,28 @@ function checkAnswer(idx) {
 
     fb.textContent = `✅ Correct! +${displayEarn} 🔮 (settles at gym end)`;
     fb.className = 'feedback-bar correct';
+
+    // SPEC Part 3B/8 (v1.22): appreciating-asset growth. If the kid used a
+    // Pokémon's ability on THIS question and answered correctly, that Pokémon
+    // gains an XP event (+0.1 xpRatio → grows HP). Wrong answer = neutral
+    // (handled in the else branch). One XP event per question.
+    if (STATE.pendingXpPokemon) {
+      const grown = awardXpEvent(STATE.pendingXpPokemon);
+      const gp = STATE.pendingXpPokemon;
+      if (grown > 0) {
+        showToast(`📈 ${gp.emoji} ${gp.name} grew! +${grown} HP (now ${gp.hp})`);
+      }
+      // pendingXpPokemon is a reference into pokemon_team; the mutation is
+      // already in place — the next save flush persists the growth.
+      STATE.pendingXpPokemon = null;
+    }
   } else {
     // No wrong-answer penalty (SPEC Part 1). Encouraging framing only —
     // never "❌ Wrong" in red. SHIELD/RETRY/SKIP modifiers harmlessly noop.
     fb.textContent = `The answer was ${correct} 💪`;
     fb.className = 'feedback-bar wrong';
+    // SPEC Part 3C: wrong answer after using an ability = neutral (no XP, no loss).
+    STATE.pendingXpPokemon = null;
   }
 
   // pendingMods kept (retry/shield are still wired); MULTIPLY/DoN ability
@@ -3489,8 +3591,10 @@ async function endGym() {
     <div class="stat-cell"><div class="stat-val">${grade}</div><div class="stat-label">Grade</div></div>
   `;
 
-  // Pokemon offer placeholder (Phase 2)
+  // Catch-between-gyms offer (v1.22, SPEC Part 4/11) — populated below when
+  // the kid is mid-region. Hidden by default; the gyms 1–4 branch turns it on.
   offerEl.style.display = 'none';
+  offerEl.innerHTML = '';
 
   // Next gym button (Phase 1 step 1.3): on gym 5, if the whole region is
   // now complete, offer Regional Pokemon Catch instead of hiding the button.
@@ -3499,6 +3603,13 @@ async function endGym() {
     nextBtn.style.display = 'block';
     nextBtn.textContent   = `Next Gym ▶`;
     nextBtn.onclick       = goNextGym;
+    // SPEC Part 4/11 (v1.22): offer a catch between gyms (rarity-gated by level).
+    offerEl.style.display = 'block';
+    offerEl.innerHTML = `
+      <button class="btn-secondary btn-catch-between" onclick="startRegionalCatch(${STATE.currentRegion})">
+        🔮 Catch a Pokémon before the next gym
+      </button>
+      <div class="catch-between-hint">You can catch up to ${_rarityLabelForLevel()} Pokémon at your level.</div>`;
   } else if (regionComplete) {
     // SPEC Part 14G: after Gym 5 cleared, boss fight comes before regional catch.
     // startBossFight() is built in Commit 2; for now the button is wired but the
@@ -4726,6 +4837,8 @@ function renderPokemonTeam() {
         <div class="poke-emoji">${p.emoji}</div>
         <div class="poke-name">${p.name}</div>
         <div class="poke-level">${stars}</div>
+        <div class="poke-hp">❤️ ${p.hp || computeHp(p)} HP</div>
+        <div class="poke-xp-bar"><div class="poke-xp-fill" style="width:${Math.round(xpRatioOf(p)*100)}%"></div></div>
         <button class="poke-ability-btn" onclick="activateAbility(${idx})">
           ${p.emoji} ${getAbilityLabel(p)}
         </button>
@@ -4736,35 +4849,29 @@ function renderPokemonTeam() {
 }
 
 // ── POKEMON ABILITY ───────────────────────────────────────────
-// Phase 1 step 1.5: generic dispatcher for all 10 mechanics. Each caught
-// Pokemon carries abilityEffect = { mechanic, value, description } from
-// pokemon.json. The dispatcher reads .mechanic and routes to one of the
-// applyAbility_* helpers below. Using an ability consumes the Pokemon
-// (removes it from STATE.save.pokemon_team) and is rate-limited to ONE
-// per gym via STATE.abilityUsedThisGym.
+// SPEC v3 (v1.22): dispatcher for the 7 live MOVE mechanics (ELIMINATE,
+// CLOCK/TIME, SWAP/SKIP, EXTRA_SHOT, TIME_TRAVEL, CLUE/REVEAL — plus FREEZE/
+// RETRY/SHIELD shims). Each caught Pokémon carries abilityEffect = { mechanic,
+// value, description } from pokemon.json. NON-CONSUMING (v1.22, SPEC Part 3B):
+// abilities no longer remove the Pokémon — instead, use MOVE + correct answer
+// awards an XP event that grows HP (Part 8 formula). Still one use per gym
+// via STATE.abilityUsedThisGym.
 
+// Fires the Pokémon's ability IMMEDIATELY (no confirmation modal — the popup
+// burned the kid's attention mid-question). One use per gym (non-consuming).
 function activateAbility(pokemonIdx) {
   if (STATE.abilityUsedThisGym) {
-    alert('⚠️ You can only use one Pokemon ability per gym!');
+    showToast('⚠️ One Pokémon ability per gym');
     return;
   }
-  // 1.5: fixed the original `!STATE.answered === false` double-negative.
   if (STATE.answered) {
-    alert('⚠️ Too late — you already answered this question.');
+    showToast('⚠️ Too late — you already answered');
     return;
   }
-
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
   if (!pokemon) return;
-  STATE.pendingAbilityPokemon = { pokemon, idx: pokemonIdx };
-
-  document.getElementById('modal-poke-emoji').textContent  = pokemon.emoji;
-  document.getElementById('modal-poke-name').textContent   = pokemon.name;
-  document.getElementById('modal-ability-name').textContent = getAbilityLabel(pokemon);
-  document.getElementById('modal-ability-desc').textContent = getAbilityDesc(pokemon);
-
-  document.getElementById('modal-confirm-btn').onclick = () => useAbility(pokemonIdx);
-  document.getElementById('modal-ability').style.display = 'flex';
+  // Fire it now.
+  useAbility(pokemonIdx);
 }
 
 function closeModal() {
@@ -4781,8 +4888,12 @@ function normalizeMultiplier(v) {
   return n;
 }
 
+// Dispatches a Pokémon's MOVE ability. SPEC v3 (v1.22): does NOT consume the
+// Pokémon. Marks the Pokémon as "used this question" so checkAnswer can award
+// an XP event if the kid then answers correctly (appreciating-asset loop,
+// Part 3B/8).
 async function useAbility(pokemonIdx) {
-  closeModal();
+  closeModal();   // harmless if modal already hidden
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
   if (!pokemon) return;
 
@@ -4801,9 +4912,6 @@ async function useAbility(pokemonIdx) {
       case 'RETRY':             resultMsg = applyAbilityRetry(); break;
       case 'SHIELD':            resultMsg = applyAbilityShield(); break;
       // CUT (SPEC v3 DROPPED): abilities never touch crystals.
-      // MULTIPLY / DOUBLE_OR_NOTHING / STEAL retired — no-op fallback so
-      // legacy pokemon.json rows don't crash. (pokemon.json v2.0 has no
-      // abilityEffect, so these branches shouldn't fire at runtime.)
       case 'MULTIPLY':          resultMsg = 'Ability retired — no effect.'; break;
       case 'DOUBLE_OR_NOTHING': resultMsg = 'Ability retired — no effect.'; break;
       case 'STEAL':             resultMsg = 'Ability retired — no effect.'; break;
@@ -4815,16 +4923,21 @@ async function useAbility(pokemonIdx) {
   }
 
   STATE.abilityUsedThisGym = true;
+  // SPEC Part 3B/8 (v1.22): mark which Pokémon was used this question. If the
+  // kid answers correctly, checkAnswer awards it an XP event (grows HP). NOT
+  // consumed — the dead v2 pokemon_team.splice was the real "ability won't
+  // refresh" bug.
+  STATE.pendingXpPokemon = pokemon;
+  renderPokemonTeam();   // re-render (button now greys via abilityUsedThisGym)
 
-  // Consume the Pokemon
-  STATE.save.pokemon_team.splice(pokemonIdx, 1);
-  renderPokemonTeam();
+  // Toast feedback (replaces the modal + feedback-bar combo).
+  const label = getAbilityLabel(pokemon);
+  showToast(`${pokemon.emoji} ${label}: ${resultMsg}`);
 
-  // Show what happened in the feedback bar (SKIP advances the question
-  // before this fires, so the bar may already be reset — that's fine).
+  // Also reflect in the feedback bar if present (SKIP may have advanced already).
   const fb = document.getElementById('feedback-bar');
-  if (fb && resultMsg) {
-    fb.textContent = `${pokemon.emoji} ${getAbilityLabel(pokemon)}: ${resultMsg}`;
+  if (fb && resultMsg && !STATE.answered) {
+    fb.textContent = `${pokemon.emoji} ${label}: ${resultMsg}`;
     fb.className = 'feedback-bar';
   }
 }

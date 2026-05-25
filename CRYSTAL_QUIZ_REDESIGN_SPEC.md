@@ -2,13 +2,23 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.7   ·   LAST UPDATED: 2026-05-25          │
+│ DESIGN VERSION: v3.8   ·   LAST UPDATED: 2026-05-26          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
 │ — if it lags this number, CLAUDE.md is behind.               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**v3.8 (2026-05-26):** CATCH AVAILABILITY (Part 11) — catching is now offered on the
+gym-complete screen after EVERY gym (not only at region end), gated by the Part 4
+rarity-by-level access ladder. Region-end + boss-reward catches unchanged. PART 8
+IMPLEMENTATION NOTE — the build (v1.22) keeps one ability use per gym (non-consuming),
+so a kid earns ~5 XP events/region, not the ~15 the original "~1 region per band"
+estimate above assumes. Effective pace ≈ 2 regions per band. Deliberate (gentler
+economy); revisit at UAT — the per-gym limit is the lever if growth feels too slow.
+⚠️ Economy pacing watch: more catch opportunities per region than the original region-
+end model assumed — validate ball/crystal balance at UAT.
 
 **v3.7 (2026-05-25):** BATTLE SESSION (Part 14G — fully locked). Boss/villain casting
 (10 minor villains + Darkrai Big Boss R3/R7/R10 cameos, all from bench); boss reward
@@ -355,7 +365,13 @@ forces forward; host pause freezes each kid’s question timer. Schema: add
 - **Confirmation-required release** to prevent accidents *(stands)*. Framing
   should read as trade-in / "sending them to train", never "delete/lose".
 
-## PART 8 — HP, XP & DAMAGE NUMBERS  *(NEW in v3)*
+## PART 8 — HP, XP & DAMAGE NUMBERS  *(NEW in v3 · v3.8 implementation note)*
+
+> **IMPLEMENTATION NOTE (v3.8):** the build (v1.22) KEEPS one ability use per gym
+> (non-consuming), so a kid earns ~5 XP events/region, not the ~15 the original
+> "~1 region per band" estimate below assumes. Effective pace ≈ 2 regions per
+> band. Deliberate (gentler economy); revisit at UAT — removing the per-gym limit
+> is the lever if growth feels too slow.
 
 **Target duel length:** ~10 rounds.
 **HP = the single strength stat (INPUT). Attack damage = OUTPUT, derived from
@@ -603,11 +619,17 @@ pattern that made a UAT kid cry.)
 
 -----
 
-## PART 11 — CATCH MECHANICS PRINCIPLES (v3.2 — LOCKED)
+## PART 11 — CATCH MECHANICS PRINCIPLES (v3.2 — LOCKED · v3.8 availability note)
 
 > User-authored principles that govern all catch decisions. Open catch questions
 > (scramble/race rule, catch timing, ball-burn punishment, catch cost) are to be
 > answered by RUNNING THEM THROUGH these principles, not decided ad hoc.
+
+> **CATCH AVAILABILITY (v3.8):** catching is offered on the gym-complete screen
+> after EVERY gym (not only at region end), gated by the Part 4 rarity-by-level
+> access ladder. Region-end and boss-reward catches unchanged. ⚠️ Economy pacing
+> watch: more catch opportunities per region than the original region-end model
+> assumed — validate ball/crystal balance at UAT.
 
 **PRINCIPLE 1 — Endemic, level-appropriate regions (LOCKED).**
 Every region's Pokemon are UNIQUE to that region (no Pokemon appears in two

@@ -2,8 +2,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.0   ·   LAST UPDATED: 2026-05-25         │
-│ SYNCED TO SPEC: v3.7 (economy Part 12 is BUILT @ v0.6.0;     │
+│ BUILD VERSION: v0.6.1   ·   LAST UPDATED: 2026-05-26         │
+│ SYNCED TO SPEC: v3.8 (economy Part 12 is BUILT @ v0.6.0;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
 │   ⚠️ v3.6 REMOVED boss crystals — v0.6.0 build may still    │
@@ -38,8 +38,10 @@
 | battleAbility populated (193 starters+regional, thematic) | ✅ DATA v2.2 | SPEC Part 14G-4 |
 | Catch mechanics (snake draft, cap grows 3→4→5, pokeball bet) | ⬜ designed* | SPEC Part 11, 12E |
 | Cosmetic evolution (A1) | ⬜ designed | SPEC Part 11 P10 |
-| Unified player-level rarity gate | ⬜ designed | SPEC Part 4 |
-| Appreciating-asset XP/HP model | ⬜ designed | SPEC Part 3, 8 |
+| Unified player-level rarity gate (catch grid) | ✅ LIVE v1.22 | SPEC Part 4 |
+| Appreciating-asset XP/HP model | ✅ LIVE v1.22 | SPEC Part 3, 8 |
+| Catch between gyms (gym-complete CTA, rarity-gated) | ✅ LIVE v1.22 | SPEC Part 4, 11 |
+| Instant abilities (no confirmation modal) | ✅ LIVE v1.22 | SPEC Part 1 UX |
 | MOVES (ELIMINATE/CLOCK/SWAP/EXTRA SHOT/CLUE/TIME TRAVEL) | ⬜ designed | SPEC Part 5, 11 |
 | Battle system / bosses (3v1, simultaneous, enrage, star rating) | ⬜ designed v3.7 | SPEC Part 9, 14G |
 | Economy (earn model, ball/redeem/trade-in, cap growth, persistence) | ✅ LIVE v0.6.0 | SPEC Part 12 |
@@ -119,6 +121,16 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.22 — ABILITY ECONOMY ALIGNED TO SPEC v3: abilities NO LONGER consume the
+  Pokémon (removed dead `pokemon_team.splice` in `useAbility`). Appreciating-
+  asset loop now LIVE: use MOVE ability + answer correctly →
+  `awardXpEvent(+0.1 xpRatio)` → `computeHp` grows HP per Part 8 band formula.
+  One ability use per gym retained (non-consuming, resets in `startGym`).
+  Abilities fire instantly (no confirmation modal). CATCH: now available on
+  the gym-complete screen between every gym (not just region end), pool gated
+  by Part 4 rarity-by-level ladder (`canCatchRarity`). HP shown on team cards
+  + XP bar. Caught Pokémon stamped with `computeHp` at catch (both pre-game
+  and regional paths).
 - Regional catch: buy up to 3 pokeballs; 1 ball = 1 question = 1 attempt;
   wrong answer consumes the ball; 10 Pokemon available per region
 - Crystals scale per region; 100 crystals = 1 peso credit
