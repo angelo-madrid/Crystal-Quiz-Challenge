@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.22.1 HOTFIX: TIME ability bar now visibly updates (was bumping both
+//                 timeLeft + totalTime, cancelling the ratio); instant bar+text
+//                 refresh on use. ⚠️ NOTE: data check during this hotfix
+//                 surfaced a deeper dispatcher/schema mismatch — pokemon.json
+//                 v2.2 uses move.type ("CLOCK", "ELIMINATE", …) but useAbility
+//                 switches on abilityEffect.mechanic ("TIME", …). See BACKLOG.
 // v1.22: Instant abilities (no popup); catch between gyms (rarity-by-level
 //        per Part 4); abilities NON-CONSUMING + XP-growth on use+correct
 //        (Part 3B/8) — removed dead consume-on-use splice; HP grows
@@ -4944,18 +4950,29 @@ async function useAbility(pokemonIdx) {
 
 // ── ABILITY HELPERS (one per mechanic) ────────────────────────
 
-// TIME — add seconds to the live timer. We bump both timeLeft and totalTime
-// (totalTime drives the visible bar percentage) but DO NOT touch
-// STATE.originalTimeLimit — that's the canonical denominator the speed
-// bonus reads in checkAnswer, so TIME ability only buys safety, never
-// extra crystals.
+// TIME — add seconds to the live timer. Adds to timeLeft (the actual gain).
+// totalTime is the bar's denominator: only raise it if timeLeft now exceeds it,
+// so the bar VISIBLY jumps toward full when time is added (instead of staying
+// flat, which made the ability look broken). Never touches originalTimeLimit —
+// that's the speed-bonus denominator in checkAnswer, so TIME buys safety only,
+// never extra crystals. (HOTFIX v1.22.1.)
 function applyAbilityTime(seconds) {
-  STATE.timeLeft  += seconds;
-  STATE.totalTime += seconds;
-  // Visual nudge: re-evaluate the bar at the new fraction
+  STATE.timeLeft += seconds;
+  // Let the bar reach 100% on a big add: ensure totalTime is at least timeLeft.
+  if (STATE.timeLeft > STATE.totalTime) STATE.totalTime = STATE.timeLeft;
+  // Immediately refresh the bar + countdown text so the gain is visible NOW
+  // (don't wait for the next 100ms tick).
   const bar = document.getElementById('timer-bar');
-  if (bar) bar.style.width = Math.min(100, (STATE.timeLeft / STATE.totalTime) * 100) + '%';
-  return `+${seconds}s timer (now ${Math.ceil(STATE.timeLeft)}s left)`;
+  const txt = document.getElementById('timer-text');
+  const pct = Math.max(0, Math.min(100, (STATE.timeLeft / STATE.totalTime) * 100));
+  if (bar) {
+    bar.style.width = pct + '%';
+    bar.className = pct < 25 ? 'timer-bar danger'
+                  : pct < 50 ? 'timer-bar warning'
+                  :            'timer-bar';
+  }
+  if (txt) txt.textContent = Math.ceil(STATE.timeLeft);
+  return `+${seconds}s — now ${Math.ceil(STATE.timeLeft)}s left!`;
 }
 
 // ELIMINATE — grey out N wrong options. Will never remove the correct one.

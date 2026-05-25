@@ -149,6 +149,20 @@
   REMOVED. Verify + strip at battle engine build (item 23 above).
 - **SPEC Part 13 subsection lettering** out of order (13I,K,L,M,N,O,P,Q,R, then J
   last) — renumber at consolidated SPEC cleanup, not piecemeal.
+- **MOVE ABILITY DISPATCHER / DATA SCHEMA MISMATCH** (surfaced during v1.22.1 hotfix
+  data check): `useAbility` in game.js switches on `pokemon.abilityEffect?.mechanic`
+  with cases TIME / ELIMINATE / SKIP / FREEZE / REVEAL / RETRY / SHIELD. But
+  pokemon.json v2.2 stores MOVE abilities at `pokemon.move.type` with the SPEC
+  Part 5 canonical names CLOCK / ELIMINATE / SWAP / EXTRA_SHOT / CLUE / TIME_TRAVEL —
+  AND every `move.value` is `null`. NET EFFECT: no MOVE ability currently routes;
+  every tap falls through to "Unknown ability mechanic". (42/193 Pokémon hit CLOCK,
+  ~all 193 affected for some mechanic.) Decision needed: (a) bridge the dispatcher
+  to read `move.type` + canonical names + default values, OR (b) regenerate
+  pokemon.json with `abilityEffect.{mechanic,value}` populated. Same data check
+  also requires TIME Pokémon to carry a numeric value (default 5s likely).
+- **TIME ability values:** confirm every TIME/CLOCK-mechanic Pokémon in
+  pokemon.json has a numeric `value` (seconds) once the dispatcher is bridged
+  — currently null for all 42 CLOCK Pokémon (logged during v1.22.1 hotfix).
 
 ---
 

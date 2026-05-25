@@ -121,6 +121,14 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- HOTFIX v1.22.1: TIME ability now gives visible feedback — `applyAbilityTime`
+  adds to `timeLeft`, grows `totalTime` only as needed, and repaints the
+  bar/countdown instantly. ⚠️ Data check during this hotfix surfaced a deeper
+  dispatcher/schema mismatch — pokemon.json v2.2 uses `move.type` ("CLOCK",
+  "ELIMINATE", etc.) but `useAbility` switches on `abilityEffect.mechanic`
+  ("TIME", etc.) — so NO MOVE ability routes today; every tap falls through
+  to "Unknown ability mechanic". TIME visual fix is in place for when the
+  dispatcher is bridged (logged as BACKLOG ⚠️ OPEN FLAG, awaiting decision).
 - v1.22 — ABILITY ECONOMY ALIGNED TO SPEC v3: abilities NO LONGER consume the
   Pokémon (removed dead `pokemon_team.splice` in `useAbility`). Appreciating-
   asset loop now LIVE: use MOVE ability + answer correctly →
