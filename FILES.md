@@ -1,14 +1,15 @@
 # Crystal Quiz Challenge — File Manifest
-Manifest version: 1.30
+Manifest version: 1.31
 Last updated: 2026-05-25
 
 > **4-HOME INFORMATION ARCHITECTURE** (see BACKLOG.md header for the full rule):
 > SPEC.md = DESIGN · CLAUDE.md = BUILD STATE · BACKLOG.md = TODO · FILES.md (this) = MANIFEST.
 > This manifest tracks the CURRENT version of every file. Superseded files move to the
 > ARCHIVED section below but stay documented (history is never deleted from the record).
+> v1.31: archived stale files physically moved to /archive/ (questions.json,
+> POKEMON_LIBRARY_v2.md, and the three CLAUDE_CODE_PROMPT_*.md apply-prompts).
 > v1.30: added BACKLOG.md (new single-source todo); synced SPEC row v3.3→v3.6 and CLAUDE.md
-> note to SPEC v3.6; grouped Active/Archived; marked scaffolding + apply-prompts Archived
-> (physical move to /archive/ is a Track B build task — still in repo root until then).
+> note to SPEC v3.6; grouped Active/Archived; marked scaffolding + apply-prompts Archived.
 
 ## ACTIVE
 
@@ -25,17 +26,17 @@ Last updated: 2026-05-25
 | CRYSTAL_QUIZ_REDESIGN_SPEC.md | v3.6 | 2026-05-25 | Design bible (DESIGN authority). v3.6: Prize Store FULLY DESIGNED (Part 13 — effort metric, 50/50 split, fixed-price tiers + spend, finish-floor, recognition honors, tier→category map, SKU framework cards-first, real-peso budget model, Pokémon TCG API build-scope, 5th TEAM PRIZE = sponsored mystery gift + shared-screen reveal, real ₱800–1,200/kid budget, TIER VOUCHER redemption w/ printable PNG+code); BOSS CRYSTALS REMOVED (Part 14 — bosses reward team prize + trophy, not crystals; leveling unaffected; gym-only economy). v3.3: Part 12 economy. v3.2: Parts 10/11 catch + rarity + R10 PH theme + cosmetic evolution. | Active |
 | CLAUDE.md | 0.6.0 | 2026-05-25 | Master project doc / BUILD STATE authority. BUILD v0.6.0 (economy LIVE). Synced to SPEC v3.6. Status table tracks implemented-vs-designed. ARCHITECTURE & FILE MANAGEMENT (Track B) section added (7-category model, game.js split plan, /archive + /assets). ⚠️ flags: boss-crystal build mismatch (verify/strip); repo-path discrepancy. Backlog migrated out → BACKLOG.md. Body still describes pre-redesign build sections (later doc pass). | Active |
 | BACKLOG.md | 1.0 | 2026-05-25 | **Single source of truth for pending work** (design + build + ops). The only TODO list — replaces backlog formerly scattered across SPEC + CLAUDE.md. Sections: NOW / Design / Build / Ops-Convention-prep / Watch-items / Open-flags / Verify-with-Claude-Code / Done (rolling archive). Workflow vocabulary = Tracks A/B/C (old "Phase Zero–4" retired). | Active |
-| FILES.md | 1.30 | 2026-05-25 | This manifest. v1.30: added BACKLOG.md; synced SPEC v3.3→v3.6 + CLAUDE.md note; grouped Active/Archived; marked scaffolding + apply-prompts Archived. | Active |
+| FILES.md | 1.31 | 2026-05-25 | This manifest. v1.31: archived stale files physically moved to /archive/. v1.30: added BACKLOG.md; synced SPEC v3.3→v3.6 + CLAUDE.md note; grouped Active/Archived; marked scaffolding + apply-prompts Archived. | Active |
 
-## ARCHIVED (superseded — kept for the record; physical move to /archive/ pending Track B)
+## ARCHIVED (superseded — kept for the record; physically moved to /archive/ in v1.31)
 
 | File | Version | Last Updated | Purpose | Status |
 |------|---------|--------------|---------|--------|
-| questions.json | 3.0 | 2026-05-22 | Archived source library (590, blueprint+bank format) — not loaded at runtime; superseded by the split junior/senior banks. | Archived |
-| POKEMON_LIBRARY_v2.md | 1.0 | 2026-05-24 | Roster reference for Library v2.0 (per-region tables, bench, R10 cultural notes). Scaffolding companion to SPEC Part 11 — content now lives in pokemon.json + SPEC. Retired. | Archived |
-| CLAUDE_CODE_PROMPT_v2_FINAL.md | 1.0 | 2026-05-24 | Apply prompt for Library v2.0 — kept for trace / future re-runs. | Archived |
-| CLAUDE_CODE_PROMPT_economy_engine.md | 1.0 | 2026-05-25 | Apply prompt for SPEC Part 12 economy engine — kept for trace. | Archived |
-| CLAUDE_CODE_PROMPT_peso_visibility.md | 1.0 | 2026-05-25 | Apply prompt for SPEC Part 12I peso-visibility split — kept for trace. | Archived |
+| archive/questions.json | 3.0 | 2026-05-22 | Archived source library (590, blueprint+bank format) — not loaded at runtime; superseded by the split junior/senior banks. **In /archive/.** | Archived |
+| archive/POKEMON_LIBRARY_v2.md | 1.0 | 2026-05-24 | Roster reference for Library v2.0 (per-region tables, bench, R10 cultural notes). Scaffolding companion to SPEC Part 11 — content now lives in pokemon.json + SPEC. Retired. **In /archive/.** | Archived |
+| archive/CLAUDE_CODE_PROMPT_v2_FINAL.md | 1.0 | 2026-05-24 | Apply prompt for Library v2.0 — kept for trace / future re-runs. **In /archive/.** | Archived |
+| archive/CLAUDE_CODE_PROMPT_economy_engine.md | 1.0 | 2026-05-25 | Apply prompt for SPEC Part 12 economy engine — kept for trace. **In /archive/.** | Archived |
+| archive/CLAUDE_CODE_PROMPT_peso_visibility.md | 1.0 | 2026-05-25 | Apply prompt for SPEC Part 12I peso-visibility split — kept for trace. **In /archive/.** | Archived |
 
 Maintain this manifest on every file change — it's the single source of truth for what's
 deployed. Tracks CURRENT versions; superseded files move to ARCHIVED but stay listed.
