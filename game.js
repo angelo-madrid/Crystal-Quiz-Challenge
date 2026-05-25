@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
-// v1.18: Battle engine scaffold — BOSS_DATA constants, BOSS_FIGHT phase wiring,
-//        startBossFight() stub. Full battle loop in Commit 2.
+// v1.19: Battle loop core — startBossFight() full implementation,
+//        round engine, auto-resolve, host battle panel, Darkrai cameo stub.
 // ═══════════════════════════════════════════════════════════
 
 // ── SUPABASE ────────────────────────────────────────────────
@@ -3412,29 +3412,849 @@ function goNextGym() {
   startGym(STATE.currentRegion, STATE.currentGym + 1);
 }
 
-// ── BOSS FIGHT (SPEC Part 14G) ────────────────────────────────
-// Full implementation in Commit 2. This stub keeps Commit 1 safe —
-// the Gym 5 button is wired but clicking it shows a "coming soon"
-// notice rather than crashing.
-function startBossFight(regionId) {
-  // Guard: only R1–R10 are valid.
+// ═══════════════════════════════════════════════════════════
+// BOSS FIGHT ENGINE (SPEC Part 14G — Commit 2)
+// Papa-gated, Supabase-synced. Papa taps "Start Round" each round;
+// the game engine auto-resolves once all kids answer or timer fires.
+// ═══════════════════════════════════════════════════════════
+
+// ── ENTRY POINT ───────────────────────────────────────────────
+// Called from the Gym 5 "⚔️ Fight the Villain!" button.
+// Shows the waiting screen and writes the player's ready status
+// into room.battleState so Papa's dashboard can see who's ready.
+async function startBossFight(regionId) {
   if (regionId < 1 || regionId > MAX_PLAYABLE_REGION) {
     console.warn('[startBossFight] regionId out of range:', regionId);
-    showMap();
-    return;
+    showMap(); return;
   }
   const boss = BOSS_DATA[regionId];
   if (!boss) { console.warn('[startBossFight] no BOSS_DATA for region', regionId); showMap(); return; }
 
-  // Commit 2 will replace this body entirely.
-  // For now, confirm and route to regional catch so the game isn't blocked.
-  const proceed = confirm(
-    `⚔️ ${boss.emoji} ${boss.villain} is waiting!\n\n` +
-    `Boss HP: ${boss.hp}\n` +
-    `Battle engine coming soon — for now, tapping OK goes straight to the Pokemon catch.\n\n` +
-    `(Remove this stub in Commit 2.)`
-  );
-  if (proceed) startRegionalCatch(regionId);
+  STATE.currentRegion = regionId;
+  STATE.battle = null; // cleared; will be populated from room poll
+
+  // Derive player HP from save, or from level band if not set.
+  const playerHp = _battleDerivePlayerHp();
+
+  // Write this player's ready status into the room so Papa sees it.
+  const code = STATE.roomCode;
+  if (code) {
+    try {
+      const room = await dbReadRoom(code);
+      if (room) {
+        if (!room.battleState) {
+          // First player to arrive — initialise the battleState skeleton.
+          room.battleState = _battleInitState(regionId, boss);
+        }
+        // Register this player (or update their HP if re-entering).
+        const ps = room.battleState.playerStates;
+        if (!ps[STATE.player.id]) {
+          ps[STATE.player.id] = _battleInitPlayerState(playerHp);
+        }
+        room.battleState.playerStates = ps;
+        room.updated_at = new Date().toISOString();
+        await dbWriteRoom(code, room);
+      }
+    } catch(e) { console.warn('[startBossFight] room write failed:', e); }
+  }
+
+  // Show the battle waiting screen.
+  _battleRenderWaiting(regionId, boss);
+  showScreen('screen-battle');
+
+  // Start polling — detects when Papa fires Round 1.
+  _battleStartPoll();
+}
+
+// Build the initial battleState object for a region.
+function _battleInitState(regionId, boss) {
+  return {
+    regionId,
+    bossHp:    boss.hp,
+    bossMaxHp: boss.hp,
+    round: 1,
+    roundActive: false,
+    enraged: false,
+    enrageRoundsLeft: 0,
+    teamStrikeDeclared: false,
+    playerStates: {},
+    roundLog: [],
+    outcome: null,
+    stars: null,
+    wonAt: null,
+  };
+}
+
+// Build the initial per-player state for a given HP value.
+function _battleInitPlayerState(hp) {
+  return {
+    hp,
+    maxHp: hp,
+    correctThisBattle: 0,
+    answeredThisRound: false,
+    answerCorrect: null,
+    fainted: false,
+  };
+}
+
+// Derive player HP from save data. Uses last gym's player HP if tracked;
+// otherwise falls back to level band midpoint (SPEC Part 8 / 14G-5).
+// Band midpoints: L1=120, L2=180, L3=260, L4=360, L5=485.
+function _battleDerivePlayerHp() {
+  if (STATE.save && STATE.save.battleHp && STATE.save.battleHp > 0) {
+    return STATE.save.battleHp;
+  }
+  const level = currentPlayerLevel();
+  const mids = { 1:120, 2:180, 3:260, 4:360, 5:485 };
+  return mids[level] || 120;
+}
+
+// ── WAITING SCREEN ────────────────────────────────────────────
+// Shown after a kid clears Gym 5, before Papa starts Round 1.
+function _battleRenderWaiting(regionId, boss) {
+  const region = REGIONS.find(r => r.id === regionId) || REGIONS[0];
+  // Show villain + "waiting for Papa" state; hide all active battle panels.
+  _battleHideAllPanels();
+  document.getElementById('battle-region-label').textContent =
+    `${region.emoji} Region ${regionId} — ${region.name}`;
+  document.getElementById('battle-villain-emoji').textContent = boss.emoji;
+  document.getElementById('battle-villain-name').textContent  = boss.villain;
+  document.getElementById('battle-hp-name').textContent       = boss.villain;
+  document.getElementById('battle-hp-val').textContent        = `${boss.hp} / ${boss.hp}`;
+  document.getElementById('battle-hp-bar').style.width        = '100%';
+  document.getElementById('battle-round-num').textContent     = 'Waiting for Papa…';
+  document.getElementById('battle-star-preview').textContent  = '';
+  document.getElementById('battle-enrage-notice').style.display = 'none';
+
+  // Render empty contrib cards (one for this player while solo/waiting).
+  _battleRenderContribCards(null);
+
+  // Show a waiting message in the controls area.
+  const ctrl = document.getElementById('battle-controls');
+  ctrl.style.display = 'flex';
+  ctrl.innerHTML = `
+    <div style="width:100%;text-align:center;padding:10px 0;opacity:0.7;font-size:0.9rem;font-weight:700">
+      ⏳ Waiting for Papa to start Round 1…<br>
+      <span style="font-size:0.75rem;opacity:0.6">All players must finish Gym 5 before Papa starts</span>
+    </div>`;
+}
+
+// ── BATTLE POLL (player side) ─────────────────────────────────
+// Runs every 2.5s while screen-battle is active. Detects:
+//   roundActive → true : serve question to this player
+//   roundActive → false (after being true) : round resolved, show summary
+//   outcome set : show win or loss screen
+let _battlePollInt = null;
+let _battleLastRoundSeen = 0;   // prevents re-serving a question for the same round
+let _battleRoundAnswered = false; // this player has answered this round
+
+function _battleStartPoll() {
+  _battleStopPoll();
+  _battleLastRoundSeen = 0;
+  _battleRoundAnswered = false;
+  _battlePollInt = setInterval(_battlePollTick, 2500);
+}
+function _battleStopPoll() {
+  if (_battlePollInt) { clearInterval(_battlePollInt); _battlePollInt = null; }
+}
+
+async function _battlePollTick() {
+  const cur = document.querySelector('.screen.active')?.id;
+  if (cur !== 'screen-battle') { _battleStopPoll(); return; }
+  const code = STATE.roomCode;
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs = room.battleState;
+
+    // Always refresh HP bar + round info from authoritative room state.
+    _battleSyncHpBar(bs);
+    _battleSyncContribCards(bs);
+
+    // Outcome set → show win or loss (one-shot).
+    if (bs.outcome === 'win' && document.getElementById('battle-win').style.display === 'none') {
+      _battleStopPoll();
+      _battleShowWin(bs);
+      return;
+    }
+    if (bs.outcome === 'loss' && document.getElementById('battle-loss').style.display === 'none') {
+      _battleStopPoll();
+      _battleShowLoss(bs);
+      return;
+    }
+
+    // New round started (Papa tapped Start Round).
+    const isNewRound = bs.roundActive && bs.round !== _battleLastRoundSeen;
+    if (isNewRound && !_battleRoundAnswered) {
+      _battleLastRoundSeen = bs.round;
+      _battleRoundAnswered = false;
+      await _battleServeQuestion(bs);
+      return;
+    }
+
+    // Round ended (roundActive flipped back to false after we answered).
+    const ps = bs.playerStates[STATE.player.id];
+    const roundJustResolved = !bs.roundActive
+      && bs.round === _battleLastRoundSeen
+      && _battleRoundAnswered
+      && document.getElementById('battle-round-result').style.display === 'none'
+      && bs.outcome === null;
+    if (roundJustResolved) {
+      _battleShowRoundSummary(bs);
+    }
+  } catch(e) { console.warn('[_battlePollTick]', e); }
+}
+
+// ── SERVE QUESTION ────────────────────────────────────────────
+// Called when poll detects a new active round. Draws a question from
+// the gym_bank (same pool as gyms — battle uses gym-tier questions).
+async function _battleServeQuestion(bs) {
+  _battleHideAllPanels();
+  _battleRoundAnswered = false;
+
+  const qData = await loadQuestions();
+  if (!qData) { console.error('[_battleServeQuestion] no question data'); return; }
+
+  // Draw from the current region's gym_bank, picking a random category/tier.
+  // In enrage (Lockdown check is handled by ability blocking, not question tier).
+  // For Nightmare (R10 Darkrai), draw from a harder tier mix — deferred post-UAT.
+  const regionId = bs.regionId;
+  const blueprints = (qData.gym_blueprints || []).filter(b => b.region === regionId);
+  let pool = [];
+  if (blueprints.length > 0) {
+    // Pick a random slot from a random blueprint for this region.
+    const bp = blueprints[Math.floor(Math.random() * blueprints.length)];
+    const slot = bp.slots[Math.floor(Math.random() * bp.slots.length)];
+    pool = qData.gym_bank?.[slot.category]?.[slot.tier] || [];
+  }
+  // Fallback: use the catch_bank for the region if gym_bank is empty.
+  if (!pool.length) {
+    pool = (qData.catch_bank && qData.catch_bank[String(regionId)]) || [];
+  }
+  if (!pool.length) {
+    console.error('[_battleServeQuestion] no question pool for region', regionId);
+    return;
+  }
+
+  const { picked } = pickQuestion(pool);
+  if (!picked) { console.error('[_battleServeQuestion] pickQuestion returned null'); return; }
+  markQuestionSeen(picked.id);
+
+  // Stash current question on STATE.battle for battleAnswer() to read.
+  if (!STATE.battle) STATE.battle = {};
+  STATE.battle.currentQuestion  = picked;
+  STATE.battle.currentChoices   = [...picked.options].sort(() => Math.random() - 0.5);
+  STATE.battle.currentRound     = bs.round;
+  STATE.battle.regionId         = bs.regionId;
+  STATE.battle.teamStrike       = bs.teamStrikeDeclared;
+  STATE.battle.enraged          = bs.enraged;
+  STATE.battle.enrageEffect     = bs.enraged ? (BOSS_DATA[bs.regionId]?.enrage?.effect || '') : '';
+
+  // Render question UI.
+  const tierLabel = TIER_LABELS[picked.tier] || picked.tier;
+  const catLabel  = CATEGORY_LABELS[picked.category] || picked.category;
+  document.getElementById('battle-q-category').textContent = `${tierLabel} · ${catLabel}`;
+  document.getElementById('battle-q-text').textContent     = picked.question;
+  const colors = ['#e21b3c','#1368ce','#d89e00','#26890c'];
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`bans${i}`);
+    const txt = document.getElementById(`bans${i}-txt`);
+    if (!btn || !txt) continue;
+    txt.textContent = STATE.battle.currentChoices[i] || '';
+    btn.style.background = colors[i];
+    btn.style.opacity = '';
+    btn.classList.remove('correct','wrong');
+    btn.disabled = false;
+    btn.style.display = i < STATE.battle.currentChoices.length ? '' : 'none';
+  }
+  document.getElementById('battle-feedback').textContent = '';
+  document.getElementById('battle-feedback').className   = 'feedback-bar';
+  document.getElementById('battle-round-num').textContent = `Round ${bs.round}`;
+
+  // Show question area; hide waiting/result panels.
+  document.getElementById('battle-controls').style.display      = 'none';
+  document.getElementById('battle-round-result').style.display  = 'none';
+  document.getElementById('battle-question-area').style.display = 'block';
+
+  // Show enrage notice if active.
+  const enrageEl = document.getElementById('battle-enrage-notice');
+  if (bs.enraged) {
+    const enrageName = BOSS_DATA[bs.regionId]?.enrage?.name || 'Enrage';
+    document.getElementById('battle-enrage-text').textContent =
+      `${enrageName} active! ${_battleEnrageDescription(bs.regionId)}`;
+    enrageEl.style.display = 'block';
+    document.getElementById('battle-hp-bar').classList.add('enraged');
+  } else {
+    enrageEl.style.display = 'none';
+    document.getElementById('battle-hp-bar').classList.remove('enraged');
+  }
+
+  // Start the battle timer (15s base + age modifier).
+  const ageMod    = AGE_TIME_MOD[STATE.player?.ageGroup] || 0;
+  const totalTime = 15 + ageMod;
+  _battleStartTimer(totalTime);
+}
+
+// ── BATTLE TIMER ──────────────────────────────────────────────
+let _battleTimerInt = null;
+function _battleStartTimer(totalTime) {
+  _battleStopTimer();
+  STATE.battle.timeLeft  = totalTime;
+  STATE.battle.totalTime = totalTime;
+  const bar = document.getElementById('battle-timer-bar');
+  const txt = document.getElementById('battle-timer-text');
+  bar.style.width = '100%';
+  bar.className   = 'timer-bar';
+  txt.textContent = Math.ceil(totalTime);
+  _battleTimerInt = setInterval(() => {
+    STATE.battle.timeLeft = Math.max(0, STATE.battle.timeLeft - 0.1);
+    const pct = (STATE.battle.timeLeft / STATE.battle.totalTime) * 100;
+    bar.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    txt.textContent = Math.ceil(STATE.battle.timeLeft);
+    if (pct < 25)      bar.className = 'timer-bar danger';
+    else if (pct < 50) bar.className = 'timer-bar warning';
+    else               bar.className = 'timer-bar';
+    if (STATE.battle.timeLeft <= 0) {
+      _battleStopTimer();
+      if (!_battleRoundAnswered) _battleTimeUp();
+    }
+  }, 100);
+}
+function _battleStopTimer() {
+  if (_battleTimerInt) { clearInterval(_battleTimerInt); _battleTimerInt = null; }
+}
+
+// ── ANSWER HANDLER ────────────────────────────────────────────
+// Called from onclick="battleAnswer(idx)" in screen-battle HTML.
+function battleAnswer(idx) {
+  if (_battleRoundAnswered) return;
+  if (!STATE.battle || !STATE.battle.currentQuestion) return;
+  _battleStopTimer();
+  _battleRoundAnswered = true;
+
+  const chosen   = STATE.battle.currentChoices[idx];
+  const correct  = STATE.battle.currentQuestion.answer;
+  const isCorrect = chosen === correct;
+  const correctIdx = STATE.battle.currentChoices.indexOf(correct);
+
+  // Reveal answers.
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`bans${i}`);
+    if (!btn || btn.style.display === 'none') continue;
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+
+  const fb = document.getElementById('battle-feedback');
+  if (isCorrect) {
+    fb.textContent = '✅ Correct! Your Pokémon attacks!';
+    fb.className   = 'feedback-bar correct';
+  } else {
+    fb.textContent = `The answer was ${correct} 💪`;
+    fb.className   = 'feedback-bar wrong';
+  }
+
+  // Write this player's answer into room.battleState.
+  _battleWriteAnswer(isCorrect);
+}
+
+function _battleTimeUp() {
+  _battleRoundAnswered = true;
+  const correctIdx = STATE.battle.currentChoices.indexOf(STATE.battle.currentQuestion.answer);
+  for (let i = 0; i < 4; i++) {
+    const btn = document.getElementById(`bans${i}`);
+    if (!btn || btn.style.display === 'none') continue;
+    btn.disabled = true;
+    if (i === correctIdx) btn.classList.add('correct');
+    else btn.classList.add('wrong');
+  }
+  const fb = document.getElementById('battle-feedback');
+  fb.textContent = `⏰ Time's up! ${STATE.battle.currentQuestion.answer}`;
+  fb.className   = 'feedback-bar timeout';
+  _battleWriteAnswer(false);
+}
+
+// Write this player's round answer to Supabase room.battleState.
+// Also checks: are ALL players answered? If yes, auto-resolve the round.
+async function _battleWriteAnswer(isCorrect) {
+  const code = STATE.roomCode;
+  if (!code) return;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs = room.battleState;
+    const pid = STATE.player.id;
+
+    // Update this player's state.
+    if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
+    bs.playerStates[pid].answeredThisRound = true;
+    bs.playerStates[pid].answerCorrect     = isCorrect;
+    if (isCorrect) bs.playerStates[pid].correctThisBattle++;
+
+    // Check: have all non-fainted players answered?
+    const activePlayers = Object.entries(bs.playerStates).filter(([,p]) => !p.fainted);
+    const allAnswered   = activePlayers.every(([,p]) => p.answeredThisRound);
+
+    if (allAnswered) {
+      // Auto-resolve: compute damage, boss attack, check win/loss.
+      _battleResolveRound(bs);
+    }
+
+    room.battleState   = bs;
+    room.updated_at    = new Date().toISOString();
+    await dbWriteRoom(code, room);
+  } catch(e) { console.warn('[_battleWriteAnswer]', e); }
+}
+
+// ── ROUND RESOLUTION (runs on the last player to answer) ─────
+// Computes damage, boss attack, enrage, win/loss. Mutates bs in place.
+// The caller writes bs back to Supabase immediately after.
+function _battleResolveRound(bs) {
+  const boss     = BOSS_DATA[bs.regionId];
+  const players  = bs.playerStates;
+  const pids     = Object.keys(players);
+  const active   = pids.filter(id => !players[id].fainted);
+
+  // --- Damage phase ---
+  // Count correct answers this round.
+  const correctThisRound = active.filter(id => players[id].answerCorrect);
+  const allCorrect       = active.length > 0 && correctThisRound.length === active.length;
+  const teamStrike       = bs.teamStrikeDeclared && allCorrect;
+
+  // Damage per correct answerer ≈ 20% current boss HP (floor 10 to avoid 0).
+  // Enrage Swagger doubles outgoing damage from players — NOT applied here
+  // (Swagger doubles BOSS damage TO players, not player damage to boss —
+  // re-read SPEC 14G-6; only Sharpen and Nightmare buff boss damage).
+  let damageMultiplier = teamStrike ? 3 : 1;
+  let totalDamage = 0;
+  correctThisRound.forEach(() => {
+    const hit = Math.max(10, Math.round(bs.bossHp * 0.20));
+    totalDamage += hit * damageMultiplier;
+  });
+  bs.bossHp = Math.max(0, bs.bossHp - totalDamage);
+
+  // --- Enrage check (triggers once when HP crosses 50%) ---
+  const halfHp = bs.bossMaxHp * 0.5;
+  if (!bs.enraged && bs.bossHp <= halfHp && bs.bossHp > 0) {
+    bs.enraged         = true;
+    bs.enrageRoundsLeft = boss.enrage.rounds;
+  }
+  if (bs.enraged && bs.enrageRoundsLeft > 0) {
+    bs.enrageRoundsLeft--;
+    if (bs.enrageRoundsLeft <= 0) bs.enraged = false;
+  }
+
+  // --- Boss attack phase ---
+  // Pick a random non-fainted player to attack.
+  // Enrage effects that modify targeting:
+  //   Headbutt (R2): attack 2 random kids instead of 1
+  //   Foul Play (R4): target lowest HP kid
+  // Enrage effects that modify damage:
+  //   Sharpen (R1): +50% dmg  · Nightmare (R10): +50% dmg
+  //   Swagger (R5): damage doubles (200%)
+  let baseDmg = BOSS_DAMAGE_PER_HIT;
+  if (bs.enraged) {
+    const effect = boss.enrage.effect;
+    if (effect === 'damage_plus_50')            baseDmg = Math.round(baseDmg * 1.5);
+    if (effect === 'damage_doubles')            baseDmg = Math.round(baseDmg * 2);
+    if (effect === 'harder_questions_plus_50')  baseDmg = Math.round(baseDmg * 1.5);
+  }
+
+  let targets = [];
+  if (active.length > 0) {
+    const effect = bs.enraged ? boss.enrage.effect : '';
+    if (effect === 'attack_two_targets') {
+      // Headbutt: pick up to 2 random kids.
+      const shuffled = active.slice().sort(() => Math.random() - 0.5);
+      targets = shuffled.slice(0, Math.min(2, active.length));
+    } else if (effect === 'target_lowest_hp') {
+      // Foul Play: target kid with lowest HP.
+      const sorted = active.slice().sort((a,b) => players[a].hp - players[b].hp);
+      targets = [sorted[0]];
+    } else if (effect === 'highest_hp_double_dmg') {
+      // Oblivion Wing: target highest HP kid, double damage.
+      const sorted = active.slice().sort((a,b) => players[b].hp - players[a].hp);
+      targets = [sorted[0]];
+      baseDmg = Math.round(baseDmg * 2);
+    } else {
+      // Default: 1 random target.
+      targets = [active[Math.floor(Math.random() * active.length)]];
+    }
+    // Apply damage to targets.
+    targets.forEach(tid => {
+      players[tid].hp = Math.max(0, players[tid].hp - baseDmg);
+      if (players[tid].hp <= 0) players[tid].fainted = true;
+    });
+  }
+
+  // Reset per-round flags for next round.
+  pids.forEach(id => {
+    players[id].answeredThisRound = false;
+    players[id].answerCorrect     = null;
+  });
+  bs.teamStrikeDeclared = false;
+
+  // --- Win/loss check ---
+  // Win: boss HP = 0 AND every active (non-fainted) player has hit N=3.
+  const everyoneContributed = active.every(id =>
+    players[id].correctThisBattle >= BATTLE_MIN_CONTRIBUTION);
+  if (bs.bossHp <= 0 && everyoneContributed) {
+    bs.outcome = 'win';
+    bs.stars   = _battleComputeStars(bs);
+    bs.wonAt   = new Date().toISOString();
+    bs.roundActive = false;
+    return;
+  }
+  // Boss HP = 0 but not everyone contributed — boss "escaped" (edge case).
+  // Treat as loss so N=3 guardrail is respected.
+  if (bs.bossHp <= 0 && !everyoneContributed) {
+    bs.outcome = 'loss';
+    bs.roundActive = false;
+    return;
+  }
+  // All players fainted → loss.
+  if (active.filter(id => !players[id].fainted).length === 0) {
+    bs.outcome = 'loss';
+    bs.roundActive = false;
+    return;
+  }
+
+  // Round done — log it + advance counter. Papa starts next round.
+  bs.roundLog.push({
+    round:       bs.round,
+    damage:      totalDamage,
+    bossHpAfter: bs.bossHp,
+    teamStrike,
+    targets,
+    bossDmg:     baseDmg,
+    enraged:     bs.enraged,
+  });
+  bs.round++;
+  bs.roundActive = false;  // Papa must tap Start Round again.
+}
+
+// ── STAR RATING (SPEC 14G-8) ─────────────────────────────────
+function _battleComputeStars(bs) {
+  const players = bs.playerStates;
+  const pids    = Object.keys(players);
+  const noFaints     = pids.every(id => !players[id].fainted);
+  const allHitN3     = pids.every(id => players[id].correctThisBattle >= BATTLE_MIN_CONTRIBUTION);
+  // Round budget = target rounds × STAR_ROUND_BUDGET_MULT.
+  // Target rounds estimated as ceil(bossMaxHp / (maxHp*0.20 * numPlayers)).
+  const avgDmgPerRound = Math.max(10, Math.round(bs.bossMaxHp * 0.20)) * pids.length;
+  const targetRounds   = Math.ceil(bs.bossMaxHp / avgDmgPerRound);
+  const budget         = Math.round(targetRounds * STAR_ROUND_BUDGET_MULT);
+  const withinBudget   = (bs.round - 1) <= budget;  // round was already bumped post-last-round
+  if (noFaints && allHitN3 && withinBudget) return 3;
+  if (noFaints && allHitN3)                  return 2;
+  return 1;
+}
+
+// ── ROUND SUMMARY (player side) ───────────────────────────────
+function _battleShowRoundSummary(bs) {
+  _battleHideAllPanels();
+  const log = bs.roundLog[bs.roundLog.length - 1];
+  if (!log) return;
+  const ps  = bs.playerStates[STATE.player.id];
+  const myHp = ps ? ps.hp : '?';
+  const myContrib = ps ? ps.correctThisBattle : 0;
+  const bossHpPct = Math.round((bs.bossHp / bs.bossMaxHp) * 100);
+  const dmgText = log.teamStrike ? `⚡ TEAM STRIKE! ${log.damage} dmg (3×)` : `${log.damage} dmg dealt`;
+
+  document.getElementById('battle-round-result-text').innerHTML = `
+    <div style="font-size:1rem;font-weight:800;margin-bottom:8px">Round ${log.round} complete</div>
+    <div style="opacity:0.85;font-size:0.85rem;line-height:1.7">
+      ${dmgText}<br>
+      Boss HP: ${bs.bossHp} / ${bs.bossMaxHp} (${bossHpPct}%)<br>
+      Your HP: ${myHp}<br>
+      Your contributions: ${myContrib} / ${BATTLE_MIN_CONTRIBUTION} needed
+      ${myContrib >= BATTLE_MIN_CONTRIBUTION ? ' ✅' : ' ⏳'}
+    </div>`;
+  document.getElementById('battle-round-result').style.display = 'block';
+}
+
+// Called from onclick="battleNextRound()" — hides summary, shows waiting.
+function battleNextRound() {
+  _battleHideAllPanels();
+  const boss = BOSS_DATA[STATE.currentRegion];
+  const ctrl = document.getElementById('battle-controls');
+  ctrl.style.display = 'flex';
+  ctrl.innerHTML = `
+    <div style="width:100%;text-align:center;padding:10px 0;opacity:0.7;font-size:0.9rem;font-weight:700">
+      ⏳ Waiting for Papa to start the next round…
+    </div>`;
+}
+
+// ── WIN SCREEN ────────────────────────────────────────────────
+function _battleShowWin(bs) {
+  _battleHideAllPanels();
+  const stars     = bs.stars || 1;
+  const starStr   = '⭐'.repeat(stars);
+  const boss      = BOSS_DATA[bs.regionId];
+  const reward    = BOSS_REWARD_POKEMON[boss?.rewardId];
+  const regionId  = bs.regionId;
+
+  document.getElementById('battle-win-emoji').textContent = boss?.emoji || '🏆';
+  document.getElementById('battle-win-title').textContent = `${boss?.villain} defeated!`;
+  document.getElementById('battle-star-rating').textContent = starStr;
+
+  // Reward Pokémon offer (SPEC 14G-2).
+  const offerEl = document.getElementById('battle-reward-offer');
+  if (reward) {
+    const team    = (STATE.save && STATE.save.pokemon_team) || [];
+    const cap     = currentTeamCap();
+    const atCap   = team.length >= cap;
+    offerEl.innerHTML = `
+      <h3>🎁 Boss Reward!</h3>
+      <div class="battle-reward-poke-row">
+        <div class="battle-reward-emoji">${reward.emoji}</div>
+        <div class="battle-reward-info">
+          <div class="battle-reward-name">${reward.name}</div>
+          <div class="battle-reward-rarity">${reward.rarity.toUpperCase()} · ${reward.type}</div>
+          <div style="font-size:0.72rem;opacity:0.7;margin-top:2px">
+            Battle ability: ${reward.battleAbility}
+          </div>
+        </div>
+      </div>
+      ${atCap
+        ? `<div style="font-size:0.78rem;opacity:0.75;margin:6px 0">
+             ⚠️ Team is full (${cap}/${MAX_TEAM_CAP}). Release a Pokémon first, then tap Keep.
+           </div>`
+        : ''}
+      <div class="battle-reward-actions">
+        <button class="btn-primary" onclick="battleKeepReward('${reward.id}')">
+          ✅ Keep ${reward.name}
+        </button>
+        <button class="btn-secondary" onclick="battlePassReward()">
+          Pass
+        </button>
+      </div>`;
+  } else {
+    offerEl.innerHTML = '<div style="opacity:0.6">No reward for this boss.</div>';
+  }
+
+  document.getElementById('battle-win').style.display = 'block';
+
+  // Record boss defeat in save (for team prize tracking — SPEC 14C).
+  _battleRecordDefeat(regionId, stars);
+
+  // Darkrai cameo for R3 / R7 — show after win screen is dismissed.
+  if (boss?.darkraiCameo) {
+    // We attach a flag so battleFinish() triggers the cameo.
+    if (STATE.battle) STATE.battle.showDarkraiCameo = true;
+  }
+}
+
+// Keep the reward Pokémon — add to team (respecting cap).
+async function battleKeepReward(rewardId) {
+  const reward = BOSS_REWARD_POKEMON[rewardId];
+  if (!reward) return;
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  if (team.length >= currentTeamCap()) {
+    showToast('⚠️ Release a Pokémon first (team is full)');
+    return;
+  }
+  const newPoke = {
+    ...reward,
+    level:    currentPlayerLevel(),
+    xp: 0, xpCap: 100, xpRatio: 0,
+    caughtAt: `boss_r${STATE.currentRegion}`,
+    roomCode: STATE.roomCode || null,
+    starter:  false,
+  };
+  STATE.save.pokemon_team = [...team, newPoke];
+  STATE.save.updated_at   = new Date().toISOString();
+  await dbSave(STATE.player.id, STATE.save);
+  showToast(`✨ ${reward.name} joined your team!`);
+  // Hide offer buttons so kid can't double-add.
+  const offerEl = document.getElementById('battle-reward-offer');
+  if (offerEl) offerEl.innerHTML =
+    `<div style="color:var(--gold);font-weight:800">✅ ${reward.name} added to your team!</div>`;
+}
+
+// Pass on the reward Pokémon.
+function battlePassReward() {
+  const offerEl = document.getElementById('battle-reward-offer');
+  if (offerEl) offerEl.innerHTML =
+    `<div style="opacity:0.6">You passed on the reward. You can't come back for it later.</div>`;
+}
+
+// Record boss defeat in save for prize tracking (SPEC 14C).
+async function _battleRecordDefeat(regionId, stars) {
+  if (!STATE.save) return;
+  if (!STATE.save.bossDefeats) STATE.save.bossDefeats = {};
+  STATE.save.bossDefeats[regionId] = { stars, defeatedAt: new Date().toISOString() };
+  STATE.save.updated_at = new Date().toISOString();
+  await dbSave(STATE.player.id, STATE.save);
+}
+
+// Continue after win — clears battle, shows Darkrai cameo if needed, routes to regional catch.
+function battleFinish() {
+  const showCameo = STATE.battle && STATE.battle.showDarkraiCameo;
+  STATE.battle = null;
+  _battleStopPoll();
+  _battleStopTimer();
+  if (showCameo) {
+    _battleShowDarkraiCameo(STATE.currentRegion);
+  } else {
+    startRegionalCatch(STATE.currentRegion);
+  }
+}
+
+// ── LOSS SCREEN ────────────────────────────────────────────────
+function _battleShowLoss(bs) {
+  _battleHideAllPanels();
+  const boss = BOSS_DATA[bs.regionId];
+  const ps   = bs.playerStates[STATE.player.id];
+  const myContrib = ps ? ps.correctThisBattle : 0;
+  let msg = `${boss?.villain || 'The villain'} got away!`;
+  if (myContrib < BATTLE_MIN_CONTRIBUTION) {
+    msg += ` You got ${myContrib}/${BATTLE_MIN_CONTRIBUTION} answers in — try to hit ${BATTLE_MIN_CONTRIBUTION} next time.`;
+  }
+  document.getElementById('battle-loss-msg').textContent = msg;
+  document.getElementById('battle-loss').style.display = 'block';
+}
+
+// Re-attempt: re-enter the boss fight with HP reset.
+async function battleRetry() {
+  // Reset player HP in battleState and re-initialise.
+  const code = STATE.roomCode;
+  if (code) {
+    try {
+      const room = await dbReadRoom(code);
+      if (room && room.battleState) {
+        const bs  = room.battleState;
+        const pid = STATE.player.id;
+        const hp  = _battleDerivePlayerHp();
+        bs.bossHp              = BOSS_DATA[bs.regionId]?.hp || bs.bossMaxHp;
+        bs.outcome             = null;
+        bs.stars               = null;
+        bs.round               = 1;
+        bs.roundActive         = false;
+        bs.enraged             = false;
+        bs.enrageRoundsLeft    = 0;
+        bs.teamStrikeDeclared  = false;
+        bs.roundLog            = [];
+        // Reset ALL players' per-battle state (full team reset per SPEC 14G-5).
+        Object.keys(bs.playerStates).forEach(id => {
+          bs.playerStates[id] = _battleInitPlayerState(
+            bs.playerStates[id]?.maxHp || hp
+          );
+        });
+        room.battleState   = bs;
+        room.updated_at    = new Date().toISOString();
+        await dbWriteRoom(code, room);
+      }
+    } catch(e) { console.warn('[battleRetry] room write failed:', e); }
+  }
+  // Re-enter the waiting screen.
+  startBossFight(STATE.currentRegion);
+}
+
+// ── DARKRAI CAMEO ─────────────────────────────────────────────
+// Scripted unbeatable appearance at R3 and R7. Shown AFTER the minor
+// villain is defeated. Not a fight — pure narrative moment.
+function _battleShowDarkraiCameo(regionId) {
+  const cameoText = {
+    3: 'Just as Klink falls… a shadow flickers across the sky. Darkrai appears — and vanishes before anyone can react. Something terrible is coming.',
+    7: 'Zygarde collapses. But the darkness doesn\'t lift. Darkrai has been watching. "Region 10," it whispers. "Come find me… if you dare."',
+  };
+  const text = cameoText[regionId] || 'A shadow passes…';
+  // Inject and show the cameo overlay.
+  let overlay = document.getElementById('darkrai-cameo-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'darkrai-cameo-overlay';
+    overlay.className = 'darkrai-cameo-overlay';
+    document.getElementById('app').appendChild(overlay);
+  }
+  overlay.innerHTML = `
+    <div class="darkrai-cameo-emoji">🌑</div>
+    <h2>Darkrai appears!</h2>
+    <p>${escapeHTML(text)}</p>
+    <button class="btn-primary" onclick="
+      document.getElementById('darkrai-cameo-overlay').style.display='none';
+      startRegionalCatch(${regionId});
+    ">😨 Continue…</button>`;
+  overlay.style.display = 'flex';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────
+function _battleHideAllPanels() {
+  ['battle-question-area','battle-controls','battle-round-result',
+   'battle-win','battle-loss'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+function _battleSyncHpBar(bs) {
+  const pct = bs.bossMaxHp > 0
+    ? Math.max(0, Math.min(100, (bs.bossHp / bs.bossMaxHp) * 100))
+    : 0;
+  const bar = document.getElementById('battle-hp-bar');
+  const val = document.getElementById('battle-hp-val');
+  if (bar) bar.style.width = pct + '%';
+  if (val) val.textContent = `${bs.bossHp} / ${bs.bossMaxHp}`;
+  if (bar) bar.classList.toggle('enraged', bs.enraged);
+}
+
+function _battleSyncContribCards(bs) {
+  _battleRenderContribCards(bs);
+}
+
+function _battleRenderContribCards(bs) {
+  const container = document.getElementById('battle-contrib-row');
+  if (!container) return;
+  if (!bs || !bs.playerStates || !Object.keys(bs.playerStates).length) {
+    // Waiting — show just this player with full HP placeholder.
+    const hp = _battleDerivePlayerHp();
+    container.innerHTML = `
+      <div class="battle-contrib-card">
+        <div class="battle-contrib-emoji">${STATE.player?.emoji || '👤'}</div>
+        <div class="battle-contrib-name">${escapeHTML(STATE.player?.name || '…')}</div>
+        <div class="battle-contrib-hp">HP ${hp}</div>
+        <div class="battle-contrib-pips">
+          ${Array(BATTLE_MIN_CONTRIBUTION).fill('<div class="battle-pip"></div>').join('')}
+        </div>
+      </div>`;
+    return;
+  }
+  const pids = Object.keys(bs.playerStates);
+  container.innerHTML = pids.map(pid => {
+    const ps    = bs.playerStates[pid];
+    const isMe  = pid === STATE.player?.id;
+    const hits  = ps.correctThisBattle;
+    const pips  = Array(BATTLE_MIN_CONTRIBUTION).fill(null).map((_,i) =>
+      `<div class="battle-pip${i < hits ? ' filled' : ''}"></div>`).join('');
+    const hpPct = ps.maxHp > 0 ? Math.round((ps.hp / ps.maxHp) * 100) : 0;
+    return `
+      <div class="battle-contrib-card${ps.fainted ? ' fainted' : ''}${ps.answeredThisRound ? ' answered' : ''}">
+        <div class="battle-contrib-emoji">${isMe ? (STATE.player?.emoji || '👤') : '👤'}</div>
+        <div class="battle-contrib-name">${isMe ? escapeHTML(STATE.player?.name || pid) : escapeHTML(pid)}</div>
+        <div class="battle-contrib-hp">${ps.fainted ? '💀 Fainted' : `HP ${ps.hp} (${hpPct}%)`}</div>
+        <div class="battle-contrib-pips">${pips}</div>
+      </div>`;
+  }).join('');
+}
+
+function _battleEnrageDescription(regionId) {
+  const effects = {
+    'damage_plus_50':           'Damage +50%',
+    'attack_two_targets':       'Attacks 2 players!',
+    'block_all_abilities':      'Abilities blocked!',
+    'target_lowest_hp':         'Targets lowest HP player!',
+    'damage_doubles':           'Damage ×2!',
+    'two_attacks_per_round':    '2 attacks this round!',
+    'block_team_strike':        'Team Strike blocked!',
+    'all_take_20_dmg':          'Everyone takes 20 dmg!',
+    'highest_hp_double_dmg':    'Highest HP player takes double damage!',
+    'harder_questions_plus_50': 'Harder questions + Damage +50%!',
+  };
+  const effect = BOSS_DATA[regionId]?.enrage?.effect || '';
+  return effects[effect] || effect;
 }
 
 // ── POKEMON TEAM RENDER ───────────────────────────────────────
@@ -4989,6 +5809,116 @@ async function renderCol3Controls() {
     lockBtn.textContent = room.locked ? 'ON' : 'OFF';
     lockBtn.classList.toggle('on', !!room.locked);
   }
+
+  // ── BOSS FIGHT panel — only shown when phase === BOSS_FIGHT ──
+  const battlePanel = document.getElementById('col3-battle-panel');
+  if (room.phase === 'BOSS_FIGHT') {
+    if (battlePanel) {
+      await _hostRenderBattlePanel(code, room, battlePanel);
+      battlePanel.style.display = 'block';
+    }
+  } else {
+    if (battlePanel) battlePanel.style.display = 'none';
+  }
+}
+
+// Renders the battle control panel in host Column 3 when phase = BOSS_FIGHT.
+async function _hostRenderBattlePanel(code, room, el) {
+  const bs = room.battleState;
+  if (!bs) {
+    el.innerHTML = `
+      <div class="col3-section-label">⚔️ BOSS FIGHT</div>
+      <div class="col1-empty">Waiting for players to arrive at the boss…</div>`;
+    return;
+  }
+  const boss    = BOSS_DATA[bs.regionId] || {};
+  const hpPct   = bs.bossMaxHp > 0 ? Math.round((bs.bossHp / bs.bossMaxHp) * 100) : 0;
+  const players = bs.playerStates || {};
+  const pids    = Object.keys(players);
+
+  // Ready check: all players in the room must have a playerStates entry.
+  const roomPlayers = (room.players || []).filter(p => p.id !== 'HOST_VIEWER');
+  const readyCount  = roomPlayers.filter(p => players[p.id]).length;
+  const allReady    = readyCount >= roomPlayers.length && roomPlayers.length > 0;
+
+  // Per-player status rows.
+  const playerRows = roomPlayers.map(p => {
+    const ps = players[p.id];
+    if (!ps) return `<div class="host-battle-player not-ready">⏳ ${escapeHTML(p.name)} — at gym</div>`;
+    const contrib = ps.correctThisBattle;
+    const answered = ps.answeredThisRound ? '✅' : '⏳';
+    const hp = ps.fainted ? '💀' : `HP ${ps.hp}`;
+    const pips = `${contrib}/${BATTLE_MIN_CONTRIBUTION}`;
+    return `<div class="host-battle-player${ps.fainted ? ' fainted' : ''}">
+      ${answered} ${escapeHTML(p.name)} · ${hp} · ${pips} hits
+    </div>`;
+  }).join('');
+
+  const outcome = bs.outcome;
+  const canStart = allReady && !bs.roundActive && outcome === null;
+
+  el.innerHTML = `
+    <div class="col3-section-label">⚔️ BOSS FIGHT — R${bs.regionId}</div>
+    <div class="host-battle-hp-row">
+      <span>${boss.emoji || '⚔️'} ${boss.villain || '?'}</span>
+      <span style="font-family:var(--font-mono);font-weight:900">${bs.bossHp} / ${bs.bossMaxHp}</span>
+    </div>
+    <div class="battle-hp-bar-wrap" style="margin:6px 0 10px">
+      <div class="battle-hp-bar${bs.enraged ? ' enraged' : ''}" style="width:${hpPct}%"></div>
+    </div>
+    ${bs.enraged
+      ? `<div class="battle-enrage-notice">⚠️ ${boss.enrage?.name} active (${bs.enrageRoundsLeft} rounds left)</div>`
+      : ''}
+    <div class="col3-section-label" style="margin-top:10px">Round ${bs.round} · Players</div>
+    ${playerRows}
+    ${!allReady
+      ? `<div style="font-size:0.75rem;opacity:0.6;margin:8px 0">${readyCount}/${roomPlayers.length} players at the boss</div>`
+      : ''}
+    ${outcome === 'win'
+      ? `<div style="color:var(--gold);font-weight:900;margin:10px 0">🏆 WIN! ${bs.stars ? '⭐'.repeat(bs.stars) : ''}</div>`
+      : outcome === 'loss'
+      ? `<div style="color:#f87171;font-weight:900;margin:10px 0">💔 Loss — players can retry</div>`
+      : ''}
+    <button class="btn-primary" style="width:100%;margin-top:8px"
+      ${canStart ? '' : 'disabled style="opacity:0.4"'}
+      onclick="hostBattleStartRound('${escapeAttr(code)}')">
+      ▶ Start Round ${bs.round}
+    </button>
+    ${outcome !== null
+      ? `<button class="btn-secondary" style="width:100%;margin-top:6px"
+           onclick="hostBattleEndFight('${escapeAttr(code)}')">
+           ✅ End Fight → Regional Catch
+         </button>`
+      : ''}`;
+}
+
+// Host taps "Start Round N" — sets roundActive = true in Supabase.
+// Kids' poll detects this and serves them the question.
+async function hostBattleStartRound(code) {
+  const room = await dbReadRoom(code);
+  if (!room || !room.battleState) return;
+  if (room.battleState.roundActive) { showToast('Round already active'); return; }
+  if (room.battleState.outcome !== null) { showToast('Fight already over'); return; }
+  room.battleState.roundActive = true;
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast(`▶ Round ${room.battleState.round} started`);
+  renderHostDashboard();
+}
+
+// Host manually ends the fight after win/loss and advances to REGION_CATCH.
+async function hostBattleEndFight(code) {
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  room.phase      = 'REGION_CATCH';
+  room.battleState = null;
+  room.updated_at  = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  if (HOST.roomCode === code) {
+    HOST.currentPhase = 'REGION_CATCH';
+  }
+  showToast('✅ Fight ended → Regional Catch');
+  renderHostDashboard();
 }
 
 async function col3AdvancePhase() {
@@ -5981,7 +6911,8 @@ window.addEventListener('load', () => {
   // room.pokemonCaught for the race rule (1.4) on catch screens.
   setInterval(() => {
     const cur = document.querySelector('.screen.active')?.id;
-    if (['screen-quiz','screen-pregame-catch','screen-gym-complete','screen-catch'].includes(cur)) {
+    if (['screen-quiz','screen-pregame-catch','screen-gym-complete','screen-catch',
+         'screen-battle'].includes(cur)) {
       checkPauseState();
     }
   }, 3000);

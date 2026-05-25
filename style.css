@@ -3112,3 +3112,20 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .darkrai-cameo-overlay h2 { color: #a78bfa; font-size: 1.5rem; margin-bottom: 8px; }
 .darkrai-cameo-overlay p  { opacity: 0.8; line-height: 1.6; }
 .darkrai-cameo-overlay button { margin-top: 20px; }
+
+/* Host battle panel (Column 3) */
+.host-battle-hp-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+.host-battle-player {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  line-height: 1.5;
+}
+.host-battle-player.not-ready { opacity: 0.45; }
+.host-battle-player.fainted   { color: #f87171; }
