@@ -1,5 +1,9 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.23 FIX: MOVE ability dispatcher now reads move.type (SPEC Part 5 canonical:
+//            CLOCK/ELIMINATE/SWAP/CLUE in-question; EXTRA_SHOT/TIME_TRAVEL post-gym
+//            gated). Default values supplied (data carries none). Fixes "Unknown
+//            mechanic" on every gym ability tap (UAT-blocking).
 // v1.22.1 HOTFIX: TIME ability bar now visibly updates (was bumping both
 //                 timeLeft + totalTime, cancelling the ratio); instant bar+text
 //                 refresh on use. ⚠️ NOTE: data check during this hotfix
@@ -4876,6 +4880,13 @@ function activateAbility(pokemonIdx) {
   }
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
   if (!pokemon) return;
+  // v1.23 FIX: Post-gym rescue moves (EXTRA_SHOT / TIME_TRAVEL) aren't usable
+  // mid-question — surface a clear message instead of consuming a tap.
+  const mt = String(pokemon.move?.type || '').toUpperCase();
+  if (mt === 'EXTRA_SHOT' || mt === 'TIME_TRAVEL') {
+    showToast(`${pokemon.emoji || '⚡'} ${getAbilityLabel(pokemon)} is a post-gym rescue — not usable during a question.`);
+    return;
+  }
   // Fire it now.
   useAbility(pokemonIdx);
 }
@@ -4903,29 +4914,67 @@ async function useAbility(pokemonIdx) {
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
   if (!pokemon) return;
 
-  const eff = pokemon.abilityEffect || {};
-  const mechanic = String(eff.mechanic || '').toUpperCase();
-  const value    = Number(eff.value) || 0;
+  // SPEC Part 5 schema (v1.23 FIX): the MOVE ability is at pokemon.move.type
+  // (canonical names CLOCK / ELIMINATE / SWAP / CLUE / EXTRA_SHOT / TIME_TRAVEL).
+  // pokemon.json carries no per-move `value`, so defaults are applied here.
+  // (Legacy support: also honor a flat abilityEffect.mechanic if an old save
+  // still has one.)
+  const move    = pokemon.move || {};
+  const legacy  = pokemon.abilityEffect || {};
+  const mechanic = String(move.type || legacy.mechanic || '').toUpperCase();
+  // Default values per mechanic (data has none).
+  const DEFAULTS = { CLOCK: 5, ELIMINATE: 1, FREEZE: 5 };
+  const value = Number(legacy.value) || DEFAULTS[mechanic] || 0;
 
   let resultMsg = '';
+  let fired = true;
   try {
     switch (mechanic) {
-      case 'TIME':              resultMsg = applyAbilityTime(value); break;
-      case 'ELIMINATE':         resultMsg = applyAbilityEliminate(value); break;
-      case 'SKIP':              resultMsg = applyAbilitySkip(); break;
-      case 'FREEZE':            resultMsg = applyAbilityFreeze(value); break;
-      case 'REVEAL':            resultMsg = applyAbilityReveal(); break;
-      case 'RETRY':             resultMsg = applyAbilityRetry(); break;
-      case 'SHIELD':            resultMsg = applyAbilityShield(); break;
-      // CUT (SPEC v3 DROPPED): abilities never touch crystals.
-      case 'MULTIPLY':          resultMsg = 'Ability retired — no effect.'; break;
-      case 'DOUBLE_OR_NOTHING': resultMsg = 'Ability retired — no effect.'; break;
-      case 'STEAL':             resultMsg = 'Ability retired — no effect.'; break;
-      default:                  resultMsg = `Unknown ability mechanic: ${mechanic || '(none)'}`;
+      // ── In-question MOVES (SPEC Part 5) ──
+      case 'CLOCK':      resultMsg = applyAbilityTime(value); break;       // +Ns timer
+      case 'ELIMINATE':  resultMsg = applyAbilityEliminate(value); break;  // grey wrong opts
+      case 'SWAP':       resultMsg = applyAbilitySkip(); break;            // swap = next question
+      case 'CLUE':       resultMsg = applyAbilityReveal(); break;          // reveal a hint
+
+      // ── Post-gym RESCUE MOVES — not usable mid-question ──
+      case 'EXTRA_SHOT':
+        // Rescue ability: bonus question toward the badge, used POST-gym, not here.
+        fired = false;
+        resultMsg = '🎯 Extra Shot is a post-gym rescue — use it after the gym, not during a question.';
+        break;
+      case 'TIME_TRAVEL':
+        // BACKLOG item 32 — not yet built. Gate gracefully.
+        fired = false;
+        resultMsg = '⏳ Time Travel (post-gym rescue) isn\'t available yet.';
+        break;
+
+      // ── Legacy in-question aliases (old saves / older schema) ──
+      case 'TIME':    resultMsg = applyAbilityTime(value || 5); break;
+      case 'SKIP':    resultMsg = applyAbilitySkip(); break;
+      case 'REVEAL':  resultMsg = applyAbilityReveal(); break;
+      case 'FREEZE':  resultMsg = applyAbilityFreeze(value || 5); break;
+      case 'RETRY':   resultMsg = applyAbilityRetry(); break;
+      case 'SHIELD':  resultMsg = applyAbilityShield(); break;
+
+      // ── Retired (SPEC v3 DROPPED): abilities never touch crystals ──
+      case 'MULTIPLY':
+      case 'DOUBLE_OR_NOTHING':
+      case 'STEAL':   fired = false; resultMsg = 'Ability retired — no effect.'; break;
+
+      default:
+        fired = false;
+        resultMsg = `Unknown ability: ${mechanic || '(none)'}`;
     }
   } catch (e) {
     console.error('useAbility error:', e);
+    fired = false;
     resultMsg = `Ability error: ${e.message}`;
+  }
+
+  // Only consume the gym's one-ability-use + mark for XP if an ability actually fired.
+  if (!fired) {
+    showToast(`${pokemon.emoji || '⚡'} ${resultMsg}`);
+    return;
   }
 
   STATE.abilityUsedThisGym = true;

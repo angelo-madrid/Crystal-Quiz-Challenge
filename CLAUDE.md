@@ -121,6 +121,12 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.23 FIX: gym MOVE abilities now actually fire. The dispatcher read a nonexistent
+  `abilityEffect` field; rewired to `pokemon.move.type` (SPEC Part 5 canonical names)
+  with default values. CLOCK / ELIMINATE / SWAP / CLUE work in-question;
+  EXTRA_SHOT / TIME_TRAVEL are gated as post-gym rescue (TIME_TRAVEL = BACKLOG 32, not
+  built). A `fired` guard ensures gated/unknown moves don't burn the gym's one-use or
+  set the XP marker. Closes the v1.22.1 schema-mismatch OPEN FLAG.
 - HOTFIX v1.22.1: TIME ability now gives visible feedback — `applyAbilityTime`
   adds to `timeLeft`, grows `totalTime` only as needed, and repaints the
   bar/countdown instantly. ⚠️ Data check during this hotfix surfaced a deeper

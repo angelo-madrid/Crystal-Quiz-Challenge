@@ -201,6 +201,11 @@ OPEN QUESTIONS (resolve before build):
   speed + strong/struggling gap at UAT.
 - Pre-game catch + regional catch both build `newPokemon` — confirm BOTH stamp
   `hp` via `computeHp` (v1.22 Change 3G) so no Pokémon has undefined HP in battle.
+- EXTRA_SHOT / TIME_TRAVEL are gated as post-gym rescue (v1.23). EXTRA_SHOT has no
+  post-gym entry point built yet; TIME_TRAVEL = BACKLOG item 32, not built. 57 Pokémon
+  (23 EXTRA_SHOT + 34 TIME_TRAVEL) currently no-op their MOVE with a "post-gym rescue"
+  toast. Wire the post-gym rescue flow so these Pokémon's moves become usable; until
+  then they stay gated.
 - QUESTION POOL DEPTH (blocks fresh-questions-on-replay, design item 40–42): the crystal
   economy assumes replays serve NEW questions. Verify per-category-per-tier depth in
   gym_bank[category][tier] is deep enough that a few replays don't exhaust the bucket and
@@ -215,20 +220,15 @@ OPEN QUESTIONS (resolve before build):
   REMOVED. Verify + strip at battle engine build (item 23 above).
 - **SPEC Part 13 subsection lettering** out of order (13I,K,L,M,N,O,P,Q,R, then J
   last) — renumber at consolidated SPEC cleanup, not piecemeal.
-- **MOVE ABILITY DISPATCHER / DATA SCHEMA MISMATCH** (surfaced during v1.22.1 hotfix
-  data check): `useAbility` in game.js switches on `pokemon.abilityEffect?.mechanic`
-  with cases TIME / ELIMINATE / SKIP / FREEZE / REVEAL / RETRY / SHIELD. But
-  pokemon.json v2.2 stores MOVE abilities at `pokemon.move.type` with the SPEC
-  Part 5 canonical names CLOCK / ELIMINATE / SWAP / EXTRA_SHOT / CLUE / TIME_TRAVEL —
-  AND every `move.value` is `null`. NET EFFECT: no MOVE ability currently routes;
-  every tap falls through to "Unknown ability mechanic". (42/193 Pokémon hit CLOCK,
-  ~all 193 affected for some mechanic.) Decision needed: (a) bridge the dispatcher
-  to read `move.type` + canonical names + default values, OR (b) regenerate
-  pokemon.json with `abilityEffect.{mechanic,value}` populated. Same data check
-  also requires TIME Pokémon to carry a numeric value (default 5s likely).
-- **TIME ability values:** confirm every TIME/CLOCK-mechanic Pokémon in
-  pokemon.json has a numeric `value` (seconds) once the dispatcher is bridged
-  — currently null for all 42 CLOCK Pokémon (logged during v1.22.1 hotfix).
+- ~~**MOVE ABILITY DISPATCHER / DATA SCHEMA MISMATCH**~~ ✅ RESOLVED v1.23
+  (2026-05-26): dispatcher rewired to read `pokemon.move.type` with the canonical
+  SPEC Part 5 names; legacy `abilityEffect.mechanic` aliases preserved for old
+  saves. Bridge approach chosen (option a — code now matches canonical SPEC,
+  data unchanged).
+- ~~**TIME ability values:**~~ ✅ RESOLVED v1.23 (2026-05-26): default values
+  supplied at the dispatcher (CLOCK=5s, ELIMINATE=1, FREEZE=5s) since the
+  pokemon.json schema carries none. If per-Pokémon variation is wanted later,
+  add `move.value` to the data and the dispatcher already prefers it.
 
 ---
 
