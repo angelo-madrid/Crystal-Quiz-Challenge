@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.4   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.5   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -49,6 +49,10 @@
 | TIER VOUCHER — unique code + printable keepsake + ledger audit + burn | ✅ LIVE v1.26 | SPEC 13R |
 | Effort Score — full SPEC 13C blend (improvement + engagement) | ⬜ deferred | SPEC Part 13C |
 | Effort→tier-unlock gating + 50/50 team pool (SPEC 13D) | ⬜ deferred | SPEC Part 13D |
+| GAME_OVER Podium — champion + stats + crystal summary | ✅ LIVE v1.27 | SPEC 13K + 13P |
+| TEAM PRIZE reveal (3-tier, mystery, boss-count gated) | ✅ LIVE v1.27 | SPEC Part 13P |
+| RECOGNITION HONORS (Top Trainer / Champion / Star Master / Collector) | ✅ LIVE v1.27 | SPEC Part 13K |
+| Multiplayer honors (Most Improved / Team Heart) — cross-player data | ⬜ deferred | SPEC Part 13K |
 | Boss mechanics (freq/reward/casting/gating) — NO boss crystals | ⬜ designed v3.7 | SPEC Part 14 |
 | Legendary gate R10 + Papa override + in-game reminders | ⬜ designed v3.7 | SPEC Part 14G-7 |
 | Boss reward Pokémon offer (keep-or-release, normal team cap) | ⬜ designed v3.7 | SPEC Part 14G-2 |
@@ -127,6 +131,18 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.27 (SPEC 13K + 13P): GAME_OVER Podium / Champion Screen LIVE. R10 Darkrai
+  victory → champion hero + stats (badges, bosses 10/10, stars, team, banked +
+  provisional crystals) + TEAM PRIZE reveal (`TEAM_PRIZE_TIERS` — 3=small, 6=medium,
+  10=grand, highest-tier-only, mystery shared gift, journey breadcrumb) + RECOGNITION
+  HONORS (`computeHonors` — Top Trainer / Champion / Star Master / Collector + fallback;
+  **cosmetic only — never grants crystals/picks** per SPEC 13K). `showFinalCompleteScreen`
+  rewired async — flips active game `status:'finished'` (SPEC 15B), `dbSaveRow`,
+  `renderPodium` + `showScreen('screen-podium')`; legacy `screen-test-build-complete`
+  kept as defensive fallback. Routes to Prize Store / Dashboard. Completes the Phase
+  3+4 build chain (P1→P3→Store→Voucher→Podium). ⚠️ P2 (game-mgmt UI, item 45) still
+  pending. DEFERRED: multiplayer comparison honors (Most Improved vs peers, Team Heart/
+  revives) need cross-player + assist tracking.
 - v1.26 (SPEC Part 13 / 13R): Prize Store + Tier Vouchers LIVE. 3 tiers
   (Bronze 8k / Silver 20k / Gold 40k — placeholder prices, tune at UAT). Buy
   with `row.banked_crystals` (change persists), unique code, printable

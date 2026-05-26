@@ -1,5 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.27: GAME_OVER Podium (SPEC 13K/13P). R10 Darkrai victory → champion screen:
+//        crystal summary (banked + provisional), TEAM PRIZE reveal (boss-count tier,
+//        mystery, shared), RECOGNITION HONORS (cosmetic/social only — never loot).
+//        Marks the game finished (15B); routes to Prize Store. Completes the Phase
+//        3+4 build chain (P1→P3→Store→Voucher→Podium; P2 game-mgmt UI still pending).
 // v1.26: Prize Store + Tier Vouchers (SPEC 13/13R). Buy Bronze/Silver/Gold vouchers
 //        with BANKED crystals; unique code; printable keepsake; ledger-tracked
 //        redeem-and-burn. Effort Score computed from available data (badges + correct)
@@ -621,6 +626,116 @@ async function redeemVoucher(code) {
   v.redeemed_at = new Date().toISOString();
   await dbSaveRow(STATE.player.id);
   return true;
+}
+
+// ── GAME_OVER PODIUM (SPEC 13K + 13P · v1.27) ──
+// End-of-campaign celebration after R10 Darkrai victory. Surfaces the journey's
+// payoff: champion moment, crystal summary, TEAM PRIZE reveal (13P), and
+// RECOGNITION HONORS (13K — cosmetic ONLY, never loot).
+
+// SPEC 13P — TEAM PRIZE: boss-defeat count → highest tier reached (mystery, shared).
+// 3 bosses → small · 6 → medium · 10 → grand. Highest-only (10 supersedes 6/3).
+const TEAM_PRIZE_TIERS = [
+  { min: 10, key: 'grand',  label: 'GRAND Team Prize', emoji: '🏆', blurb: 'All 10 bosses defeated — the legendary team reward!' },
+  { min: 6,  key: 'medium', label: 'Medium Team Prize', emoji: '🥈', blurb: '6 bosses down — a great shared reward!' },
+  { min: 3,  key: 'small',  label: 'Small Team Prize',  emoji: '🎁', blurb: '3 bosses beaten — a team treat!' },
+];
+function teamPrizeTier(bossCount) {
+  return TEAM_PRIZE_TIERS.find(t => bossCount >= t.min) || null;
+}
+
+// Gather everything the podium shows. Per-game stats from STATE.save; wallet per-player.
+function computePodiumData() {
+  const save = STATE.save || {};
+  const row  = STATE.playerRow || {};
+  const bossDefeats = save.bossDefeats || {};
+  const bossCount = Object.keys(bossDefeats).length;
+
+  // Total stars across all boss fights (SPEC 14 star rating).
+  let stars = 0;
+  for (const k of Object.keys(bossDefeats)) stars += (bossDefeats[k].stars || 0);
+
+  const team = save.pokemon_team || [];
+  return {
+    name: (STATE.player && STATE.player.name) || 'Champion',
+    badges: save.badges_earned || 0,
+    bossCount,
+    stars,
+    teamSize: team.length,
+    banked: row.banked_crystals || 0,
+    provisional: save.total_crystals || 0,
+    teamPrize: teamPrizeTier(bossCount),
+    totalCorrect: save.total_correct || 0,
+  };
+}
+
+// SPEC 13K — pick honors this kid earned. **Cosmetic recognition only — NEVER
+// grants crystals, picks, or any prize advantage.** Honors are PRIDE, not loot.
+// Multiplayer comparison honors (Most Improved vs peers, Team Heart/most revives)
+// need cross-player + assist tracking — deferred to a multiplayer-aware pass.
+function computeHonors(data, save) {
+  const honors = [];
+  if (data.badges >= 45)    honors.push({ emoji: '🌟', name: 'Top Trainer',   why: 'Outstanding badge mastery' });
+  if (data.bossCount >= 10) honors.push({ emoji: '👑', name: 'Champion',      why: 'Defeated all 10 bosses' });
+  if (data.stars >= 30)     honors.push({ emoji: '✨', name: 'Star Master',   why: 'Three stars on every boss' });
+  if (data.teamSize >= 5)   honors.push({ emoji: '🐾', name: 'Collector',     why: 'Built a full team' });
+  // Always give at least one honor so every finisher gets a moment.
+  if (honors.length === 0)  honors.push({ emoji: '🎓', name: 'Pokémon Champion', why: 'Completed the whole journey!' });
+  return honors;
+  // TODO (multiplayer pass): "Most Improved" (vs own past) + "Team Heart" (most
+  // revives) require per-gym improvement history + battle-assist tracking — not
+  // built yet.
+}
+
+function renderPodium() {
+  const d = computePodiumData();
+  const honors = computeHonors(d, STATE.save);
+
+  const titleEl = document.getElementById('podium-title');
+  if (titleEl) titleEl.textContent = `${d.name}, You're a Champion!`;
+  const subEl = document.getElementById('podium-subtitle');
+  if (subEl) subEl.textContent = `You defeated all the villains and completed your journey!`;
+
+  // Stats grid.
+  const statsEl = document.getElementById('podium-stats');
+  if (statsEl) statsEl.innerHTML = `
+    <div class="pstat"><span class="pstat-num">${d.badges}</span><span class="pstat-lbl">🏅 Badges</span></div>
+    <div class="pstat"><span class="pstat-num">${d.bossCount}/10</span><span class="pstat-lbl">⚔️ Bosses</span></div>
+    <div class="pstat"><span class="pstat-num">${d.stars}</span><span class="pstat-lbl">⭐ Stars</span></div>
+    <div class="pstat"><span class="pstat-num">${d.teamSize}</span><span class="pstat-lbl">🐾 Team</span></div>
+    <div class="pstat pstat-crystals">
+      <span class="pstat-num">${d.banked.toLocaleString()}</span>
+      <span class="pstat-lbl">💎 Banked to spend</span>
+      ${d.provisional > 0 ? `<span class="pstat-sub">✨ ${d.provisional.toLocaleString()} more earning this game</span>` : ''}
+    </div>`;
+
+  // Team prize (SPEC 13P) — mystery, shared, journey shown for motivation.
+  const tpEl = document.getElementById('podium-teamprize');
+  if (tpEl) {
+    if (d.teamPrize) {
+      const passed = TEAM_PRIZE_TIERS.filter(t => d.bossCount >= t.min)
+        .map(t => `${t.emoji} ${t.label.replace(' Team Prize','')}`).reverse().join(' → ');
+      tpEl.innerHTML = `
+        <div class="teamprize-card teamprize-${d.teamPrize.key}">
+          <div class="tp-emoji">${d.teamPrize.emoji}</div>
+          <div class="tp-title">${d.teamPrize.label} Unlocked!</div>
+          <div class="tp-mystery">🎁 A mystery team reward — revealed together with your team!</div>
+          <div class="tp-journey">${passed}</div>
+          <div class="tp-blurb">${d.teamPrize.blurb}</div>
+        </div>`;
+    } else {
+      tpEl.innerHTML = `<div class="teamprize-none">Beat 3 bosses as a team to unlock a shared team prize!</div>`;
+    }
+  }
+
+  // Honors (SPEC 13K) — cosmetic recognition.
+  const hEl = document.getElementById('podium-honors');
+  if (hEl) hEl.innerHTML = `<h3>🎖️ Honors</h3>` + honors.map(h =>
+    `<div class="honor-chip">
+       <span class="honor-emoji">${h.emoji}</span>
+       <span class="honor-name">${h.name}</span>
+       <span class="honor-why">${h.why}</span>
+     </div>`).join('');
 }
 
 // ── PRIZE STORE UI (renderPrizeStore + onBuyVoucher + showVoucher) ─
@@ -3243,15 +3358,39 @@ function _maybeShowLegendaryReminder(regionId) {
 
 // ── FINAL COMPLETE (Region 10 cleared) ────────────────────────
 // Routed to from finishRegionalCatch when the kid clears Region 10's
-// final gym. Used to be the Phase-1 test-build lid; Phase 2 repurposes
-// it as the legitimate end-of-game screen.
-function showFinalCompleteScreen() {
+// final gym. Used to be the Phase-1 test-build lid; Phase 2 repurposed
+// it as the end-of-game screen; v1.27 routes it through the GAME_OVER
+// PODIUM (SPEC 13K + 13P) — champion screen + team-prize reveal + honors.
+async function showFinalCompleteScreen() {
   if (STATE.timerInt) { clearInterval(STATE.timerInt); STATE.timerInt = null; }
   if (REGIONAL_CATCH_STATE && REGIONAL_CATCH_STATE.timerInt) {
     clearInterval(REGIONAL_CATCH_STATE.timerInt);
     REGIONAL_CATCH_STATE.timerInt = null;
   }
-  showScreen('screen-test-build-complete');
+
+  // v1.27: mark the active GAME as 'finished' (SPEC 15B) so the My Games list
+  // shows it as a completed, read-only campaign.
+  try {
+    if (STATE.playerRow) {
+      const g = activeGame(STATE.playerRow);
+      if (g && g.status !== 'finished') {
+        g.status = 'finished';
+        g.last_played_at = new Date().toISOString();
+        if (STATE.player && STATE.player.id) await dbSaveRow(STATE.player.id);
+      }
+    }
+  } catch (e) { console.warn('[podium] mark-finished failed:', e); }
+
+  // Render the champion podium (replaces the legacy screen-test-build-complete).
+  try {
+    renderPodium();
+    showScreen('screen-podium');
+  } catch (e) {
+    // Defensive fallback — if podium rendering errors, still get the kid to a
+    // valid end screen rather than a blank.
+    console.error('[podium] render failed:', e);
+    showScreen('screen-test-build-complete');
+  }
 }
 // Legacy alias so any pre-Phase-2 call sites keep working.
 function showTestBuildComplete() { return showFinalCompleteScreen(); }

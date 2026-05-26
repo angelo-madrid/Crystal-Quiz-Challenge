@@ -34,15 +34,20 @@
 
 ## 🔵 NOW (active next)
 
-- **R1–R3 UAT with real kids** — battle engine built & playable (Commits 1–4) and gym
-  MOVE abilities now fire (v1.23 dispatcher fix). Capture: boss difficulty, N=3 feel,
-  Team Strike, reward reaction, pacing, ability feel (CLOCK/ELIMINATE/SWAP/CLUE),
-  FREEZE_STUN (team-wide), enrage moments, reconnect paths. Use the dev-reset tool
-  (`?dev=1`) to reset the test player between runs, and clear Supabase test rows first.
-  ⚠️ Dev-reset tooling is REFERENCED but NOT YET BUILT (see OPS item 34) — currently
-  rely on the full-wipe SQL path until the per-player `?dev=1` tool ships.
-- **(Optional, if reward loop wanted for UAT)** crystal checkpoint economy P3 / R3
-  banking — see the staged Player Game Management item below.
+- **FULL UAT — Phase 3+4 build chain complete** (except P2 game-mgmt UI, item 45).
+  Live: battle engine, instant abilities + XP growth, MOVE dispatcher, catch
+  between gyms, P1 player-row + games[], P3 provisional→banked checkpoint
+  economy, Prize Store + Tier Vouchers, GAME_OVER Podium + team prize + honors.
+  Capture across a full R1–R10 run: difficulty curve, banking moments
+  (R3/R7/R10), Prize-Store affordability + voucher print flow, podium emotional
+  payoff, team-prize tier hit, honors variety.
+- **Cap + price tuning** (BACKLOG WATCH-ITEMS): `REGION_CRYSTAL_CAP` values and
+  `VOUCHER_TIERS` prices are placeholders — UAT data confirms or retunes.
+- **Item 45 (P2 game-management UI)** still pending — My Games list /
+  switch / restart / abandon / archive. Not blocking UAT (single active game
+  works fine via P1's accessor model); ship if multi-game switching is wanted.
+- **Dev-reset tooling** (OPS item 34) still REFERENCED but NOT BUILT — currently
+  rely on full-wipe SQL between UAT runs.
 
 ---
 
@@ -144,9 +149,17 @@ BUILD PHASES (dependency order):
     switch/restart/abandon/archive/restore confirms, banked-vs-provisional display.
     Reference the player-dashboard mockup from the 2026-05-26 design session.
     (SPEC 15B + 15C.)
-46. PODIUM — final-results screen after R10 clear (crystal summary, unused-Pokémon
-    level bonus, team-prize reveal SPEC 13P, recognition honors SPEC 13K).
-    Equivalent to build item 28.
+46. ✅ PODIUM — final-results screen after R10 clear. **DONE v1.27 (2026-05-26).**
+    `screen-podium` live: champion hero + stats grid (badges, bosses X/10, stars,
+    team, banked + provisional crystals); TEAM PRIZE reveal (SPEC 13P) via
+    `TEAM_PRIZE_TIERS` + `teamPrizeTier(bossCount)` (3=small, 6=medium, 10=grand,
+    highest-only, mystery shared gift, journey breadcrumb); HONORS (SPEC 13K) via
+    `computeHonors` — Top Trainer / Champion / Star Master / Collector + fallback,
+    cosmetic only (never grants crystals/picks). `showFinalCompleteScreen` rewired
+    async — marks active game `status:'finished'` (SPEC 15B), `dbSaveRow`, then
+    podium. Routes to Prize Store / Dashboard. Legacy `screen-test-build-complete`
+    kept as defensive fallback. (SPEC 13K + 13P.) Equivalent to build item 28.
+    ⚠️ Multiplayer comparison honors (Most Improved / Team Heart) deferred.
 
 OPEN QUESTIONS (resolve before build):
 - Switch-active side effect: previous active → abandoned (proposed) or stay resumable?
@@ -198,6 +211,12 @@ OPEN QUESTIONS (resolve before build):
   (23 EXTRA_SHOT + 34 TIME_TRAVEL) currently no-op their MOVE with a "post-gym rescue"
   toast. Wire the post-gym rescue flow so these Pokémon's moves become usable; until
   then they stay gated.
+- MULTIPLAYER COMPARISON HONORS (deferred from v1.27 Podium, SPEC 13K): "Most
+  Improved" (vs own past) + "Team Heart" (most revives/most supportive) need
+  per-gym improvement history + battle-assist tracking (revive/protect counts)
+  not yet collected. v1.27 ships the self-referential honors (Top Trainer,
+  Champion, Star Master, Collector + fallback). Wire the cross-player honors
+  when the data sources exist.
 - EFFORT/TEAM GATING (deferred from v1.26 Prize Store, SPEC 13C/13D): tier unlock is
   affordability-only for now (`isTierUnlocked` stubbed `true`; Effort Score
   display-only). To wire the real two-gate (team effort unlocks tiers): build
@@ -252,6 +271,23 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — GAME_OVER PODIUM / CHAMPION SCREEN (2026-05-26, v1.27):**
+- R10 Darkrai victory → champion podium (replaces legacy `screen-test-build-complete`)
+- `TEAM_PRIZE_TIERS` + `teamPrizeTier(bossCount)` (3=small / 6=medium / 10=grand,
+  highest-tier-only, mystery shared gift) — SPEC 13P
+- `computePodiumData()` aggregates badges + bossDefeats count + total stars +
+  team size + banked + provisional + teamPrize tier
+- `computeHonors(data, save)` returns cosmetic honors only (Top Trainer / Champion /
+  Star Master / Collector + fallback) — **never grants crystals or picks** (SPEC 13K)
+- `renderPodium()` paints hero (animated crown + gradient title), stat grid
+  (with crystal-emphasis cell), team-prize card (per-tier color + journey breadcrumb),
+  honor chips, action buttons
+- `showFinalCompleteScreen` rewired async: flips active game `status:'finished'`
+  (SPEC 15B) + `dbSaveRow` + `renderPodium` + `showScreen('screen-podium')`
+- Routes to Prize Store / Dashboard from the podium
+- Completes the Phase 3+4 build chain (P1→P3→Store→Voucher→Podium; P2 still pending)
+- ⚠️ Multiplayer comparison honors (Most Improved, Team Heart) deferred — flagged
 
 **Track C — PRIZE STORE + TIER VOUCHERS (2026-05-26, v1.26):**
 - Prize Store live: `screen-prize-store` with 3 tier cards (Bronze 8k / Silver 20k /

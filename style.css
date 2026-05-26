@@ -3472,3 +3472,117 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   }
   .vk-code { background: rgba(0,0,0,0.05) !important; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   GAME_OVER PODIUM / CHAMPION SCREEN (v1.27, SPEC 13K + 13P)
+   ═══════════════════════════════════════════════════════════ */
+#screen-podium {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 16px 32px;
+}
+.podium-hero {
+  text-align: center;
+  padding: 28px 8px 18px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(255,203,5,0.10) 0%, rgba(167,139,250,0.10) 100%);
+  border: 2px solid rgba(255,203,5,0.5);
+  border-radius: 22px;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+}
+.podium-crown {
+  font-size: 5.5rem;
+  line-height: 1;
+  margin-bottom: 4px;
+  animation: podium-crown-bob 3.2s ease-in-out infinite;
+}
+@keyframes podium-crown-bob {
+  0%,100% { transform: translateY(0) rotate(-2deg); }
+  50%     { transform: translateY(-6px) rotate(2deg); }
+}
+.podium-hero h1 {
+  font-size: 1.85rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #ffcb05, #a78bfa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 6px 0 4px;
+}
+.podium-subtitle { opacity: 0.78; font-size: 0.95rem; }
+
+/* Stats grid */
+.podium-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin: 14px 0 18px;
+}
+.pstat {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  padding: 14px 10px;
+  text-align: center;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pstat-num { font-size: 1.6rem; font-weight: 900; color: var(--gold, #ffcb05); font-family: var(--font-mono, monospace); }
+.pstat-lbl { font-size: 0.78rem; opacity: 0.8; font-weight: 700; }
+.pstat-sub { font-size: 0.7rem; opacity: 0.6; font-weight: 600; }
+.pstat-crystals {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(255,203,5,0.10), rgba(167,139,250,0.10));
+  border-color: rgba(255,203,5,0.45);
+}
+
+/* Team prize card */
+.podium-teamprize { margin: 12px 0 18px; }
+.teamprize-card {
+  text-align: center;
+  padding: 22px 18px;
+  border: 3px solid var(--gold, #ffcb05);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,203,5,0.12), rgba(0,0,0,0.20));
+  box-shadow: 0 10px 28px rgba(0,0,0,0.30);
+}
+.teamprize-card.teamprize-small  { border-color: #cd7f32; background: linear-gradient(135deg, rgba(205,127,50,0.14), rgba(0,0,0,0.20)); }
+.teamprize-card.teamprize-medium { border-color: #c0c0c0; background: linear-gradient(135deg, rgba(192,192,192,0.14), rgba(0,0,0,0.20)); }
+.teamprize-card.teamprize-grand  { border-color: var(--gold, #ffcb05); }
+.tp-emoji   { font-size: 3.6rem; line-height: 1; margin-bottom: 6px; }
+.tp-title   { font-size: 1.25rem; font-weight: 900; margin-bottom: 8px; letter-spacing: 0.5px; }
+.tp-mystery { font-size: 0.92rem; font-weight: 700; opacity: 0.92; margin-bottom: 10px; }
+.tp-journey { font-family: var(--font-mono, monospace); font-size: 0.85rem; opacity: 0.7; margin-bottom: 10px; }
+.tp-blurb   { font-size: 0.84rem; opacity: 0.78; padding: 0 6px; }
+.teamprize-none {
+  text-align: center;
+  padding: 14px;
+  opacity: 0.6;
+  font-size: 0.85rem;
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 14px;
+}
+
+/* Honors */
+.podium-honors { margin: 16px 0 22px; }
+.podium-honors h3 { font-size: 1rem; opacity: 0.85; margin: 0 0 10px; }
+.honor-chip {
+  display: grid;
+  grid-template-columns: 42px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  margin: 6px 0;
+  background: rgba(167,139,250,0.10);
+  border-left: 4px solid #a78bfa;
+  border-radius: 12px;
+}
+.honor-emoji { font-size: 1.8rem; line-height: 1; text-align: center; }
+.honor-name  { font-weight: 800; font-size: 0.95rem; }
+.honor-why   { font-size: 0.78rem; opacity: 0.7; font-style: italic; }
+
+/* Actions */
+.podium-actions {
+  display: flex; gap: 12px; margin-top: 6px;
+}
+.podium-actions .btn-primary,
+.podium-actions .btn-secondary { flex: 1; }

@@ -479,6 +479,22 @@
     </div>
   </div>
 
+  <!-- GAME_OVER PODIUM (SPEC 13K + 13P · v1.27) — champion screen after R10 win -->
+  <div id="screen-podium" class="screen">
+    <div class="podium-hero">
+      <div class="podium-crown">👑</div>
+      <h1 id="podium-title">Champion!</h1>
+      <div id="podium-subtitle" class="podium-subtitle"></div>
+    </div>
+    <div id="podium-stats" class="podium-stats"></div>
+    <div id="podium-teamprize" class="podium-teamprize"></div>
+    <div id="podium-honors" class="podium-honors"></div>
+    <div class="podium-actions no-print">
+      <button class="btn-primary" onclick="showScreen('screen-prize-store')">🎁 Spend Banked Crystals</button>
+      <button class="btn-secondary" onclick="showScreen('screen-player-dashboard'); renderPlayerDashboard();">🏠 Dashboard</button>
+    </div>
+  </div>
+
   <!-- PRIZE STORE (SPEC Part 13 / 13R · v1.26) — banked crystals → tier vouchers -->
   <div id="screen-prize-store" class="screen">
     <div class="screen-header">
