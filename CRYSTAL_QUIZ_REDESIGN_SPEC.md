@@ -1788,6 +1788,13 @@ Replaces the former "trophy Pokémon" / "bonus slot" mechanic entirely.
 
 **Format:** 3v1 — all kids attack one shared boss HP bar together.
 
+> **Host-flow gating (v1.29 build note):** the host's boss control panel is gated on
+> `room.phase === 'BOSS_FIGHT'`. The phase is set when the FIRST player reaches the
+> boss (taps "Fight the Villain!" after Gym 5 → `startBossFight` writes the phase +
+> `battleState` skeleton). Host has a manual fallback to set the phase from the
+> room-detail overlay when the room is `REGION_COMPLETE`. Without this gate set,
+> the boss panel never appears.
+
 **Win condition (TWO gates, both required):**
 1. Boss HP reaches 0
 2. Every kid has landed **at least 3 correct answers** (minimum contribution — prevents

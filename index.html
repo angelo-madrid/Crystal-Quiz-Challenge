@@ -1054,10 +1054,20 @@
         <div class="rd-pokemon-pool" id="rd-pokemon-pool"></div>
       </section>
 
+      <!-- v1.29 SPEC 14G fix: boss control panel for the room-detail overlay
+           (renders the "▶ Start the Battle! (Round 1)" + force-next + end-fight
+           buttons via _hostRenderBattlePanel when room.phase === 'BOSS_FIGHT'). -->
+      <section class="modal-section" id="rd-battle-section" style="display:none">
+        <div id="rd-battle-panel" class="col3-section"></div>
+      </section>
+
       <section class="modal-section">
         <div class="modal-section-label">🎛️ ACTIONS</div>
         <div class="rd-actions">
           <button class="btn-primary" id="rd-start-btn" onclick="rdStartGame()" style="display:none">🚀 Start Game</button>
+          <!-- v1.29: manual boss-start fallback for REGION_COMPLETE when the
+               kid is parked / no player triggered startBossFight yet. -->
+          <button class="btn-primary" id="rd-start-boss-btn" onclick="rdStartBossFight()" style="display:none">⚔️ Start Boss Fight</button>
           <button class="btn-secondary" id="rd-pause-btn" onclick="rdTogglePause()">⏸️ Pause Room</button>
           <button class="btn-secondary" id="rd-archive-btn" onclick="rdArchive()">🗄️ Archive</button>
           <button class="btn-danger" onclick="rdEndGame()">🏁 End Game</button>

@@ -1,5 +1,13 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29: BOSS FIGHT reachability fix (SPEC 14G). `startBossFight` now sets
+//        `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` so the host boss panel
+//        reveals (was gated on phase === 'BOSS_FIGHT' but phase was never set →
+//        Start Round button never appeared → kid sat on "Waiting for Papa"
+//        forever). Boss controls (`_hostRenderBattlePanel`) now also render in
+//        the room-detail overlay the host drives games from — not just the
+//        dashboard col3. New `rdStartBossFight` manual fallback for
+//        REGION_COMPLETE. Restores the boss → R3/R7/R10 banking → reward loop.
 // v1.28.3 HOTFIX: pokemonDisplayName now reads `catchForm` (the real regional name)
 //                 before the id-prettify fallback — fixes mangled names like
 //                 Jangmo-o / Ho-Oh / Philippine-Eagle / Mariang-Makiling. The
@@ -4654,6 +4662,13 @@ async function startBossFight(regionId) {
           ps[STATE.player.id] = _battleInitPlayerState(playerHp);
         }
         room.battleState.playerStates = ps;
+        // v1.29 (SPEC 14G fix): set the phase so the host boss panel reveals
+        // (gated on room.phase === 'BOSS_FIGHT'); keep currentRegion in sync
+        // so the host's progress view follows. Previously only battleState
+        // was written → host never saw the Start Round button → kid sat on
+        // "Waiting for Papa" forever.
+        room.phase = 'BOSS_FIGHT';
+        room.currentRegion = regionId;
         room.updated_at = new Date().toISOString();
         await dbWriteRoom(code, room);
       }
@@ -7882,17 +7897,58 @@ async function renderRoomDetail() {
   }
 
   // Action buttons — phase-driven visibility.
-  //   lobby phase  → [🚀 Start Game]  [🗄️ Archive]  [🏁 End Game]
-  //   any other    → [⏸️ Pause / ▶️ Resume]  [🗄️ Archive]  [🏁 End Game]
-  const startBtn = document.getElementById('rd-start-btn');
-  const pauseBtn = document.getElementById('rd-pause-btn');
+  //   lobby phase    → [🚀 Start Game]  [🗄️ Archive]  [🏁 End Game]
+  //   REGION_COMPLETE → [⚔️ Start Boss Fight] (v1.29 manual fallback) + Pause/Archive/End
+  //   any other      → [⏸️ Pause / ▶️ Resume]  [🗄️ Archive]  [🏁 End Game]
+  const startBtn     = document.getElementById('rd-start-btn');
+  const startBossBtn = document.getElementById('rd-start-boss-btn');
+  const pauseBtn     = document.getElementById('rd-pause-btn');
   const isLobby  = room.phase === 'lobby';
   if (startBtn) startBtn.style.display = isLobby ? '' : 'none';
+  if (startBossBtn) startBossBtn.style.display = (room.phase === 'REGION_COMPLETE') ? '' : 'none';
   if (pauseBtn) {
     pauseBtn.style.display = isLobby ? 'none' : '';
     pauseBtn.textContent = room.isPaused ? '▶️ Resume Room' : '⏸️ Pause Room';
   }
   document.getElementById('rd-archive-btn').textContent = room.archived ? '📤 Unarchive' : '🗄️ Archive';
+
+  // v1.29 SPEC 14G fix: render the boss control panel here too (not just on
+  // the dashboard col3) — this overlay is what the host actually drives games
+  // from. _hostRenderBattlePanel renders the "▶ Start the Battle! (Round 1)"
+  // button + force-next + end-fight, wired to hostBattleStartRound(code).
+  const rdBattleSection = document.getElementById('rd-battle-section');
+  const rdBattlePanel   = document.getElementById('rd-battle-panel');
+  if (rdBattleSection && rdBattlePanel) {
+    if (room.phase === 'BOSS_FIGHT') {
+      await _hostRenderBattlePanel(code, room, rdBattlePanel);
+      rdBattleSection.style.display = 'block';
+    } else {
+      rdBattleSection.style.display = 'none';
+    }
+  }
+}
+
+// v1.29 manual boss-start fallback. Used when a room is REGION_COMPLETE but
+// no player has triggered startBossFight() yet (kid parked / reconnect glitch).
+// Sets room.phase='BOSS_FIGHT' so the boss panel reveals, initialising
+// battleState if missing. Normal flow still goes through startBossFight when
+// a kid taps "⚔️ Fight the Villain!" after Gym 5.
+async function rdStartBossFight() {
+  const code = HOST_UI.detailRoomCode;
+  if (!code) return;
+  const room = await dbReadRoom(code);
+  if (!room) return;
+  if (room.phase === 'BOSS_FIGHT') { showToast('Boss fight already started'); return; }
+  const regionId = room.currentRegion || 1;
+  const boss = BOSS_DATA[regionId];
+  if (!boss) { showToast('⚠️ No boss data for this region'); return; }
+  if (!room.battleState) room.battleState = _battleInitState(regionId, boss);
+  room.phase = 'BOSS_FIGHT';
+  room.updated_at = new Date().toISOString();
+  await dbWriteRoom(code, room);
+  showToast('⚔️ Boss fight started — players can now battle');
+  renderRoomDetail();
+  renderHostDashboard();
 }
 
 async function rdTogglePause() {

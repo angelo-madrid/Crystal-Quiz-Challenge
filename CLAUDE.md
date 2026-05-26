@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.6   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.7   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -132,6 +132,18 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29 (SPEC 14G boss reachability — THE #1 UAT BLOCKER fix): `startBossFight`
+  now sets `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` on player arrival
+  (was only writing `battleState`, but the host boss panel gates on
+  `phase === 'BOSS_FIGHT'`, so the panel never appeared → kid sat on "Waiting
+  for Papa" forever → R3/R7/R10 banking never fired → entire reward economy
+  was gated). Boss control panel (`_hostRenderBattlePanel`) now ALSO renders in
+  `renderRoomDetail` (the room-detail overlay the host actually drives games
+  from), not just dashboard col3. New `rdStartBossFight` manual fallback for
+  REGION_COMPLETE. Restores the boss → R3/R7/R10 banking → reward loop. Existing
+  `hostDoPoll` (2.5s) already re-renders the overlay while open. Sequential
+  gym-completion lock at line 3853 confirmed intact (gym-3 out-of-order anomaly
+  was stale Supabase test data — clear before real UAT).
 - HOTFIX v1.28.3: `pokemonDisplayName` reads `catchForm` (primary) for the 183
   regional Pokémon — they carry the real name in `catchForm`, not `name`. The
   v1.28.2 resolver fell through to prettify-id, mangling hyphenated names

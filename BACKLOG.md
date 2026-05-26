@@ -46,6 +46,11 @@
   `VOUCHER_TIERS` prices are placeholders — UAT data confirms or retunes.
 - **Dev-reset tooling** (OPS item 34) still REFERENCED but NOT BUILT — currently
   rely on full-wipe SQL between UAT runs.
+- ⚠️ **Clear Supabase test data before real UAT.** v1.29 surfaced a player with
+  gyms 1/2/4/5 complete but NOT 3 — the sequential-lock at line 3853
+  (`isLocked = i > 1 && !gymsCompleted.includes(i-1)`) was confirmed intact, so
+  this was stale test data from an earlier build that wrote `gymsCompleted` out
+  of order. Wipe before real UAT to avoid confusion.
 
 ---
 
@@ -288,6 +293,20 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — BOSS REACHABILITY FIX (2026-05-26, v1.29 — #1 UAT blocker):**
+- `startBossFight` now sets `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` so
+  the host boss control panel reveals — was writing `battleState` only, but the
+  panel gates on `phase === 'BOSS_FIGHT'`, so the "Start the Battle!" button
+  never appeared
+- Boss controls (`_hostRenderBattlePanel`) now render in `renderRoomDetail`
+  (the room-detail overlay the host drives games from), not just dashboard col3
+- New `rdStartBossFight` manual fallback shown in the overlay when
+  `room.phase === 'REGION_COMPLETE'`
+- Sequential gym-completion lock confirmed intact (line 3853); gym-3
+  out-of-order anomaly traced to stale Supabase test data
+- Existing `hostDoPoll` (2.5s) already re-renders the overlay while open
+- Restores the boss → R3/R7/R10 banking → Prize Store reward loop end-to-end
 
 **Track C — P2 GAME↔ROOM BINDING + MY GAMES UI (2026-05-26, v1.28):**
 - A GAME is now a per-room campaign — `room_code` is the key
