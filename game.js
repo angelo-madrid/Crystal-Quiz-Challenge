@@ -1,5 +1,14 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.2 FIX: Gym 5 → boss fight now reachable on PASS and FAIL.
+//   Bug A: showGymComplete was gating the ⚔️ Fight the Villain! button on
+//   regionComplete (all 5 gyms in gymsCompleted). Failed gym 5 is never pushed
+//   to gymsCompleted → button hidden → kid stranded. Design: fail gym 5 = no
+//   badge/XP, but boss fight is always the forward path. Fixed: gym 5 always
+//   shows the boss button regardless of pass/fail; regionComplete check removed.
+//   Bug B: removed hardcoded onclick="goNextGym()" from btn-next-gym in HTML —
+//   JS always overwrites nextBtn.onclick at render time; HTML attribute was a
+//   footgun that could fire goNextGym() on gym 5 instead of startBossFight().
 // v1.29.1 HOTFIX: regional-catch SELECTION grid + click-update + result toasts now use
 //                 pokemonDisplayName() — was reading raw `.name` so all 183 regional
 //                 Pokémon (which carry name in `catchForm`, not `name`) showed
@@ -4585,9 +4594,13 @@ async function endGym() {
   offerEl.style.display = 'none';
   offerEl.innerHTML = '';
 
-  // Next gym button (Phase 1 step 1.3): on gym 5, if the whole region is
-  // now complete, offer Regional Pokemon Catch instead of hiding the button.
-  const regionComplete = (regionSave.gymsCompleted || []).length >= 5;
+  // Next gym button (Phase 1 step 1.3).
+  // Gyms 1–4: offer Next Gym + catch-between-gyms.
+  // Gym 5 (pass OR fail): always show ⚔️ Fight the Villain! — failing gym 5
+  //   only costs the badge and XP; it never blocks progression to the boss.
+  //   (v1.29.2: regionComplete check removed — was hiding the button on a
+  //   gym-5 fail, stranding the kid with only Back to Map. Design: fail =
+  //   no badge, but the boss fight is always the forward path after gym 5.)
   if (STATE.currentGym < 5) {
     nextBtn.style.display = 'block';
     nextBtn.textContent   = `Next Gym ▶`;
@@ -4599,16 +4612,11 @@ async function endGym() {
         🔮 Catch a Pokémon before the next gym
       </button>
       <div class="catch-between-hint">You can catch up to ${_rarityLabelForLevel()} Pokémon at your level.</div>`;
-  } else if (regionComplete) {
-    // SPEC Part 14G: after Gym 5 cleared, boss fight comes before regional catch.
-    // startBossFight() is built in Commit 2; for now the button is wired but the
-    // function shows a "coming soon" alert so Commit 1 is safe to ship alone.
+  } else {
+    // Gym 5 — always route to boss, pass or fail.
     nextBtn.style.display = 'block';
     nextBtn.textContent   = `⚔️ Fight the Villain!`;
     nextBtn.onclick       = () => startBossFight(STATE.currentRegion);
-  } else {
-    // Failed gym 5 — nothing to advance to; user must redo via the map.
-    nextBtn.style.display = 'none';
   }
 
   showScreen('screen-gym-complete');

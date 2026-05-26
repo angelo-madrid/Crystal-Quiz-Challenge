@@ -132,6 +132,17 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29.2 FIX: Gym 5 → boss fight reachable on PASS and FAIL. Two bugs combined
+  to strand the kid after gym 5: (A) `showGymComplete` was gating the
+  ⚔️ Fight the Villain! button on `regionComplete` (`gymsCompleted.length >= 5`),
+  but a FAILED gym 5 never pushes to `gymsCompleted`, so the button was hidden
+  and the only option was Back to Map. Design: fail gym 5 = no badge / reduced
+  crystals, but the boss fight is ALWAYS the forward path (badge/XP penalties
+  don't block progression). Gym-5 branch collapsed: always shows boss button.
+  (B) Removed hardcoded `onclick="goNextGym()"` from `#btn-next-gym` — JS
+  always overwrites the handler at render but the HTML attribute was a footgun
+  that could fire `goNextGym()` on gym 5 instead of `startBossFight()`. JS
+  assignment is now the single source of truth.
 - HOTFIX v1.29.1: regional-catch SELECTION grid (and click-update + result
   toasts) now route through `pokemonDisplayName()`. v1.28.2 wired the resolver
   into team/battle/dashboard renders but missed the catch grid — all 183

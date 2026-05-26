@@ -297,6 +297,19 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — GYM 5 BOSS-REACHABILITY FIX (2026-05-26, v1.29.2 — Bug #5):**
+- `showGymComplete` was gating the ⚔️ Fight the Villain! button on
+  `regionComplete` (`gymsCompleted.length >= 5`). A FAILED gym 5 never writes
+  to `gymsCompleted`, so the gate failed and the kid was stranded with only
+  Back to Map after a fail.
+- Design intent confirmed: fail gym 5 = no badge / reduced crystals, but the
+  boss fight is ALWAYS the forward path (penalties don't block progression).
+- Gym-5 branch collapsed: gym 5 always shows the boss button (pass or fail).
+- (B) Removed hardcoded `onclick="goNextGym()"` from `#btn-next-gym` in
+  index.html — JS always sets `nextBtn.onclick` at render but the HTML
+  attribute was a footgun that could fire `goNextGym()` on gym 5 instead of
+  `startBossFight()`. JS assignment is now the single source of truth.
+
 **Track C — BOSS REACHABILITY FIX (2026-05-26, v1.29 — #1 UAT blocker):**
 - `startBossFight` now sets `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` so
   the host boss control panel reveals — was writing `battleState` only, but the
