@@ -1,5 +1,13 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.28: Game ↔ Room binding + My Games UI (SPEC Part 15 P2). A GAME is a
+//        per-room campaign (room_code is the key). bindGameToRoom() create-or-resume
+//        on join/rejoin; new room → fresh self-contained game; rejoin → resume.
+//        Previous active → abandoned on switch; FINISHED games stay finished (re-
+//        joining routes to the podium, not silent resurrection). resetGameProgress
+//        upgraded to full-progress reset (regions/badges/team/seen-questions),
+//        wallet+vouchers untouched. My Games UI in player-dashboard col-1 with
+//        switch / continue / restart / archive / restore + archived sublist.
 // v1.27: GAME_OVER Podium (SPEC 13K/13P). R10 Darkrai victory → champion screen:
 //        crystal summary (banked + provisional), TEAM PRIZE reveal (boss-count tier,
 //        mystery, shared), RECOGNITION HONORS (cosmetic/social only — never loot).
@@ -522,13 +530,22 @@ async function bankCrystalsForCheckpoint(regionId) {
 // fresh state. Caller (P2 restart UI) is responsible for game lifecycle —
 // THIS HELPER ONLY zeroes economy fields. The per-player wallet
 // (row.banked_crystals) is left UNTOUCHED on purpose.
-function resetGameProgress(game) {
-  if (!game || !game.progress) return;
-  game.progress.total_crystals  = 0;
-  game.progress.region_crystals = {};
-  game.progress.banked_regions  = {};
-  game.progress.updated_at      = new Date().toISOString();
-  game.last_played_at           = new Date().toISOString();
+// v1.28 P2 upgrade: full game-progress reset (Restart). Resets regions/badges/team/
+// pokeballs/provisional/seen-questions to a fresh-game shape via newSave, PRESERVES
+// the game's id + room_code + label + status (caller decides status). Per-PLAYER
+// fields (row.banked_crystals, row.vouchers, row.crystal_ledger) are UNTOUCHED —
+// they live at the row, not the game.
+function resetGameProgress(game, player) {
+  if (!game) return;
+  const fresh = newSave(player || (STATE && STATE.player) || {});
+  // Build a new progress in-place rather than swap the reference so anything
+  // still holding STATE.save (the live pointer) keeps pointing at the right
+  // object after the reset.
+  if (!game.progress) game.progress = {};
+  // Wipe and repopulate progress.
+  for (const k of Object.keys(game.progress)) delete game.progress[k];
+  Object.assign(game.progress, fresh);
+  game.last_played_at = new Date().toISOString();
 }
 
 // ── PRIZE STORE + TIER VOUCHERS (SPEC Part 13 / 13R · v1.26) ──
@@ -1192,6 +1209,70 @@ function activeProgress(row) {
   return g ? g.progress : null;
 }
 
+// ── GAME ↔ ROOM BINDING (SPEC Part 15 · v1.28 P2) ─────────────
+// A GAME = a per-room campaign. room_code is the key. Joining a NEW room creates
+// a new self-contained game (fresh progress, own regions/badges/team/seen-questions);
+// rejoining a PLAYED room resumes its game. Per-PLAYER fields (banked_crystals,
+// vouchers, ledger) live at the row and span ALL games.
+
+// Find the game bound to a room_code (or null).
+function gameForRoom(row, roomCode) {
+  if (!row || !Array.isArray(row.games) || !roomCode) return null;
+  return row.games.find(g => g.room_code === roomCode) || null;
+}
+
+// Helper: set a game as active. If the previously-active game was 'active' (not
+// finished/archived/abandoned), downgrade it to 'abandoned' (SPEC 15C switch).
+// FINISHED games keep their status — we never resurrect a completed campaign to
+// abandoned. ARCHIVED games also keep their status.
+function bindActiveGame(row, gameId) {
+  if (!row || !gameId) return null;
+  const g = row.games.find(x => x.game_id === gameId);
+  if (!g) return null;
+  if (row.active_game_id && row.active_game_id !== gameId) {
+    const prev = row.games.find(x => x.game_id === row.active_game_id);
+    if (prev && prev.status === 'active') prev.status = 'abandoned';
+  }
+  row.active_game_id = gameId;
+  g.last_played_at = new Date().toISOString();
+  return g;
+}
+
+// Create-or-resume the game for a room on join. Returns the active game.
+// First-ever join reuses the null-room placeholder from registration so we
+// don't leave orphan empty games.
+function bindGameToRoom(row, roomCode, player) {
+  if (!row || !roomCode) return null;
+  let g = gameForRoom(row, roomCode);
+  if (!g) {
+    // No game bound to this room yet. Reuse a null-room unplayed placeholder if
+    // present (the typical first-join case from registration); else create a
+    // brand-new game.
+    const placeholder = (row.games || []).find(x => !x.room_code &&
+        (!x.progress
+          || ((x.progress.badges_earned || 0) === 0
+              && (!x.progress.regions || Object.keys(x.progress.regions).length === 0))));
+    if (placeholder) {
+      placeholder.room_code = roomCode;
+      placeholder.label = `Room ${roomCode}`;
+      g = placeholder;
+    } else {
+      g = newGame(player, `Room ${roomCode}`);
+      g.room_code = roomCode;
+      if (!Array.isArray(row.games)) row.games = [];
+      row.games.push(g);
+    }
+  }
+  // Make it active (abandons prev active per bindActiveGame's rules).
+  bindActiveGame(row, g.game_id);
+  // Resuming an ABANDONED game reactivates it. FINISHED stays finished
+  // (read-only, SPEC 15B) — the caller can route to the podium/My-Games
+  // instead of silently resurrecting a completed campaign. ARCHIVED stays
+  // archived (caller should restore explicitly).
+  if (g.status === 'abandoned') g.status = 'active';
+  return g;
+}
+
 // Lazy, idempotent, non-destructive migration of legacy flat saves → player row.
 // Called from dbLoadRow on every load; if `raw` is already a row, returns it
 // untouched. If it's a flat save, wraps it as games[0].progress and lifts
@@ -1667,6 +1748,9 @@ async function renderPlayerDashboard() {
     pdcRenderCol2Wallet(),
     pdcRenderCol3Journey(),
   ]);
+  // v1.28 P2: My Games (per-room campaigns, SPEC Part 15) renders above the
+  // rooms list in col-1. Rooms list still shows live multiplayer discovery.
+  renderMyGames();
 }
 
 // ── HEADER ───────────────────────────────────────────────────
@@ -1934,6 +2018,215 @@ async function pdcConfirmAbandon(code) {
   });
   PLAYER_UI.abandonOpenFor = null;
   showToast(`🚪 Abandon request sent for ${code}`);
+  await renderPlayerDashboard();
+}
+
+// ── COLUMN 1 — MY GAMES (SPEC Part 15 P2 · v1.28) ────────────
+// A GAME is a per-room campaign (bound on join via bindGameToRoom). This list
+// renders the kid's campaigns with status + continue/switch/restart/archive
+// actions. Per-player wallet + vouchers + ledger live at the row and persist
+// across games.
+
+const _GAME_STATUS_LABELS = {
+  active:    '● Playing',
+  abandoned: '❚❚ Paused',
+  finished:  '🏆 Finished',
+  archived:  '📦 Archived',
+};
+
+function _gameSummary(g) {
+  const p = g.progress || {};
+  const badges = p.badges_earned || 0;
+  // Highest region with any progress (gymsCompleted) — clamp to 1 for display.
+  const regionIds = Object.keys(p.regions || {}).map(Number).filter(n => !isNaN(n));
+  const region = regionIds.length ? Math.max(...regionIds) : 1;
+  const team   = (p.pokemon_team || []).length;
+  const prov   = p.total_crystals || 0;
+  return { badges, region, team, prov };
+}
+
+function _gameCardHTML(g, row) {
+  const isActive = g.game_id === row.active_game_id;
+  // Active flag wins over the stored status for the badge label only.
+  const status = isActive ? 'active' : (g.status || 'abandoned');
+  const lbl    = _GAME_STATUS_LABELS[status] || status;
+  const s      = _gameSummary(g);
+  const code   = g.room_code || '—';
+
+  let primary, ghostRestart;
+  if (status === 'active') {
+    primary = `<button class="game-act-primary" onclick="continueActiveGame()">▶ Continue</button>`;
+    ghostRestart = `<button class="game-act-ghost" onclick="confirmRestartGame('${escapeAttr(g.game_id)}')">↺ Restart</button>`;
+  } else if (status === 'finished') {
+    primary = `<button class="game-act-primary" onclick="confirmRestartGame('${escapeAttr(g.game_id)}')">↺ Play Again</button>`;
+    ghostRestart = ''; // Play Again is already a restart
+  } else {
+    // abandoned (paused) or unbound game (no room) — Switch to it.
+    primary = g.room_code
+      ? `<button class="game-act-primary" onclick="switchToGame('${escapeAttr(g.game_id)}')">▶ Switch to this</button>`
+      : `<button class="game-act-primary" onclick="continueActiveGame()" disabled style="opacity:.4">No room yet</button>`;
+    ghostRestart = `<button class="game-act-ghost" onclick="confirmRestartGame('${escapeAttr(g.game_id)}')">↺ Restart</button>`;
+  }
+  const archiveBtn = `<button class="game-act-ghost" onclick="archiveGame('${escapeAttr(g.game_id)}')">📦 Archive</button>`;
+
+  return `
+    <div class="game-card game-${status}${isActive ? ' is-active' : ''}">
+      <div class="gc-top">
+        <div class="gc-name">${escapeHTML(g.label || ('Room ' + code))}</div>
+        <span class="gc-status gc-${status}">${lbl}</span>
+      </div>
+      <div class="gc-stats">🏅 ${s.badges} · 🗺️ R${s.region} · 🐾 ${s.team} · ✨ ${s.prov.toLocaleString()}</div>
+      <div class="gc-room">🎮 ${escapeHTML(code)}</div>
+      <div class="gc-actions">
+        ${primary}
+        ${ghostRestart}
+        ${archiveBtn}
+      </div>
+    </div>`;
+}
+
+function _gameArchivedCardHTML(g) {
+  const s = _gameSummary(g);
+  const code = g.room_code || '—';
+  return `
+    <div class="game-card game-archived game-card-archived">
+      <div class="gc-top">
+        <div class="gc-name">${escapeHTML(g.label || ('Room ' + code))}</div>
+        <span class="gc-status gc-archived">📦 Archived</span>
+      </div>
+      <div class="gc-stats">🏅 ${s.badges} · 🗺️ R${s.region} · 🐾 ${s.team}</div>
+      <div class="gc-room">🎮 ${escapeHTML(code)}</div>
+      <div class="gc-actions">
+        <button class="game-act-ghost" onclick="restoreGame('${escapeAttr(g.game_id)}')">↩ Restore</button>
+      </div>
+    </div>`;
+}
+
+function renderMyGames() {
+  const listEl    = document.getElementById('pdc-mygames-list');
+  const archEl    = document.getElementById('pdc-mygames-archived-list');
+  const archTog   = document.getElementById('pdc-mygames-archived-toggle');
+  const archCount = document.getElementById('pdc-mygames-archived-count');
+  const totalCount = document.getElementById('pdc-mygames-count');
+  if (!listEl) return;
+
+  const row = STATE.playerRow;
+  if (!row || !Array.isArray(row.games) || row.games.length === 0) {
+    listEl.innerHTML = `<div class="pdc-empty">No games yet — Join a Room to start your first campaign! 🎮</div>`;
+    if (archEl) archEl.innerHTML = '';
+    if (archTog) archTog.style.display = 'none';
+    if (totalCount) totalCount.textContent = '0';
+    return;
+  }
+
+  const games = row.games.slice().sort((a, b) =>
+    (b.last_played_at || '').localeCompare(a.last_played_at || ''));
+
+  const visible  = games.filter(g => g.status !== 'archived');
+  const archived = games.filter(g => g.status === 'archived');
+
+  listEl.innerHTML = visible.length === 0
+    ? `<div class="pdc-empty">All games archived. Restore one below or join a new room.</div>`
+    : visible.map(g => _gameCardHTML(g, row)).join('');
+
+  if (archEl) archEl.innerHTML = archived.map(_gameArchivedCardHTML).join('');
+  if (archTog) {
+    archTog.style.display = archived.length > 0 ? '' : 'none';
+    if (archCount) archCount.textContent = String(archived.length);
+  }
+  if (totalCount) totalCount.textContent = String(visible.length);
+}
+
+function pdcToggleArchivedGames() {
+  const list = document.getElementById('pdc-mygames-archived-list');
+  const chev = document.getElementById('pdc-mygames-archived-chevron');
+  if (!list || !chev) return;
+  const open = list.style.display !== 'none';
+  list.style.display = open ? 'none' : 'block';
+  chev.textContent   = open ? '▶' : '▼';
+}
+
+// ── MY GAMES OPS (SPEC 15C) ──────────────────────────────────
+async function switchToGame(gameId) {
+  const row = STATE.playerRow;
+  if (!row) return;
+  const g = row.games.find(x => x.game_id === gameId);
+  if (!g) return;
+  // Switch = rejoin that game's room (binds + activates). Routes through the
+  // existing join path so the locked-room guard + lobby/in-game routing reuse.
+  if (g.room_code) {
+    const hidden = document.getElementById('join-code');
+    if (hidden) hidden.value = g.room_code;
+    await playerJoin();
+    return;
+  }
+  // Roomless game — just activate it locally.
+  bindActiveGame(row, gameId);
+  STATE.save = g.progress;
+  await dbSaveRow(STATE.player.id);
+  await renderPlayerDashboard();
+}
+
+async function continueActiveGame() {
+  const g = activeGame(STATE.playerRow);
+  if (!g) return;
+  if (g.room_code) {
+    const hidden = document.getElementById('join-code');
+    if (hidden) hidden.value = g.room_code;
+    await playerJoin();
+  } else {
+    showToast('⚠️ This game isn\'t bound to a room yet — Join a Room to start.');
+  }
+}
+
+function confirmRestartGame(gameId) {
+  const row = STATE.playerRow;
+  const g = row && row.games.find(x => x.game_id === gameId);
+  if (!g) return;
+  const label = g.label || ('Room ' + (g.room_code || ''));
+  if (!confirm(
+    `Start "${label}" over?\n\nThis game's progress (regions, badges, team, provisional crystals) resets to a fresh campaign.\n\nYour banked crystals, vouchers, and other games are safe.`
+  )) return;
+  restartGame(gameId);
+}
+
+async function restartGame(gameId) {
+  const row = STATE.playerRow;
+  const g = row && row.games.find(x => x.game_id === gameId);
+  if (!g) return;
+  resetGameProgress(g, STATE.player);     // P3 helper (v1.28-upgraded): full progress fresh; wallet+vouchers safe
+  g.status = 'active';                    // restarted game (even from finished) is playable again
+  row.active_game_id = g.game_id;         // restart makes it the active game (abandons prev separately)
+  // Re-bind STATE.save at the (now fresh) progress reference.
+  STATE.save = g.progress;
+  await dbSaveRow(STATE.player.id);
+  await renderPlayerDashboard();
+  showToast(`↺ "${g.label || ('Room ' + (g.room_code || ''))}" restarted`);
+}
+
+async function archiveGame(gameId) {
+  const row = STATE.playerRow;
+  const g = row && row.games.find(x => x.game_id === gameId);
+  if (!g) return;
+  if (!confirm(`Archive "${g.label || ('Room ' + (g.room_code || ''))}"? You can restore it from the Archived list any time.`)) return;
+  g.status = 'archived';
+  if (g.game_id === row.active_game_id) {
+    // Pick a non-archived game as next active, or leave none.
+    const next = row.games.find(x => x.status !== 'archived');
+    row.active_game_id = next ? next.game_id : null;
+    STATE.save = next ? next.progress : null;
+  }
+  await dbSaveRow(STATE.player.id);
+  await renderPlayerDashboard();
+}
+
+async function restoreGame(gameId) {
+  const row = STATE.playerRow;
+  const g = row && row.games.find(x => x.game_id === gameId);
+  if (!g) return;
+  g.status = 'abandoned';
+  g.last_played_at = new Date().toISOString();
+  await dbSaveRow(STATE.player.id);
   await renderPlayerDashboard();
 }
 
@@ -5881,14 +6174,23 @@ async function playerJoin() {
     STATE.isHost   = false;
     localStorage.setItem('cqc_room_code', code);
 
-    // Ensure save loaded (refresh from Supabase in case of stale local copy).
-    // v1.24 P1: load the player row and re-point STATE.save at active progress.
-    if (!STATE.save) {
-      STATE.playerRow = await dbLoadRow(storedId, STATE.player) || newPlayerRow(STATE.player);
-      STATE.save      = activeProgress(STATE.playerRow);
-    }
+    // v1.28 P2 (SPEC Part 15): a GAME is a per-room campaign. Load the row and
+    // BIND the game to this room — create-or-resume keyed on room_code. New room
+    // → fresh self-contained game (reuses the null-room placeholder if it
+    // exists, so no orphan empty games). Rejoin → resume that room's game.
+    STATE.playerRow = await dbLoadRow(storedId, STATE.player) || newPlayerRow(STATE.player);
+    const _boundGame = bindGameToRoom(STATE.playerRow, code, STATE.player);
+    STATE.save = (_boundGame && _boundGame.progress) || activeProgress(STATE.playerRow);
     STATE.save.last_seen = new Date().toISOString();
     await dbSaveRow(storedId);
+
+    // If the bound game is already FINISHED (R10 podium done), route to the
+    // podium instead of silently resurrecting a completed campaign as active.
+    if (_boundGame && _boundGame.status === 'finished') {
+      try { renderPodium(); showScreen('screen-podium'); } catch (_) {}
+      btn.textContent = '🚀 Join Room!'; btn.disabled = false;
+      return;
+    }
 
     if (!room.players) room.players = [];
     room.players.push({
@@ -5965,7 +6267,11 @@ async function reconnectExistingPlayer(code, room, playerId) {
 
   STATE.player    = player;
   STATE.playerRow = rowProvisional;
-  STATE.save      = activeProgress(rowProvisional);
+  // v1.28 P2: bind to this room's game on reconnect (create-or-resume).
+  // Reconnecting to room X activates room X's game — even if the kid had a
+  // different game active before this reconnect.
+  const _boundGame = bindGameToRoom(STATE.playerRow, code, player);
+  STATE.save      = (_boundGame && _boundGame.progress) || activeProgress(rowProvisional);
   STATE.roomCode  = code;
   STATE.isHost    = false;
 
@@ -5974,6 +6280,13 @@ async function reconnectExistingPlayer(code, room, playerId) {
   STATE.save.last_seen = new Date().toISOString();
   await dbSaveRow(playerId);
   ensureHeartbeat();
+
+  // FINISHED game rejoin: route to the podium rather than treat the read-only
+  // campaign as live gameplay.
+  if (_boundGame && _boundGame.status === 'finished') {
+    try { renderPodium(); showScreen('screen-podium'); } catch (_) {}
+    return true;
+  }
 
   // Route based on the current room phase.
   if (room.phase === 'lobby') {

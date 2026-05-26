@@ -3586,3 +3586,71 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 }
 .podium-actions .btn-primary,
 .podium-actions .btn-secondary { flex: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   MY GAMES (v1.28 P2, SPEC Part 15) — per-room campaign cards
+   ═══════════════════════════════════════════════════════════ */
+.pdc-games-list { display: flex; flex-direction: column; gap: 8px; }
+.game-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-left: 4px solid rgba(255,255,255,0.18);
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.game-card.is-active   { border-left-color: #4ade80; background: rgba(74,222,128,0.06); }
+.game-card.game-finished {
+  border-left-color: var(--gold, #ffcb05);
+  background: rgba(255,203,5,0.06);
+}
+.game-card.game-abandoned { border-left-color: rgba(192,192,192,0.5); }
+.game-card.game-archived  { border-left-color: rgba(255,255,255,0.22); opacity: 0.65; border-style: dashed; }
+
+.gc-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  margin-bottom: 4px;
+}
+.gc-name {
+  font-weight: 800; font-size: 0.92rem;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gc-status {
+  font-size: 0.7rem; font-weight: 800; letter-spacing: 0.3px;
+  padding: 2px 7px; border-radius: 8px;
+  background: rgba(255,255,255,0.08);
+}
+.gc-status.gc-active    { background: rgba(74,222,128,0.18);   color: #4ade80; }
+.gc-status.gc-finished  { background: rgba(255,203,5,0.18);    color: var(--gold, #ffcb05); }
+.gc-status.gc-abandoned { background: rgba(192,192,192,0.14);  color: #ccc; }
+.gc-status.gc-archived  { background: rgba(255,255,255,0.10);  color: #aaa; }
+
+.gc-stats {
+  font-size: 0.78rem;
+  font-family: var(--font-mono, monospace);
+  opacity: 0.85;
+  margin: 2px 0;
+}
+.gc-room  { font-size: 0.72rem; opacity: 0.6; margin-bottom: 8px; }
+.gc-actions {
+  display: flex; gap: 6px; flex-wrap: wrap;
+}
+.gc-actions button {
+  font-size: 0.78rem; font-weight: 700;
+  padding: 6px 10px; border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.16);
+  cursor: pointer;
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  transition: background 0.12s, transform 0.08s;
+}
+.gc-actions button:hover { background: rgba(255,255,255,0.12); }
+.gc-actions button:active { transform: scale(0.97); }
+.game-act-primary {
+  background: linear-gradient(135deg, #ffcb05, #a78bfa) !important;
+  color: #1a1a2e !important;
+  font-weight: 900 !important;
+  border-color: transparent !important;
+}
+.game-act-primary:hover { filter: brightness(1.05); }
+.game-act-ghost  { opacity: 0.85; }

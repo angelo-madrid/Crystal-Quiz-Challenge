@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.5   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.6   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -57,7 +57,8 @@
 | Legendary gate R10 + Papa override + in-game reminders | ⬜ designed v3.7 | SPEC Part 14G-7 |
 | Boss reward Pokémon offer (keep-or-release, normal team cap) | ⬜ designed v3.7 | SPEC Part 14G-2 |
 | Player Game Management — model + migration (P1) | ✅ LIVE v1.24 | SPEC Part 15D/15E |
-| Player Game Management — game-mgmt UI (P2) | ⬜ designed v3.9 | SPEC Part 15B/15C |
+| Player Game Management — game-mgmt UI (P2) | ✅ LIVE v1.28 | SPEC Part 15B/15C |
+| Game ↔ Room binding (room_code keyed; create-or-resume on join) | ✅ LIVE v1.28 | SPEC Part 15A/15D |
 | Crystal checkpoint economy — provisional/banked + R3/R7/R10 (P3) | ✅ LIVE v1.25 | SPEC Part 12-NEW |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
@@ -131,6 +132,19 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.28 (SPEC Part 15 P2): GAME ↔ ROOM BINDING + My Games UI LIVE. A GAME is now a
+  per-room campaign (`room_code` is the key). `bindGameToRoom(row, code, player)`
+  create-or-resume on join/rejoin; joining a new room creates a fresh self-contained
+  game (own regions/badges/team/provisional/seen-questions), rejoining resumes its
+  game. Previous active → `abandoned` on switch (SPEC 15C); FINISHED games stay
+  finished — rejoining their room routes to the podium (not silent resurrection).
+  First-ever join reuses the null-room placeholder from registration (no orphan
+  games). My Games UI in player-dashboard col-1 (`renderMyGames`) with status pills
+  + continue/switch/restart/archive/restore + archived sublist. `resetGameProgress`
+  upgraded to full reset via `newSave` (wallet+vouchers safe). Migration binds
+  legacy game to its last `roomCode` (or null placeholder). Per-player across
+  all games: `banked_crystals`, `vouchers`, ledger. **Completes the Phase 3+4
+  build chain (P1→P3→Store→Voucher→P2→Podium).**
 - v1.27 (SPEC 13K + 13P): GAME_OVER Podium / Champion Screen LIVE. R10 Darkrai
   victory → champion hero + stats (badges, bosses 10/10, stars, team, banked +
   provisional crystals) + TEAM PRIZE reveal (`TEAM_PRIZE_TIERS` — 3=small, 6=medium,

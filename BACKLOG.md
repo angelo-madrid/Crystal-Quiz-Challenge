@@ -34,18 +34,16 @@
 
 ## 🔵 NOW (active next)
 
-- **FULL UAT — Phase 3+4 build chain complete** (except P2 game-mgmt UI, item 45).
-  Live: battle engine, instant abilities + XP growth, MOVE dispatcher, catch
-  between gyms, P1 player-row + games[], P3 provisional→banked checkpoint
-  economy, Prize Store + Tier Vouchers, GAME_OVER Podium + team prize + honors.
-  Capture across a full R1–R10 run: difficulty curve, banking moments
-  (R3/R7/R10), Prize-Store affordability + voucher print flow, podium emotional
-  payoff, team-prize tier hit, honors variety.
+- **FULL UAT — Phase 3+4 build chain COMPLETE** (P1 → P3 → Store → Voucher →
+  P2 → Podium all shipped, v1.24–v1.28). Live: battle engine, instant abilities
+  + XP growth, MOVE dispatcher, catch between gyms, player-row + per-room games,
+  game ↔ room binding, provisional→banked checkpoint economy, Prize Store + Tier
+  Vouchers, My Games UI, GAME_OVER Podium + team prize + honors. Capture across a
+  full R1–R10 run: difficulty curve, banking moments (R3/R7/R10), Prize-Store
+  affordability + voucher print flow, podium emotional payoff, team-prize tier
+  hit, honors variety, multi-game switch UX.
 - **Cap + price tuning** (BACKLOG WATCH-ITEMS): `REGION_CRYSTAL_CAP` values and
   `VOUCHER_TIERS` prices are placeholders — UAT data confirms or retunes.
-- **Item 45 (P2 game-management UI)** still pending — My Games list /
-  switch / restart / abandon / archive. Not blocking UAT (single active game
-  works fine via P1's accessor model); ship if multi-game switching is wanted.
 - **Dev-reset tooling** (OPS item 34) still REFERENCED but NOT BUILT — currently
   rely on full-wipe SQL between UAT runs.
 
@@ -145,10 +143,19 @@ BUILD PHASES (dependency order):
     `redeemVoucher(code)` flips voucher status `active→redeemed` (host verify-and-burn).
     Print CSS hides everything except the keepsake on `window.print()`. PNG artwork
     user-supplied later — themed CSS placeholder lives in `.voucher-keepsake`. (SPEC 13R.)
-45. P2 — game management UI. My Games list (active/abandoned/finished/archived),
-    switch/restart/abandon/archive/restore confirms, banked-vs-provisional display.
-    Reference the player-dashboard mockup from the 2026-05-26 design session.
-    (SPEC 15B + 15C.)
+45. ✅ P2 — game management UI. **DONE v1.28 (2026-05-26).** Also locks in the
+    game↔room binding engine (Phase A of this build): a GAME = a per-room
+    campaign keyed on `room_code`. `bindGameToRoom` create-or-resume on join/
+    rejoin; FINISHED games stay finished (rejoin routes to podium, not silent
+    resurrection); previous active → abandoned on switch (SPEC 15C); first-join
+    reuses the null-room placeholder. My Games UI in player-dashboard col-1
+    (`#pdc-mygames-section` with active+paused+finished list and collapsible
+    archived sublist) — `renderMyGames` + per-status cards with stats
+    (🏅badges · 🗺️region · 🐾team · ✨provisional). Ops: switchToGame
+    (rejoins room via `playerJoin`), continueActiveGame, confirmRestartGame/
+    restartGame, archiveGame (picks next non-archived or none), restoreGame.
+    `resetGameProgress` upgraded to full-progress reset via `newSave` (wallet
+    + vouchers safe). (SPEC 15A + 15B + 15C + 15D.)
 46. ✅ PODIUM — final-results screen after R10 clear. **DONE v1.27 (2026-05-26).**
     `screen-podium` live: champion hero + stats grid (badges, bosses X/10, stars,
     team, banked + provisional crystals); TEAM PRIZE reveal (SPEC 13P) via
@@ -271,6 +278,24 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — P2 GAME↔ROOM BINDING + MY GAMES UI (2026-05-26, v1.28):**
+- A GAME is now a per-room campaign — `room_code` is the key
+- `gameForRoom`, `bindActiveGame`, `bindGameToRoom` (create-or-resume keyed on
+  room_code; reuses null-room placeholder on first join; FINISHED stays finished;
+  previous active → abandoned on switch per SPEC 15C)
+- `playerJoin` + `reconnectExistingPlayer` wired through `bindGameToRoom` — joining
+  a new room creates a fresh self-contained game; rejoining resumes
+- FINISHED-game rejoin routes to podium (`renderPodium` + `screen-podium`) rather
+  than silently resurrecting a completed campaign
+- `resetGameProgress(game, player)` upgraded to full reset via `newSave` — regions/
+  badges/team/pokeballs/provisional/seen-questions all fresh; per-player wallet,
+  vouchers, ledger stay safe at the row
+- `renderMyGames` + `pdcToggleArchivedGames` in player-dashboard col-1; ops:
+  `switchToGame`, `continueActiveGame`, `confirmRestartGame`/`restartGame`,
+  `archiveGame`, `restoreGame`; archived sublist
+- Per-player across all games: `banked_crystals`, `vouchers`, ledger (SPEC 12-NEW)
+- **Completes the Phase 3+4 build chain: P1 → P3 → Store → Voucher → P2 → Podium.**
 
 **Track C — GAME_OVER PODIUM / CHAMPION SCREEN (2026-05-26, v1.27):**
 - R10 Darkrai victory → champion podium (replaces legacy `screen-test-build-complete`)

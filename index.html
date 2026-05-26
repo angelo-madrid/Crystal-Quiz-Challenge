@@ -175,6 +175,22 @@
             <button class="btn-primary" onclick="pdcShowJoinForm()">＋ Join a Room</button>
           </div>
 
+          <!-- v1.28 P2: MY GAMES — the kid's per-room campaigns (SPEC Part 15). -->
+          <div class="pdc-section" id="pdc-mygames-section">
+            <div class="pdc-section-label">
+              <span>🎯 MY GAMES</span>
+              <span class="pdc-count" id="pdc-mygames-count">0</span>
+            </div>
+            <div id="pdc-mygames-list" class="pdc-games-list"></div>
+            <button class="pdc-archived-toggle" id="pdc-mygames-archived-toggle"
+                    onclick="pdcToggleArchivedGames()" style="display:none">
+              <span id="pdc-mygames-archived-chevron">▶</span>
+              <span>📦 ARCHIVED GAMES</span>
+              <span class="pdc-count" id="pdc-mygames-archived-count">0</span>
+            </button>
+            <div id="pdc-mygames-archived-list" class="pdc-games-list" style="display:none"></div>
+          </div>
+
           <div class="pdc-section">
             <div class="pdc-section-label">
               <span>🟢 ACTIVE</span>
