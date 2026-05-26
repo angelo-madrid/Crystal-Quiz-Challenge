@@ -297,6 +297,26 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — BOSS ROUND SUMMARY FIX (2026-05-26, v1.29.3 RETRY):**
+- Bug: after a player answered, the round summary never appeared → kid stuck
+  on the answered question screen forever (blocking the entire boss loop).
+- Root cause: `_battlePollTick`'s `roundJustResolved` checked
+  `bs.round === _battleLastRoundSeen`, but `_battleResolveRound` increments
+  `bs.round` BEFORE writing to Supabase, so after resolve `bs.round` is N+1
+  while `_battleLastRoundSeen` is still N → condition always false.
+- Fix at 3 sites:
+  - New `_battleLastResolvedRound` declaration alongside `_battleRoundAnswered`.
+  - Reset to 0 in `_battleStartPoll`.
+  - `roundJustResolved` rewritten to `bs.round > _battleLastResolvedRound`;
+    tracker stamped when the summary fires (prevents re-stamping in the
+    "keep summary live" branch).
+- UAT-confirmed via screenshots: host panel showed Round 2 / HP 400/500 while
+  the player screen still showed Round 1 answered — `_battleResolveRound` was
+  running correctly, only the summary trigger was broken.
+- NOTE on version: this is the v1.29.3 fix that was never applied; ships
+  retroactively after v1.29.4 (chronological gap) but carries the v1.29.3
+  label per the prompt's framing.
+
 **Track C — START GAME SILENT FAILURE FIX (2026-05-26, v1.29.4 — Bug #9):**
 - `rdStartGame` (🚀 Start Game button in Room Detail Overlay) had no try/catch
   and silent `return` on `!code` / `!room` — any Supabase read/write error

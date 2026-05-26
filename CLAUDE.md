@@ -132,6 +132,18 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29.3 RETRY FIX (applied retroactively after v1.29.4): boss round summary
+  never appeared after a player answered → kid stuck on the answered question
+  screen forever, blocking the boss loop. `_battlePollTick`'s
+  `roundJustResolved` checked `bs.round === _battleLastRoundSeen`, but
+  `_battleResolveRound` increments `bs.round` BEFORE the Supabase write, so
+  after resolve `bs.round` is N+1 while `_battleLastRoundSeen` is still N →
+  condition always false. Fixed: new `_battleLastResolvedRound` tracker
+  (reset in `_battleStartPoll`); condition rewritten to
+  `bs.round > _battleLastResolvedRound` and stamps the tracker when summary
+  fires. UAT-confirmed: host panel was showing Round 2 / HP 400/500 while
+  player screen still showed Round 1 answered — only the summary trigger was
+  broken, the engine itself was running correctly.
 - v1.29.4 FIX (Bug #9): `rdStartGame` (🚀 Start Game button in the Room Detail
   Overlay) was silently failing — no try/catch around `dbReadRoom`/`dbWriteRoom`,
   so any Supabase read/write error left the room in `lobby` with no toast and no

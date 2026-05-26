@@ -1,5 +1,18 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.3 FIX (applied retroactively — original v1.29.3 prompt was missed; this
+//   ships AFTER v1.29.4 chronologically, but the FIX it carries is v1.29.3):
+//   Boss round summary never appears after answering.
+//   _battlePollTick's roundJustResolved condition was checking
+//   `bs.round === _battleLastRoundSeen`, but _battleResolveRound increments
+//   bs.round BEFORE the Supabase write, so after resolve bs.round is N+1 while
+//   _battleLastRoundSeen is still N → condition always false → player stuck
+//   on the answered question screen forever. Fixed: new _battleLastResolvedRound
+//   tracker (reset in _battleStartPoll); the condition now checks
+//   `bs.round > _battleLastResolvedRound` and stamps the tracker when the
+//   summary is shown. (UAT-confirmed: host panel showed Round 2 / HP 400/500
+//   while the player screen still showed the Round 1 answered question — the
+//   resolve was running correctly, only the summary trigger was broken.)
 // v1.29.4 FIX: rdStartGame (Start Game button in Room Detail Overlay) was
 //   silently failing — no try/catch, so Supabase read/write errors produced
 //   no feedback and the room stayed in lobby. Added try/catch + toasts on
@@ -4833,11 +4846,13 @@ function _battleRenderWaiting(regionId, boss) {
 let _battlePollInt = null;
 let _battleLastRoundSeen = 0;   // prevents re-serving a question for the same round
 let _battleRoundAnswered = false; // this player has answered this round
+let _battleLastResolvedRound = 0; // last round whose summary we've shown; avoids bs.round post-increment mismatch (v1.29.3)
 
 function _battleStartPoll() {
   _battleStopPoll();
   _battleLastRoundSeen = 0;
   _battleRoundAnswered = false;
+  _battleLastResolvedRound = 0;
   _battlePollInt = setInterval(_battlePollTick, 2500);
 }
 function _battleStopPoll() {
@@ -4880,13 +4895,21 @@ async function _battlePollTick() {
     }
 
     // Round ended (roundActive flipped back to false after we answered).
+    // IMPORTANT (v1.29.3): _battleResolveRound increments bs.round BEFORE
+    // writing to Supabase, so after resolve bs.round is already N+1. We can't
+    // compare bs.round === _battleLastRoundSeen (that would be N+1 === N →
+    // always false → summary never showed → player stuck on the answered
+    // question screen). Instead, _battleLastResolvedRound tracks the last
+    // round whose summary we've already shown; we show the summary whenever
+    // bs.round has advanced past it and the round is no longer active.
     const summaryVisible = document.getElementById('battle-round-result').style.display !== 'none';
     const roundJustResolved = !bs.roundActive
-      && bs.round === _battleLastRoundSeen
+      && bs.round > _battleLastResolvedRound
       && _battleRoundAnswered
       && !summaryVisible
       && bs.outcome === null;
     if (roundJustResolved) {
+      _battleLastResolvedRound = bs.round;
       _battleShowRoundSummary(bs);
     } else if (!bs.roundActive && summaryVisible && bs.outcome === null) {
       // Keep the summary's ready count + Team Strike state live as teammates
