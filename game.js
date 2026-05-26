@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.25: Crystal Checkpoint Economy P3 (SPEC 12-NEW-A…G). Gym crystals are PROVISIONAL
+//        (progress.total_crystals + per-region progress.region_crystals); they BANK
+//        into the per-player wallet (row.banked_crystals) at R3/R7/R10 boss wins,
+//        capped by REGION_CRYSTAL_CAP. HUD + Wallet show banked vs provisional.
+//        Prize Store buy code doesn't exist yet (BACKLOG item 43) — when built, it
+//        spends banked only per SPEC 13 v3.9. Pokeball + broadcast spends stay on
+//        provisional to keep early-game catch playable; see WATCH-ITEM.
 // v1.24: Player Game Management P1 (SPEC Part 15) — save is now a PLAYER ROW with a
 //        games[] array + active_game_id + banked_crystals (wallet, mirrored in P1).
 //        Lazy idempotent migration of legacy flat saves. Gameplay reads STATE.save =
@@ -406,6 +413,16 @@ const REDEEM_BASE     = { basic:  20, holo:  80, rare: 200, super:  500, legenda
 const TEAM_CAP_BY_LEVEL = { 1: 3, 2: 3, 3: 4, 4: 4, 5: 5 };
 const MAX_TEAM_CAP      = 5;
 
+// SPEC 12-NEW-C (v1.25 P3): per-region crystal ceiling. Replay can REACH but never
+// EXCEED. Values are PLACEHOLDERS pending UAT — round numbers, scaled by region tier.
+const REGION_CRYSTAL_CAP = {
+  1: 400, 2: 450, 3: 500, 4: 600, 5: 700,
+  6: 800, 7: 900, 8: 1000, 9: 1100, 10: 1200
+};
+// SPEC 12-NEW-B (v1.25 P3): which regions bank at each checkpoint boss
+// (Darkrai narrative beats).
+const BANK_CHECKPOINTS = { 3: [1, 2, 3], 7: [4, 5, 6, 7], 10: [8, 9, 10] };
+
 // SPEC Part 8 — HP bands by player level (low→high). LOCKED defaults, retunable.
 const HP_BANDS = {
   1: [100, 140],
@@ -441,6 +458,67 @@ function awardXpEvent(poke) {
   poke.hp = computeHp(poke);                              // store grown HP
   const gained = poke.hp - before;
   return gained > 0 ? gained : 0;
+}
+
+// SPEC 12-NEW-B/C (v1.25 P3): bank provisional → wallet at a checkpoint boss
+// (R3/R7/R10). Caps each region at REGION_CRYSTAL_CAP; idempotent per region
+// via banked_regions. Returns { banked, breakdown } so the UI can celebrate.
+// PRE-CONDITION: STATE.playerRow + STATE.save exist (post-P1 player-row model).
+async function bankCrystalsForCheckpoint(regionId) {
+  const regions = BANK_CHECKPOINTS[regionId];
+  if (!regions || !STATE.playerRow || !STATE.save) return { banked: 0, breakdown: [] };
+
+  if (!STATE.save.banked_regions) STATE.save.banked_regions = {};
+  if (!STATE.save.region_crystals) STATE.save.region_crystals = {};
+
+  let totalBanked = 0;
+  const breakdown = [];
+  for (const rid of regions) {
+    const earned  = STATE.save.region_crystals[rid] || 0;
+    const cap     = REGION_CRYSTAL_CAP[rid] || 0;
+    const already = (STATE.save.banked_regions[rid] && STATE.save.banked_regions[rid].banked) || 0;
+    const credit  = Math.max(0, Math.min(cap, earned) - already);
+    if (credit > 0) {
+      STATE.save.banked_regions[rid] = { banked: already + credit };
+      totalBanked += credit;
+      breakdown.push({ region: rid, credited: credit, cap });
+    }
+  }
+
+  if (totalBanked > 0) {
+    // Move into the per-PLAYER wallet (SPEC 12-NEW-A).
+    STATE.playerRow.banked_crystals = (STATE.playerRow.banked_crystals || 0) + totalBanked;
+    // Provisional is now "spent" into banked — reduce the visible provisional
+    // total so the kid doesn't see the same crystals counted twice.
+    STATE.save.total_crystals = Math.max(0, (STATE.save.total_crystals || 0) - totalBanked);
+    // Ledger (per-player audit, SPEC 12-NEW-G).
+    try {
+      await dbLedgerInsert({
+        player_id:   STATE.player.id,
+        room_code:   STATE.roomCode || null,
+        type:        'bonus',
+        amount:      +totalBanked,
+        status:      'approved',
+        note:        `Checkpoint banked at R${regionId} (${breakdown.map(b=>`R${b.region}:${b.credited}`).join(', ')})`,
+        resolved_at: new Date().toISOString(),
+      });
+    } catch (e) { console.warn('[bank] ledger insert failed:', e); }
+    await dbSaveRow(STATE.player.id);
+  }
+  return { banked: totalBanked, breakdown };
+}
+
+// SPEC 15F (v1.25 P3): reset a game's provisional/region/banked_regions to a
+// fresh state. Caller (P2 restart UI) is responsible for game lifecycle —
+// THIS HELPER ONLY zeroes economy fields. The per-player wallet
+// (row.banked_crystals) is left UNTOUCHED on purpose.
+function resetGameProgress(game) {
+  if (!game || !game.progress) return;
+  game.progress.total_crystals  = 0;
+  game.progress.region_crystals = {};
+  game.progress.banked_regions  = {};
+  game.progress.updated_at      = new Date().toISOString();
+  game.last_played_at           = new Date().toISOString();
 }
 // Pity softener — 3 consecutive misses on the same Pokemon → next catch
 // question one tier easier (Part 12G).
@@ -1889,10 +1967,15 @@ async function pdcConfirmRelease(idx) {
     `⚠️ Released Pokemon are gone forever from this room's pool — no kid can ever catch ${p.name} again.`
   );
   if (!proceed) return;
-  // Remove from team + bank the trade-in.
+  // Remove from team + bank the trade-in. v1.25 P3: trade-ins are provisional
+  // (per-game, banks at next checkpoint) — accrued to the CURRENT region
+  // alongside the visible provisional running total.
   team.splice(idx, 1);
   STATE.save.pokemon_team = team;
   STATE.save.total_crystals = (STATE.save.total_crystals || 0) + tradeIn;
+  if (!STATE.save.region_crystals) STATE.save.region_crystals = {};
+  const _tradeRid = STATE.currentRegion || 1;
+  STATE.save.region_crystals[_tradeRid] = (STATE.save.region_crystals[_tradeRid] || 0) + tradeIn;
   STATE.save.updated_at = new Date().toISOString();
   await dbSaveRow(STATE.player.id);
   if (STATE.player && STATE.player.id) {
@@ -2991,7 +3074,17 @@ async function showMap() {
   const save = STATE.save;
   const player = STATE.player;
   document.getElementById('map-player-name').textContent = `${player.emoji} ${player.name}'s Journey`;
-  document.getElementById('map-crystals').textContent = (save.total_crystals || 0).toLocaleString();
+  // v1.25 P3: banked (spendable now) vs provisional (earning this game — banks at
+  // the next Darkrai checkpoint). Show both so the kid knows what's real.
+  {
+    const banked = (STATE.playerRow && STATE.playerRow.banked_crystals) || 0;
+    const prov   = save.total_crystals || 0;
+    const el = document.getElementById('map-crystals');
+    el.textContent = prov > 0
+      ? `${banked.toLocaleString()} · ✨ ${prov.toLocaleString()}`
+      : `${banked.toLocaleString()}`;
+    el.title = `🔮 ${banked} banked (spendable) · ✨ ${prov} earning this game (banks at R3/R7/R10)`;
+  }
   document.getElementById('map-badges').textContent = save.badges_earned || 0;
   document.getElementById('map-pokemon-count').textContent = (save.pokemon_team || []).length;
 
@@ -3114,11 +3207,17 @@ async function renderWallet() {
   // v1.24 P1: refresh through the row.
   const freshRow = await dbLoadRow(player.id, player);
   if (freshRow) { STATE.playerRow = freshRow; STATE.save = activeProgress(freshRow); }
-  const balance = (STATE.save && STATE.save.total_crystals) || 0;
   // Peso removed from player UI (SPEC v3.3 Part 12I); host UI keeps peso.
+  // v1.25 P3: wallet header shows BANKED (spendable) prominently + provisional
+  // (earning this game) as a secondary line.
+  const banked     = (STATE.playerRow && STATE.playerRow.banked_crystals) || 0;
+  const provisional = (STATE.save && STATE.save.total_crystals) || 0;
 
   document.getElementById('wallet-title').textContent = `💎 ${player.name}'s Crystal Wallet`;
-  document.getElementById('wallet-balance').textContent = `${balance.toLocaleString()} 🔮`;
+  const walletEl = document.getElementById('wallet-balance');
+  walletEl.innerHTML = provisional > 0
+    ? `${banked.toLocaleString()} 🔮 <span style="opacity:.6;font-size:.65em;font-weight:600">· ✨ ${provisional.toLocaleString()} earning this game (banks at R3/R7/R10)</span>`
+    : `${banked.toLocaleString()} 🔮`;
 
   // Redeem button — disabled while a request is already pending.
   const redeemSection = document.getElementById('wallet-redeem-section');
@@ -3680,7 +3779,16 @@ async function endGym() {
   }
 
   // Bank the per-gym earn (Path B mutates ONLY here, never per-question).
+  // v1.25 P3: total_crystals is the visible PROVISIONAL running total (earning
+  // this game). It banks into the per-player wallet (row.banked_crystals) at
+  // R3/R7/R10 checkpoints, capped per region.
   STATE.save.total_crystals = (STATE.save.total_crystals || 0) + finalEarn;
+
+  // SPEC 12-NEW-C: per-region accrual so checkpoint banking can cap PER REGION
+  // (replay can reach the cap but never exceed it; kills farming).
+  if (!STATE.save.region_crystals) STATE.save.region_crystals = {};
+  const _rid = STATE.currentRegion;
+  STATE.save.region_crystals[_rid] = (STATE.save.region_crystals[_rid] || 0) + finalEarn;
 
   // Review feature: persist a per-gym results object so completed gyms
   // open in read-only review mode. Written on every attempt (pass or
@@ -4821,7 +4929,30 @@ async function _battleRecordDefeat(regionId, stars) {
   if (!STATE.save.bossDefeats) STATE.save.bossDefeats = {};
   STATE.save.bossDefeats[regionId] = { stars, defeatedAt: new Date().toISOString() };
   STATE.save.updated_at = new Date().toISOString();
+
+  // SPEC 12-NEW-B (v1.25 P3): checkpoint banking at R3 / R7 / R10. Banks the
+  // capped per-region provisional into the per-player wallet, idempotent.
+  let bankResult = null;
+  if (BANK_CHECKPOINTS[regionId]) {
+    bankResult = await bankCrystalsForCheckpoint(regionId);
+  }
+
   await dbSaveRow(STATE.player.id);
+
+  // Surface the banking moment to the kid (if anything banked).
+  if (bankResult && bankResult.banked > 0) {
+    showCheckpointBankToast(regionId, bankResult);
+  }
+}
+
+// v1.25 P3: celebratory surface when the kid clears a checkpoint boss and
+// provisional crystals get banked into their wallet.
+function showCheckpointBankToast(regionId, result) {
+  const lines = result.breakdown
+    .map(b => `R${b.region}: +${b.credited.toLocaleString()} 🔮`).join(' · ');
+  const msg = `🏦 Checkpoint! Banked ${result.banked.toLocaleString()} 🔮 — now yours to spend! (${lines})`;
+  if (typeof showToast === 'function') showToast(msg, 4000);
+  else alert(msg);
 }
 
 // Continue after win — clears battle, shows Darkrai cameo if needed, routes to regional catch.

@@ -2,8 +2,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.2   ·   LAST UPDATED: 2026-05-26         │
-│ SYNCED TO SPEC: v3.9 (economy Part 12 is BUILT @ v0.6.0;     │
+│ BUILD VERSION: v0.6.3   ·   LAST UPDATED: 2026-05-26         │
+│ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
 │   ⚠️ v3.6 REMOVED boss crystals — v0.6.0 build may still    │
@@ -51,7 +51,7 @@
 | Boss reward Pokémon offer (keep-or-release, normal team cap) | ⬜ designed v3.7 | SPEC Part 14G-2 |
 | Player Game Management — model + migration (P1) | ✅ LIVE v1.24 | SPEC Part 15D/15E |
 | Player Game Management — game-mgmt UI (P2) | ⬜ designed v3.9 | SPEC Part 15B/15C |
-| Crystal checkpoint economy — provisional/banked + R3/R7/R10 (P3) | ⬜ designed v3.9 | SPEC Part 12-NEW |
+| Crystal checkpoint economy — provisional/banked + R3/R7/R10 (P3) | ✅ LIVE v1.25 | SPEC Part 12-NEW |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
 
@@ -124,6 +124,16 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.25 (SPEC 12-NEW P3): crystals now PROVISIONAL→BANKED. Gym earn accrues
+  `progress.total_crystals` (visible provisional) + `progress.region_crystals[rid]`.
+  Banking at R3/R7/R10 via `bankCrystalsForCheckpoint()` hooked in
+  `_battleRecordDefeat` — moves capped provisional into `row.banked_crystals`
+  (per-region cap `REGION_CRYSTAL_CAP`, tracked in `progress.banked_regions`,
+  idempotent). Per-player ledger row written on each bank. Map HUD + Wallet
+  header show banked vs provisional. Caps are placeholder — tune at UAT.
+  ⚠️ POKEBALL + BROADCAST SPENDS still go through provisional (`total_crystals`);
+  no Prize Store buy code exists yet (BACKLOG item 43). When the Prize Store
+  is built, it spends banked only per SPEC 13 v3.9 amendment.
 - v1.24 (SPEC Part 15 P1): saves migrated from flat → player-row `{ games[],
   active_game_id, banked_crystals }`. `STATE.save` now points at the active game's
   progress via `activeProgress()`; `STATE.playerRow` holds the row. Lazy idempotent

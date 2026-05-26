@@ -115,14 +115,19 @@ BUILD PHASES (dependency order):
     `activeGame`, `activeProgress`, `migrateToPlayerRow`, `dbLoadRow`, `dbSaveRow`,
     `hydratePlayerData`. STATE.save now points at the active game's progress via
     accessor — the 119 read sites are unchanged. NO behavior change. (SPEC 15D + 15E.)
-42. P3 — crystal checkpoint economy. Split `provisional_crystals` (per-game) from
-    `banked_crystals` (per-player); add `REGION_CRYSTAL_CAP` + `banked_regions[]`;
-    bank at R3/R7/R10 boss clears with `min(cap, best) − alreadyBanked` per region;
-    write per-player ledger rows on banking; restart/abandon semantics per SPEC 15F.
-    REWRITES Part 12 in code. (SPEC 12-NEW-A…G.)
-    NOTE: P3 is independent of P1/P2 — the provisional/banked split works in the
-    single-game model too. If the Prize-Store reward loop is wanted before P2 is
-    built, ship P3 (at least the R3 checkpoint) first.
+42. ✅ P3 — crystal checkpoint economy. **DONE v1.25 (2026-05-26).** Split LIVE:
+    `progress.total_crystals` (visible provisional, per-game) + `row.banked_crystals`
+    (per-player wallet, spendable). `REGION_CRYSTAL_CAP` (placeholder values, tune at
+    UAT) + `progress.region_crystals[rid]` accrual at gym earn + trade-in.
+    `bankCrystalsForCheckpoint(regionId)` banks `min(cap, earned) − alreadyBanked` per
+    region, idempotent via `progress.banked_regions`, writes per-player ledger row,
+    hooked into `_battleRecordDefeat` so R3/R7/R10 boss clears trigger banking +
+    `showCheckpointBankToast`. `resetGameProgress(game)` zeroes provisional/region/
+    banked_regions (wallet untouched) — ready for P2 restart UI. Map HUD + Wallet
+    header show banked vs provisional. (SPEC 12-NEW-A…G.)
+    ⚠️ DEFERRED to item 43: flipping the Prize Store buy to banked-only — there's no
+    Prize Store buy code yet. Pokeball + broadcast spends stay on provisional for
+    early-game playability; see WATCH-ITEM.
 43. PRIZE STORE — banked-only spend. Make the store always open + browsable; spend
     flows debit `banked_crystals` only; "earning this game — bank at R3/R7/R10"
     indicator separates provisional from banked. Build items 24/26/27 (5-tier store +
@@ -187,6 +192,17 @@ OPEN QUESTIONS (resolve before build):
   (23 EXTRA_SHOT + 34 TIME_TRAVEL) currently no-op their MOVE with a "post-gym rescue"
   toast. Wire the post-gym rescue flow so these Pokémon's moves become usable; until
   then they stay gated.
+- v1.25 SPEND-SITE POLICY (deliberate): only the Prize Store should spend BANKED
+  crystals (SPEC Part 13 v3.9 amendment). Today the only in-game spends are
+  Pokeball buy (regional catch) + broadcast message (10 💎) — both kept on
+  PROVISIONAL (`total_crystals`). Rationale: no Prize Store buy code exists yet
+  (item 43), and forcing Pokeball buys through banked would brick R1/R2 catch
+  (kids can't bank anything until R3). Re-evaluate at UAT: should regional
+  Pokeball ALSO require banked? If so, the gate moves when item 43 ships.
+- v1.25 REGION_CRYSTAL_CAP VALUES are placeholders (R1=400 … R10=1200). Tune at
+  UAT — caps should let a strong kid hit ceiling without grinding, and let a
+  struggling kid recover via replay without ever exceeding. Confirm vs the
+  observed per-region earn rates.
 - QUESTION POOL DEPTH (blocks fresh-questions-on-replay, build items 40–46 / SPEC 12-NEW-D): the crystal
   economy assumes replays serve NEW questions. Verify per-category-per-tier depth in
   gym_bank[category][tier] is deep enough that a few replays don't exhaust the bucket and
@@ -223,6 +239,18 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — CRYSTAL CHECKPOINT ECONOMY P3 (2026-05-26, v1.25):**
+- Crystals now PROVISIONAL→BANKED (SPEC 12-NEW-A…G)
+- Gym earn + trade-in accrue `progress.total_crystals` + `progress.region_crystals[rid]`
+- `bankCrystalsForCheckpoint(regionId)` at R3/R7/R10 banks
+  `min(REGION_CRYSTAL_CAP[rid], earned) − alreadyBanked` per region; idempotent;
+  writes per-player ledger row
+- Hooked into `_battleRecordDefeat` (boss-win) + `showCheckpointBankToast`
+- Map HUD + Wallet header show banked (spendable) vs provisional (this game)
+- `resetGameProgress(game)` helper ready for P2's restart UI
+- Pokeball + broadcast spends INTENTIONALLY left on provisional (no Prize Store
+  buy code yet — flipping early would brick R1/R2 catch); flagged as WATCH-ITEM
 
 **Track C — PLAYER GAME MANAGEMENT P1 (2026-05-26, v1.24):**
 - Save migrated from flat → player row { games[], active_game_id, banked_crystals }
