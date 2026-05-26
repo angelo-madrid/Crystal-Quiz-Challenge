@@ -35,11 +35,15 @@
 
 ## 🔵 NOW (active next)
 
-- **Apply Claude Code prompts from today's battle session:**
-  1. `CLAUDE_CODE_PROMPT_battle_session.md` — Commit 1: SPEC v3.6→v3.7 (Part 14G);
-     Commit 2: pokemon.json battleAbility population (193 Pokémon). Then bump FILES.md→v1.32.
-- **Track B — game.js monolith split** (5,938 lines → 7 modules via multiple `<script>`
-  tags, no bundler). Its own tested commit.
+- **R1–R3 UAT with real kids** — battle engine built & playable (Commits 1–4) and gym
+  MOVE abilities now fire (v1.23 dispatcher fix). Capture: boss difficulty, N=3 feel,
+  Team Strike, reward reaction, pacing, ability feel (CLOCK/ELIMINATE/SWAP/CLUE),
+  FREEZE_STUN (team-wide), enrage moments, reconnect paths. Use the dev-reset tool
+  (`?dev=1`) to reset the test player between runs, and clear Supabase test rows first.
+  ⚠️ Dev-reset tooling is REFERENCED but NOT YET BUILT (see OPS item 34) — currently
+  rely on the full-wipe SQL path until the per-player `?dev=1` tool ships.
+- **(Optional, if reward loop wanted for UAT)** crystal checkpoint economy P3 / R3
+  banking — see the staged Player Game Management item below.
 
 ---
 
@@ -58,26 +62,18 @@
 ## 🛠️ BUILD BACKLOG (pending build work → CLAUDE.md updates when done)
 
 **🏗️ TRACK B — ARCHITECTURE / FILE REORG:**
-8. game.js monolith split (5,938 lines → core/ledger/player-ui/catch/wallet/host-ui/
-   gameplay via multiple `<script>` tags, no bundler). Its own tested commit.
+8. game.js monolith split (~7,660 lines as of v1.23 → core/ledger/player-ui/catch/
+   wallet/host-ui/gameplay via multiple `<script>` tags, no bundler). Its own tested
+   commit.
 9. Create `/assets/` tree (needed before evolution art + voucher PNGs land).
 10. Update FILES.md manifest after the reorg.
 
-**⚔️ BATTLE ENGINE (Track C — own session, builds on Part 9 + Part 14G design):**
-11. 3v1 battle loop (shared boss HP bar, simultaneous questions, round structure)
-12. Turn engine (parallel question streams, timer, results resolve, random villain attack)
-13. Boss HP per region (R1 500 → R10 8,000; tunable constants)
-14. Boss enrage abilities (trigger at 50% HP, unique per boss — 10 ability definitions)
-15. Team Strike mechanic (all-correct → 3× damage; partial → normal)
-16. Minimum contribution tracking (N=3 correct answers per kid per fight)
-17. Battle ability firing (CRITICAL_HIT / FREEZE_STUN / HEAL / PROTECT / GUARD /
-    SECOND_WIND / COMBO_TEAM_STRIKE — declared pre-answer, one per Pokémon per battle)
-18. Star rating tracking (⭐⭐⭐/⭐⭐/⭐ per fight, accumulates across bosses)
-19. Boss reward Pokémon offer (post-win offer UI — keep or pass, enters normal team cap)
-20. Legendary gate at R10 (pre-fight check: every kid must field a Legendary)
-21. Papa override tool (host dashboard — gift Legendary if kid is short at R10)
-22. In-game Legendary reminders (end of R5/R7/R8 — player notification + host dashboard)
-23. Boss-crystal strip (verify/remove any boss crystal award logic from v0.6.0 build)
+**⚔️ BATTLE ENGINE (Track C) — ✅ BUILT (Commits 1–4, 2026-05-26). See DONE archive.**
+> Items 11–23 shipped: 3v1 loop, turn engine, boss HP/enrage (all 10 regions), Team
+> Strike (kid-driven via COMBO_TEAM_STRIKE), N=3, 7 battle abilities, star rating,
+> reward Pokémon, R10 Legendary gate + Papa override, R5/R7/R8 reminders, kid-managed
+> round flow. Item 23 (boss-crystal strip) verified CLEAN. game.js v1.21+.
+> ⚠️ Battle NUMBERS (boss HP, 35-dmg knob, N=3) remain tune-at-UAT — see WATCH-ITEMS.
 
 **🎁 PRIZE STORE BUILD (design COMPLETE in SPEC Part 13):**
 24. 5-tier store + effort/voucher mechanics
@@ -216,8 +212,9 @@ OPEN QUESTIONS (resolve before build):
 
 ## ⚠️ OPEN FLAGS (resolve, don't lose)
 
-- **Boss-crystal mismatch:** v0.6.0 may still award boss crystals that v3.6 design
-  REMOVED. Verify + strip at battle engine build (item 23 above).
+- ~~**Boss-crystal mismatch:**~~ ✅ RESOLVED (2026-05-26, battle build Commit 1): the
+  v0.6.0 code never had boss-crystal-award logic — grep confirmed zero
+  `boss…crystal` / `crystal…boss` matches in game.js. Nothing to strip. Item 23 closed.
 - **SPEC Part 13 subsection lettering** out of order (13I,K,L,M,N,O,P,Q,R, then J
   last) — renumber at consolidated SPEC cleanup, not piecemeal.
 - ~~**MOVE ABILITY DISPATCHER / DATA SCHEMA MISMATCH**~~ ✅ RESOLVED v1.23
@@ -241,6 +238,29 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — BATTLE ENGINE R1–R3 BUILT (2026-05-26, Commits 1–4 + hotfixes):**
+- Commit 1 (v1.18): BOSS_FIGHT phase scaffold; BOSS_DATA + BOSS_REWARD_POKEMON (all 10
+  regions); screen-battle shell; boss-crystal mismatch confirmed clean (item 23 closed).
+- Commit 2 (v1.19): full battle loop — round engine, auto-resolve, boss attack + enrage
+  (all 10 regions), N=3 win gate, win/loss/retry, star rating, reward Pokémon offer,
+  Darkrai cameo R3/R7, host battle panel.
+- Commit 3 (v1.20): 6 battle abilities (CRITICAL_HIT/FREEZE_STUN/HEAL/PROTECT/GUARD/
+  SECOND_WIND) declared pre-answer; Lockdown blocks bar; R10 Legendary gate + Papa
+  override (logged); R5/R7/R8 reminders.
+- Commit 4 (v1.21): kid-managed round flow (Papa starts R1 only, rounds auto-chain on
+  last-kid Ready); COMBO_TEAM_STRIKE armed between rounds; enrage warnings on summary;
+  host watch-only + force-next fallback.
+- Hotfix v1.21.1: pre-game catch re-entry trap + "undefined" ability labels (7 sites).
+- v1.22: instant abilities (no popup); catch-between-gyms (rarity-by-level, Part 4);
+  abilities NON-CONSUMING + XP-growth (appreciating-asset model, Part 3B/8) — removed
+  dead consume splice; HP grows per band formula.
+- v1.22.1: TIME ("Clock") ability visible-effect fix (was bumping both timeLeft+totalTime).
+- v1.23: MOVE ability dispatcher schema fix — dispatcher rewired to read
+  `pokemon.move.type` (canonical SPEC Part 5 names: CLOCK/ELIMINATE/SWAP/CLUE
+  in-question; EXTRA_SHOT/TIME_TRAVEL post-gym gated) instead of the nonexistent
+  `abilityEffect.mechanic`. Default values supplied (CLOCK +5s) since data carries
+  none. Was UAT-blocking — every gym ability tap fell through to "Unknown mechanic".
 
 **Track A — DESIGN COMPLETE (2026-05-25):**
 - Battle Session FULLY DESIGNED (SPEC Part 14G v3.7): boss/villain casting (Darkrai
