@@ -3,7 +3,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ THE SINGLE SOURCE OF TRUTH FOR "WHAT'S LEFT TO DO."           │
-│ Last updated: 2026-05-25                                      │
+│ Last updated: 2026-05-26                                      │
 │                                                              │
 │ 4-HOME INFORMATION ARCHITECTURE:                             │
 │  • SPEC.md   = DESIGN (what the game IS — locked mechanics)  │
@@ -23,11 +23,13 @@
 > three TRACKS:
 > **Track A = Design** · **Track B = Architecture/file-mgmt** · **Track C = Sequenced build.**
 
-> **⚠️ TRACK A — DESIGN IS COMPLETE (2026-05-25).** All design backlog items are locked
-> in the SPEC. Economy (Part 12) + Prize Store/Bayanihan (Part 13) + Boss Mechanics
-> (Part 14A–F) + Battle Session (Part 14G) all done. Real card sourcing replaced by
-> voucher model (Part 13R — no upfront sourcing needed). The project now runs on
-> **Track B (architecture)** and **Track C (build)** only.
+> **TRACK A — DESIGN (mostly locked; ONE area reopened 2026-05-26).** The core design is
+> locked in SPEC: Economy (Part 12) + Prize Store/Bayanihan (Part 13) + Boss Mechanics
+> (Part 14A–F) + Battle Session (Part 14G); card sourcing → voucher model (Part 13R).
+> **REOPENED:** Player Game Management + Crystal Checkpoint Economy — DECIDED in
+> principle, staged below in BUILD BACKLOG, pending UAT validation before it's promoted
+> into SPEC (will become Part 15 + rewrite Part 12 + amend Part 13). Until then, treat
+> current SPEC Part 12 as the live/built economy and the staged item as the planned next.
 
 ---
 
@@ -100,6 +102,65 @@
 **✨ POLISH:**
 33. Animations, sound, leaderboard polish
 
+**🎮 PLAYER GAME MANAGEMENT + CRYSTAL CHECKPOINT ECONOMY (Track A→C — DESIGNED 2026-05-26, build post-UAT):**
+
+> Decided in principle; NOT yet validated or built. Promote to SPEC (Part 15 + Part 12
+> rewrite + Part 13 amend) AFTER UAT confirms the model. Build phases P1/P2/P3 below.
+> ⚠️ This REWRITES locked SPEC Part 12 (crystals become provisional→banked) when adopted.
+
+LOCKED DESIGN DECISIONS (11):
+1. A "game" = one campaign playthrough; players own multiple (save slots). Data model A:
+   a `games[]` array inside the player_saves row (no new table). One active at a time.
+2. Game states: active · abandoned · finished · archived. NO player-facing delete
+   (archive is reversible; hard delete lives in Host/dev tooling only).
+3. Reset = two behaviors: RESTART (wipe that game's progress, keep the slot) and
+   ABANDON & start new (freeze current game, create a fresh active one).
+4. CRYSTALS: provisional per-game during play → BANKED into a per-PLAYER lifetime wallet
+   at checkpoints. Only banked crystals are spendable.
+5. Banking CHECKPOINTS = R3 / R7 / R10 (the Darkrai narrative beats). R3 banks regions
+   1–3, R7 banks 4–7, R10 banks 8–10.
+6. PER-REGION CRYSTAL CAP: each region banks up to a fixed ceiling (REGION_CRYSTAL_CAP).
+   Replay (fresh questions) can REACH the cap (recover a bad first pass) but never EXCEED
+   it → kills farming incentive with no penalty mechanic.
+7. FRESH QUESTIONS ON REPLAY (existing pickQuestion draw-without-replacement). Makes
+   replay genuine learning, not answer-key memorization. ⚠️ pool-depth dependent (see WATCH).
+8. The learning/economy split: badges + team/HP growth accrue on replay UNCAPPED
+   (learning rewards); crystals are CAPPED per region (economy guard).
+9. PRIZE STORE: always open + browsable; spends BANKED crystals only; provisional shown
+   separately ("earning this game — bank at R3/R7/R10").
+10. RERUNS: free in SOLO play (master at own pace). In GROUP play, forward-only BY DESIGN
+    (a kid re-running blocks the team at the synchronized boss gate). CURRENT enforcement
+    = crystal cap + SOCIAL (Papa paces the group); auto forward-only LOCK is DEFERRED,
+    build only if UAT shows kids actually backtrack/block teammates.
+11. BOSS-LOSS RE-ATTEMPT always allowed (recoverable failure ≠ grinding — SPEC Part 9).
+    Rule: forced retry after a loss = allowed; voluntary backtrack to farm = discouraged.
+    crystal_ledger stays per-PLAYER (audit trail for the banked wallet).
+
+DATA SHAPE (when built):
+- player row: `active_game_id`, `banked_crystals` (per-player wallet), `games:[ {game_id,
+  status, created_at, last_played_at, room_code, label, progress:{ regions, badges_earned,
+  pokemon_team, pokeballs, provisional_crystals, banked_regions:{}, seen_question_ids }} ]`
+- MIGRATION (lazy, idempotent, non-destructive): wrap existing flat save as games[0]
+  (active); LIFT legacy total_crystals up to banked_crystals; provisional_crystals→0,
+  banked_regions→{}.
+
+BUILD PHASES (post-UAT):
+40. P1 — model + migration (no visible gameplay change; repoint dbLoad/dbSave to the
+    active game's progress via accessor). Independently testable.
+41. P2 — game management UI (My Games list, switch/restart/abandon/archive, archived
+    sub-list, confirms; banked vs provisional crystal display). Ref the player-dashboard
+    mockup from the 2026-05-26 design session.
+42. P3 — crystal checkpoint economy (provisional/banked, per-region caps, R3/R7/R10
+    banking, store spends banked-only, restart/abandon semantics). REWRITES Part 12 in
+    code. NOTE: P3 is independent of P1/P2 — the provisional/banked split works in the
+    single-game model too. If the Prize-Store reward loop is wanted FOR UAT, prioritize
+    P3 (at least the R3 checkpoint) over the save-slot UI.
+
+OPEN QUESTIONS (resolve before build):
+- Switch-active side effect: previous active → abandoned (proposed) or stay resumable?
+- Finished-game replay: read-only + restart-makes-new (proposed), or replayable in place?
+- Max games cap per player (proposed soft cap ~10)?
+
 ---
 
 ## 🎪 OPS / CONVENTION PREP (before live event)
@@ -140,6 +201,11 @@
   speed + strong/struggling gap at UAT.
 - Pre-game catch + regional catch both build `newPokemon` — confirm BOTH stamp
   `hp` via `computeHp` (v1.22 Change 3G) so no Pokémon has undefined HP in battle.
+- QUESTION POOL DEPTH (blocks fresh-questions-on-replay, design item 40–42): the crystal
+  economy assumes replays serve NEW questions. Verify per-category-per-tier depth in
+  gym_bank[category][tier] is deep enough that a few replays don't exhaust the bucket and
+  force repeats (pickQuestion falls back to least-recently-seen on exhaustion). SPEC's
+  ~1,458-question goal supports this — confirm actual depth before building P3.
 
 ---
 

@@ -823,6 +823,12 @@ that assumed a personal pool.)
 
 ## PART 12 — ECONOMY (v3.3 — LOCKED)
 
+> **⚠️ REDESIGN STAGED (2026-05-26, not yet adopted):** a provisional→banked crystal
+> checkpoint economy (bank at R3/R7/R10, per-region caps, spend banked-only) is DESIGNED
+> and staged in BACKLOG (Player Game Management item), pending UAT validation. When
+> adopted it will REWRITE this Part 12 and add Part 15. Until then, THIS Part 12 (lifetime
+> wallet, immediately-spendable) remains the live/locked design that the code implements.
+
 > Settles the numbers deferred from Parts 3, 7, 10E, and 11 (P3/P7). Anchored to
 > the LIVE earn-rate discovered in game.js this session, not the stale SPEC
 > assumptions. Read with the progression spine below — the numbers exist to serve
