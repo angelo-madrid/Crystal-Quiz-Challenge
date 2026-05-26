@@ -2,8 +2,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.7.2   ·   LAST UPDATED: 2026-05-26         │
-│ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
+│ BUILD VERSION: v0.7.3   ·   LAST UPDATED: 2026-05-26         │
+│ SYNCED TO SPEC: v3.10 (economy 12-NEW now BUILT @ v0.6.3;    │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
 │   ⚠️ v3.6 REMOVED boss crystals — v0.6.0 build may still    │
@@ -61,7 +61,7 @@
 | Player Game Management — model + migration (P1) | ✅ LIVE v1.24 | SPEC Part 15D/15E |
 | Player Game Management — game-mgmt UI (P2) | ✅ LIVE v1.28 | SPEC Part 15B/15C |
 | Game ↔ Room binding (room_code keyed; create-or-resume on join) | ✅ LIVE v1.28 | SPEC Part 15A/15D |
-| Crystal checkpoint economy — provisional/banked + R3/R7/R10 (P3) | ✅ LIVE v1.25 | SPEC Part 12-NEW |
+| Crystal checkpoint economy — provisional/banked + every-region boss banking (v3.10) | ✅ LIVE v1.31.3 | SPEC Part 12-NEW |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
 
@@ -134,6 +134,18 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.31.3 ECONOMY TIMING CHANGE: crystals now bank into the per-player wallet
+  on EVERY region's boss win (R1 through R10), not only R3/R7/R10. SPEC Part
+  12-NEW-B rewritten to v3.10. Rationale: kids want to spend banked crystals
+  in the Prize Store right after R1 — no waiting for a distant checkpoint.
+  `bankCrystalsForCheckpoint(regionId)` generalized: `regions = BANK_CHECKPOINTS[regionId] || [regionId]` so non-checkpoint regions bank just themselves; R3/R7/R10 still
+  sweep their group as a catch-up safety net. Win-banking trigger at
+  `_battleRecordDefeat` is now unconditional. `showCheckpointBankToast` picks
+  heading from `BANK_CHECKPOINTS[regionId]` — "🏦 Checkpoint!" for R3/R7/R10
+  (narrative beat preserved), "🏦 Banked!" for plain regions. Per-region cap,
+  idempotency (`banked_regions`), ledger row, and R3/R7/R10 Team Prize /
+  Darkrai narrative beats all unchanged. 3 wallet/HUD hint sites + 1
+  voucher-gate alert string updated to "banks when you beat each region's boss".
 - v1.31.2 HOST REGION TRACKER: room-detail overlay GAME PROGRESS strip
   replaced with an interactive tracker — clickable R1–R10 tabs (✅/🔄/○)
   + per-region phase row (Gyms → Boss Fight → Crystal Checkpoint) + a

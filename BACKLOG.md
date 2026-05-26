@@ -39,7 +39,7 @@
   + XP growth, MOVE dispatcher, catch between gyms, player-row + per-room games,
   game ↔ room binding, provisional→banked checkpoint economy, Prize Store + Tier
   Vouchers, My Games UI, GAME_OVER Podium + team prize + honors. Capture across a
-  full R1–R10 run: difficulty curve, banking moments (R3/R7/R10), Prize-Store
+  full R1–R10 run: difficulty curve, banking every region (per-region cap behavior; R3/R7/R10 retained as narrative beats, v1.31.3), Prize-Store
   affordability + voucher print flow, podium emotional payoff, team-prize tier
   hit, honors variety, multi-game switch UX.
 - **Cap + price tuning** (BACKLOG WATCH-ITEMS): `REGION_CRYSTAL_CAP` values and
@@ -267,9 +267,11 @@ OPEN QUESTIONS (resolve before build):
   crystals (SPEC Part 13 v3.9 amendment). Today the only in-game spends are
   Pokeball buy (regional catch) + broadcast message (10 💎) — both kept on
   PROVISIONAL (`total_crystals`). Rationale: no Prize Store buy code exists yet
-  (item 43), and forcing Pokeball buys through banked would brick R1/R2 catch
-  (kids can't bank anything until R3). Re-evaluate at UAT: should regional
-  Pokeball ALSO require banked? If so, the gate moves when item 43 ships.
+  (item 43), and forcing Pokeball buys through banked would brick R1/R2 catch.
+  ⚠️ v1.31.3 UPDATE: every region now banks at its boss win, so kids DO have
+  banked crystals from R1 onward. The "can't bank anything until R3" rationale
+  is now obsolete. Re-evaluate at UAT: should regional Pokeball ALSO require
+  banked? If so, the gate moves when item 43 ships.
 - v1.25 REGION_CRYSTAL_CAP VALUES are placeholders (R1=400 … R10=1200). Tune at
   UAT — caps should let a strong kid hit ceiling without grinding, and let a
   struggling kid recover via replay without ever exceeding. Confirm vs the
@@ -310,6 +312,28 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — ECONOMY TIMING CHANGE (2026-05-26, v1.31.3 / SPEC v3.10):**
+- Crystals now bank into the per-player wallet on EVERY region's boss win
+  (R1 through R10), not only R3/R7/R10. Rationale: kids want to spend banked
+  crystals in the Prize Store right after R1 — waiting until R3 was a UX
+  pain point.
+- `bankCrystalsForCheckpoint(regionId)` generalized: `regions =
+  BANK_CHECKPOINTS[regionId] || [regionId]` — non-checkpoint regions bank
+  just themselves; R3/R7/R10 still sweep their full group as a catch-up
+  safety net (no-op in normal play since each earlier region has already
+  banked at its own boss).
+- Win-banking trigger at `_battleRecordDefeat` is now unconditional (was
+  gated on `BANK_CHECKPOINTS[regionId]`).
+- `showCheckpointBankToast` heading: "🏦 Checkpoint!" for R3/R7/R10
+  (narrative beat preserved), "🏦 Banked!" for every other region.
+- 3 wallet/HUD hint sites + 1 voucher-gate alert string updated from
+  "banks at R3/R7/R10" → "banks when you beat each region's boss".
+- Per-region cap (`REGION_CRYSTAL_CAP`), idempotency (`banked_regions`),
+  per-player ledger row, and the R3/R7/R10 Team Prize / Darkrai narrative
+  beats (boss-defeat tiers 3/6/10) are all unchanged — only timing moves.
+- SPEC Part 12-NEW-B rewritten to v3.10; v3.10 changelog entry added;
+  Prize Store passage + superseded-block hint updated.
 
 **Track C — HOST REGION TRACKER (2026-05-26, v1.31.2):**
 - Replaced the static R1–R10 progress strip in the room-detail overlay

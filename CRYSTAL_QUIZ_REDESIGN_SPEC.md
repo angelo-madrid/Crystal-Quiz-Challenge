@@ -2,13 +2,21 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.9   ·   LAST UPDATED: 2026-05-26          │
+│ DESIGN VERSION: v3.10  ·   LAST UPDATED: 2026-05-26          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
 │ — if it lags this number, CLAUDE.md is behind.               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**v3.10 (2026-05-26):** ECONOMY TIMING CHANGE — crystals now bank into the per-player
+wallet at EVERY region's boss win (R1 through R10), not only at R3/R7/R10. Rationale:
+kids want to spend banked crystals in the Prize Store right after R1 without waiting
+for a distant checkpoint. Part 12-NEW-B updated. The per-region cap (12-NEW-C),
+idempotency (`banked_regions`), and ledger (12-NEW-G) are all unchanged — only the
+TIMING moves. R3 / R7 / R10 are RETAINED as Team Prize / Darkrai narrative beats
+(boss-defeat-count tiers 3/6/10) — DECOUPLED from banking. Built v1.31.3. Supersedes v3.9.
 
 **v3.9 (2026-05-26):** PLAYER GAME MANAGEMENT + CRYSTAL CHECKPOINT ECONOMY adopted
 (was staged in BACKLOG). NEW Part 15 (multi-game save slots, 4 states, Model A games
@@ -846,9 +854,17 @@ that assumed a personal pool.)
 > - **Banked** (per-player, `banked_crystals`): the lifetime spendable wallet. Only
 >   banked crystals buy Prize Store vouchers. Survive Restart/Abandon.
 >
-> **12-NEW-B — Banking checkpoints = R3 / R7 / R10** (the Darkrai narrative beats):
-> R3 banks regions 1–3, R7 banks 4–7, R10 banks 8–10. Clearing a checkpoint boss credits
-> the capped value of each not-yet-banked region in that segment.
+> **12-NEW-B — Banking timing = EVERY region's boss** (v3.10, was R3/R7/R10 only):
+> Crystals are PROVISIONAL during play and BANK into the wallet when the player defeats
+> EACH region's boss (R1 through R10), capped per region by `REGION_CRYSTAL_CAP`.
+> Rationale: kids want to spend banked crystals in the Prize Store without waiting for
+> a distant checkpoint. The R3 / R7 / R10 moments are RETAINED as Team Prize / Darkrai
+> narrative beats (boss-defeat-count tiers 3/6/10) — these are now DECOUPLED from
+> banking. Banking remains idempotent per region (`banked_regions`); replay to the cap
+> banks nothing extra. The R3/R7/R10 multi-region sweep is retained inside
+> `bankCrystalsForCheckpoint` as a catch-up safety net (banks any earlier region in
+> the segment that somehow didn't bank yet), but in normal play each region has
+> already banked at its own boss.
 >
 > **12-NEW-C — Per-region cap (anti-grind):** each region banks UP TO a fixed ceiling
 > `REGION_CRYSTAL_CAP[regionId]` (tunable). Replay (fresh questions) can REACH the cap
@@ -871,8 +887,9 @@ that assumed a personal pool.)
 > **12-NEW-G — crystal_ledger stays per-PLAYER** (audit trail for the banked wallet).
 > Banking events at checkpoints write ledger rows; provisional crystals are NOT ledgered.
 
-> **⚠️ SUPERSEDED by v3.9 (12-NEW-A…G above).** The v3.3 immediately-spendable lifetime
-> wallet is retained below for history. Crystals now bank at checkpoints (above).
+> **⚠️ SUPERSEDED by v3.9 / v3.10 (12-NEW-A…G above).** The v3.3 immediately-spendable
+> lifetime wallet is retained below for history. Crystals now bank at every region's
+> boss win (v3.10 — was R3/R7/R10 in v3.9).
 
 > Settles the numbers deferred from Parts 3, 7, 10E, and 11 (P3/P7). Anchored to
 > the LIVE earn-rate discovered in game.js this session, not the stale SPEC
@@ -1055,7 +1072,7 @@ against real-world value.
 
 > **⚙️ v3.9 AMENDMENT (2026-05-26, ADOPTED):** the Prize Store spends BANKED crystals
 > only (see Part 12-NEW). The store is always open + browsable; provisional (un-banked)
-> crystals are shown separately ("earning this game — bank at R3/R7/R10") and cannot be
+> crystals are shown separately ("earning this game — banks when you beat each region's boss", v3.10) and cannot be
 > spent until banked. All other Part 13 mechanics (tiers, vouchers 13R, effort metric,
 > team prize) are unchanged.
 

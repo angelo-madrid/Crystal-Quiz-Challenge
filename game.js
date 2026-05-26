@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.3: ECONOMY CHANGE — crystals now bank into the wallet on EVERY region's
+//   boss win (was R3/R7/R10 only). Kids can spend in the Prize Store right after
+//   R1. bankCrystalsForCheckpoint now banks the single region when called for a
+//   non-checkpoint region, and retains the R3/R7/R10 multi-region sweep as a
+//   catch-up safety net. Per-region cap, idempotency (banked_regions), and the
+//   R3/R7/R10 Team Prize / Darkrai narrative beats are all unchanged. SPEC →v3.10.
 // v1.31.2: Host region tracker — replaced static R1-R10 progress strip in the
 //   room-detail overlay with clickable region tabs + a per-region phase row
 //   (Gyms → Boss Fight → Crystal Checkpoint) + a player table showing each
@@ -591,8 +597,11 @@ function awardXpEvent(poke) {
 // via banked_regions. Returns { banked, breakdown } so the UI can celebrate.
 // PRE-CONDITION: STATE.playerRow + STATE.save exist (post-P1 player-row model).
 async function bankCrystalsForCheckpoint(regionId) {
-  const regions = BANK_CHECKPOINTS[regionId];
-  if (!regions || !STATE.playerRow || !STATE.save) return { banked: 0, breakdown: [] };
+  if (!STATE.playerRow || !STATE.save) return { banked: 0, breakdown: [] };
+  // v1.31.3: every region banks at its own boss win. If this region IS a
+  // checkpoint (R3/R7/R10), also sweep any earlier regions in its group that
+  // didn't bank yet (catch-up safety net). Otherwise bank just this region.
+  const regions = BANK_CHECKPOINTS[regionId] || [regionId];
 
   if (!STATE.save.banked_regions) STATE.save.banked_regions = {};
   if (!STATE.save.region_crystals) STATE.save.region_crystals = {};
@@ -701,7 +710,7 @@ async function buyVoucher(tier) {
   }
   const wallet = STATE.playerRow.banked_crystals || 0;
   if (wallet < t.cost) {
-    alert(`Need ${t.cost.toLocaleString()} banked 🔮 for a ${t.label} voucher. Bank more by beating a checkpoint boss (R3/R7/R10).`);
+    alert(`Need ${t.cost.toLocaleString()} banked 🔮 for a ${t.label} voucher. Bank more by beating a region's boss.`);
     return null;
   }
 
@@ -872,7 +881,7 @@ function renderPrizeStore() {
   const wEl = document.getElementById('store-wallet');
   if (wEl) wEl.innerHTML =
     `<span class="wallet-banked">💎 ${banked.toLocaleString()} banked</span>` +
-    `<span class="wallet-prov">✨ ${provisional.toLocaleString()} earning this game — banks at R3/R7/R10</span>`;
+    `<span class="wallet-prov">✨ ${provisional.toLocaleString()} earning this game — banks when you beat each region's boss</span>`;
 
   const eEl = document.getElementById('store-effort');
   if (eEl) eEl.textContent = `⭐ Effort Score: ${effort.toLocaleString()}`;
@@ -3861,7 +3870,7 @@ async function showMap() {
     el.textContent = prov > 0
       ? `${banked.toLocaleString()} · ✨ ${prov.toLocaleString()}`
       : `${banked.toLocaleString()}`;
-    el.title = `🔮 ${banked} banked (spendable) · ✨ ${prov} earning this game (banks at R3/R7/R10)`;
+    el.title = `🔮 ${banked} banked (spendable) · ✨ ${prov} earning this game (banks when you beat each region's boss)`;
   }
   document.getElementById('map-badges').textContent = save.badges_earned || 0;
   document.getElementById('map-pokemon-count').textContent = (save.pokemon_team || []).length;
@@ -3994,7 +4003,7 @@ async function renderWallet() {
   document.getElementById('wallet-title').textContent = `💎 ${player.name}'s Crystal Wallet`;
   const walletEl = document.getElementById('wallet-balance');
   walletEl.innerHTML = provisional > 0
-    ? `${banked.toLocaleString()} 🔮 <span style="opacity:.6;font-size:.65em;font-weight:600">· ✨ ${provisional.toLocaleString()} earning this game (banks at R3/R7/R10)</span>`
+    ? `${banked.toLocaleString()} 🔮 <span style="opacity:.6;font-size:.65em;font-weight:600">· ✨ ${provisional.toLocaleString()} earning this game (banks when you beat each region's boss)</span>`
     : `${banked.toLocaleString()} 🔮`;
 
   // Redeem button — disabled while a request is already pending.
@@ -5869,12 +5878,11 @@ async function _battleRecordDefeat(regionId, stars) {
   STATE.save.bossDefeats[regionId] = { stars, defeatedAt: new Date().toISOString() };
   STATE.save.updated_at = new Date().toISOString();
 
-  // SPEC 12-NEW-B (v1.25 P3): checkpoint banking at R3 / R7 / R10. Banks the
-  // capped per-region provisional into the per-player wallet, idempotent.
-  let bankResult = null;
-  if (BANK_CHECKPOINTS[regionId]) {
-    bankResult = await bankCrystalsForCheckpoint(regionId);
-  }
+  // v1.31.3: bank THIS region's capped provisional into the wallet on every boss
+  // win (was R3/R7/R10 only — kids want to spend sooner). The R3/R7/R10 sweep is
+  // retained inside bankCrystalsForCheckpoint as a catch-up safety net for any
+  // earlier region that didn't bank. Idempotent via banked_regions.
+  let bankResult = await bankCrystalsForCheckpoint(regionId);
 
   await dbSaveRow(STATE.player.id);
 
@@ -5889,7 +5897,9 @@ async function _battleRecordDefeat(regionId, stars) {
 function showCheckpointBankToast(regionId, result) {
   const lines = result.breakdown
     .map(b => `R${b.region}: +${b.credited.toLocaleString()} 🔮`).join(' · ');
-  const msg = `🏦 Checkpoint! Banked ${result.banked.toLocaleString()} 🔮 — now yours to spend! (${lines})`;
+  const isCheckpoint = !!BANK_CHECKPOINTS[regionId];
+  const head = isCheckpoint ? '🏦 Checkpoint!' : '🏦 Banked!';
+  const msg = `${head} ${result.banked.toLocaleString()} 🔮 — now yours to spend! (${lines})`;
   if (typeof showToast === 'function') showToast(msg, 4000);
   else alert(msg);
 }
