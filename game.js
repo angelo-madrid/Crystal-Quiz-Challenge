@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.30.1 TUNING: BOSS_DAMAGE_PER_HIT 35 → 18. At level-1 HP (~120), 35 dmg
+//   killed solo players in ~4 rounds — unwinnable before N=3 + boss kill.
+//   18 gives ~6–7 rounds of survivability. Single knob; adjust 12–25 in UAT.
 // v1.30.0: BATTLE MODEL CHANGE — field ONE Pokémon per boss fight (was whole team).
 //   New "Choose Your Pokémon" screen before the fight: tap to select, live
 //   "[Pokemon], I choose you!" remark, confirm → battle. The fielded Pokémon's
@@ -961,8 +964,8 @@ const MAX_PLAYABLE_REGION = 10;
 
 // ── BOSS DATA (SPEC Part 14G — R1–R10 constants) ─────────────
 // All numbers are TUNE-AT-PLAYTEST values. The single lever to adjust first
-// in UAT is BOSS_DAMAGE_PER_HIT (one enemy hit ≈ 35 dmg).
-const BOSS_DAMAGE_PER_HIT = 35;   // tuning knob — adjust this first in UAT
+// in UAT is BOSS_DAMAGE_PER_HIT (one enemy hit ≈ 18 dmg post-v1.30.1).
+const BOSS_DAMAGE_PER_HIT = 18;   // tuning knob — adjust this first in UAT (v1.30.1: 35→18 for level-1 survivability)
 
 const BOSS_DATA = {
   1:  { villain:'Pawniard', emoji:'⚔️',  hp:500,  rewardId:'cleffa',

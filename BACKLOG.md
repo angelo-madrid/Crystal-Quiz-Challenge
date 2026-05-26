@@ -199,8 +199,8 @@ OPEN QUESTIONS (resolve before build):
 - R7 legendaries = 3 (intentional on-ramp; watch for frustration).
 - Crystal gap: without boss crystals strong-vs-struggling gap ~3× — FINE for prizes
   (effort-gated); if Pokémon ladder feels tight, raise GYM earn-rates (NOT boss crystals).
-- Battle tuning: boss HP + damage knob (35/hit) + N=3 threshold all need playtest
-  validation. Lowest-level kid vs matched enemy is the critical test case.
+- Battle tuning: BOSS_DAMAGE_PER_HIT set to 18 (was 35) for level-1 survivability —
+  re-tune 12–25 from UAT. Boss HP, N=3, enrage still placeholder.
 - Foul Play (Vullaby R4 enrage): targets lowest HP kid — watch if this feels unfair
   in practice; can swap to random target if needed.
 - RE-ENTRY / RECONNECT paths (found at pre-game catch, fixed v1.21.1): a kid

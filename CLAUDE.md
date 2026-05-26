@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.8   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.9   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -134,6 +134,12 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.30.1 TUNING: `BOSS_DAMAGE_PER_HIT` 35 → 18. At level-1 HP ~120, 35 dmg/hit
+  killed solo players in ~4 rounds — unwinnable before N=3 + boss kill,
+  especially tight under the v1.30 single-fielded model (fewer abilities).
+  18 gives ~6–7 rounds of survivability. ONE-KNOB tuning — boss HP / N=3 /
+  20% player-damage formula left as-is so UAT data is interpretable. Re-tune
+  12–25 from UAT; logged as the battle-tuning WATCH-ITEM in BACKLOG.
 - v1.30.0 BATTLE MODEL CHANGE: field ONE Pokémon per boss fight (was whole team).
   New `screen-choose-pokemon` flow before the fight — tap a team Pokémon, live
   `"{Pokémon}, I choose you!"` remark, confirm → battle. The fielded Pokémon's
