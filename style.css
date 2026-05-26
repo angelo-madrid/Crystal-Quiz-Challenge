@@ -3671,3 +3671,85 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 }
 .game-act-primary:hover { filter: brightness(1.05); }
 .game-act-ghost  { opacity: 0.85; }
+
+/* ═══════════════════════════════════════════════════════════
+   v1.30 — Choose Your Pokémon + redesigned battle contrib cards
+   ═══════════════════════════════════════════════════════════ */
+.choose-hero { text-align: center; padding: 20px 0 12px; }
+.choose-title { font-size: 1.5rem; font-weight: 800; margin: 0; }
+.choose-sub { opacity: 0.7; font-size: 0.9rem; margin: 4px 0 0; }
+.choose-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 10px; padding: 0 16px;
+}
+.choose-option {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px; padding: 12px 8px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
+  cursor: pointer; transition: all 0.15s;
+}
+.choose-option:hover { background: rgba(255,255,255,0.08); }
+.choose-option.selected {
+  border: 2px solid var(--gold, #f5c542);
+  background: rgba(245,197,66,0.12);
+}
+.choose-opt-emoji { font-size: 1.8rem; }
+.choose-opt-name { font-size: 0.78rem; font-weight: 700; text-align: center; }
+.choose-opt-ability { font-size: 0.68rem; opacity: 0.7; text-align: center; }
+.choose-remark {
+  text-align: center; font-size: 1rem; font-weight: 800; padding: 14px;
+  margin: 16px; background: rgba(245,197,66,0.1);
+  border-radius: 12px; color: var(--gold, #f5c542);
+}
+#choose-confirm-btn { margin: 0 16px 16px; }
+
+/* v1.30 — battle contrib cards (fielded Pokémon on top) */
+.battle-contrib-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px; padding: 10px 12px;
+  min-width: 130px;
+  display: flex; flex-direction: column;
+  gap: 6px; align-items: center;
+}
+.battle-contrib-card.fainted { opacity: 0.55; }
+.battle-contrib-card.answered { border-color: rgba(99,153,34,0.5); }
+.bc-poke-field {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1px;
+}
+.bc-poke-emoji { font-size: 1.6rem; line-height: 1; }
+.bc-poke-name { font-size: 0.72rem; font-weight: 700; }
+.bc-byline { font-size: 0.66rem; opacity: 0.6; }
+.bc-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.1); }
+.bc-hp-row {
+  display: flex; justify-content: space-between;
+  width: 100%; font-size: 0.62rem; opacity: 0.75;
+}
+.bc-hp-track {
+  width: 100%; height: 5px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px; overflow: hidden;
+}
+.bc-hp-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.bc-hp-green { background: #639922; }
+.bc-hp-amber { background: #BA7517; }
+.bc-hp-red   { background: #E24B4A; }
+.bc-hp-gray  { background: rgba(255,255,255,0.25); }
+.bc-fainted { font-size: 0.72rem; color: #f87171; font-weight: 700; }
+.bc-ability {
+  font-size: 0.64rem; padding: 2px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+}
+.bc-ability.used { opacity: 0.45; text-decoration: line-through; }
+.bc-pips { display: flex; gap: 4px; }
+.bc-pip {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+.bc-pip.filled { background: #BA7517; border-color: #BA7517; }

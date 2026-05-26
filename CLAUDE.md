@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.7   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.8   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -36,6 +36,8 @@
 | Multiplayer core, rooms, ledger, dashboards, rejoin | ✅ LIVE | (this file) |
 | Pokemon library v2.0 (183 lines, evolution, PH R10) | ✅ LIVE | SPEC Part 10–11 |
 | battleAbility populated (193 starters+regional, thematic) | ✅ DATA v2.2 | SPEC Part 14G-4 |
+| Boss-battle model — ONE fielded Pokémon per battle (single ability) | ✅ LIVE v1.30.0 | SPEC Part 14G-3 |
+| Choose Your Pokémon pre-battle screen + retry re-choose | ✅ LIVE v1.30.0 | SPEC Part 14G-3 |
 | Catch mechanics (snake draft, cap grows 3→4→5, pokeball bet) | ⬜ designed* | SPEC Part 11, 12E |
 | Cosmetic evolution (A1) | ⬜ designed | SPEC Part 11 P10 |
 | Unified player-level rarity gate (catch grid) | ✅ LIVE v1.22 | SPEC Part 4 |
@@ -132,6 +134,21 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.30.0 BATTLE MODEL CHANGE: field ONE Pokémon per boss fight (was whole team).
+  New `screen-choose-pokemon` flow before the fight — tap a team Pokémon, live
+  `"{Pokémon}, I choose you!"` remark, confirm → battle. The fielded Pokémon's
+  single `battleAbility` is usable once for the whole battle: `ps.abilityUsed`
+  boolean replaces the per-Pokémon `abilitiesUsed[]` array. Battle contrib cards
+  redesigned: fielded Pokémon emoji+name on top, `(PLAYER)` byline, HP bar (green
+  ≥50% / amber ≥25% / red < 25% / grey-fainted), ability tag below HP
+  (strikethrough when used), N=3 pip dots. Retry re-opens Choose Your Pokémon so
+  the kid can field a different Pokémon. Team Strike (COMBO_TEAM_STRIKE) is
+  armable only when the kid FIELDED a Pokémon with that ability — arming
+  consumes the kid's one-ability-per-battle. SPEC Part 14G-3 carries a
+  fielded-Pokémon design note documenting the change. ⚠️ NOTE: the v1.29.6
+  "once per Pokémon per gym" cadence applies to GYM phase only (still via
+  `STATE.abilitiesUsedThisGym`); BATTLE phase is now once per battle for the
+  single fielded Pokémon.
 - v1.29.6 FIX: Pokémon ability cadence reworked from "once per question (any
   Pokémon)" to "ONCE PER POKÉMON PER GYM" (the actual design intent — the v1.28.2
   per-question cadence was an earlier interpretation that didn't match). Single

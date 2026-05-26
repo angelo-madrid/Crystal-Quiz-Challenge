@@ -1788,6 +1788,17 @@ Replaces the former "trophy Pokémon" / "bonus slot" mechanic entirely.
 
 **Format:** 3v1 — all kids attack one shared boss HP bar together.
 
+> **⚙️ FIELDED-POKÉMON MODEL (v1.30 build note, design change adopted):** before the
+> boss fight, each player CHOOSES ONE Pokémon to field (new "Choose Your Pokémon"
+> screen). That Pokémon's single `battleAbility` is usable once for the whole
+> battle. Replaces the earlier "whole-team / per-Pokémon-ability" model where every
+> team Pokémon contributed an ability. Retry re-opens Choose Your Pokémon — the kid
+> may field a different Pokémon on the second attempt. Contrib cards show the
+> fielded Pokémon with the player's name as byline, HP bar + ability tag, and
+> N=3 pip dots. **Team Strike** (SPEC 14G-4 COMBO_TEAM_STRIKE) is now armable only
+> when the kid FIELDED a Pokémon whose `battleAbility` is `COMBO_TEAM_STRIKE` —
+> arming consumes the kid's one-ability-per-battle.
+>
 > **Host-flow gating (v1.29 build note):** the host's boss control panel is gated on
 > `room.phase === 'BOSS_FIGHT'`. The phase is set when the FIRST player reaches the
 > boss (taps "Fight the Villain!" after Gym 5 → `startBossFight` writes the phase +

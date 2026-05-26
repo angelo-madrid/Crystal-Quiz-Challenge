@@ -543,6 +543,24 @@
     <div id="review-content"><!-- rendered by JS --></div>
   </div>
 
+  <!-- CHOOSE YOUR POKÉMON — shown before the boss fight (v1.30). One Pokémon
+       is fielded for the whole battle; its single battle ability is usable once. -->
+  <div id="screen-choose-pokemon" class="screen">
+    <div class="choose-hero">
+      <h2 class="choose-title">Choose Your Pokémon</h2>
+      <p class="choose-sub">Pick one to field in the battle</p>
+    </div>
+    <div class="choose-grid" id="choose-grid">
+      <!-- Rendered by JS -->
+    </div>
+    <div class="choose-remark" id="choose-remark" style="display:none">
+      <span id="choose-remark-text"></span>
+    </div>
+    <button class="btn-primary" id="choose-confirm-btn" onclick="confirmFieldedPokemon()" style="display:none">
+      ⚔️ Enter Battle
+    </button>
+  </div>
+
   <!-- BATTLE SCREEN — boss fight (SPEC Part 14G). Populated by JS in Commit 2. -->
   <div id="screen-battle" class="screen">
     <div class="battle-header">

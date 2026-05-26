@@ -297,6 +297,27 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — CHOOSE YOUR POKÉMON + SINGLE-FIELDED BATTLE MODEL (2026-05-26, v1.30.0):**
+- Battle model changed from whole-team-contributes-abilities to ONE fielded
+  Pokémon per fight (design adopted; SPEC Part 14G-3 noted).
+- New `screen-choose-pokemon` shown before the boss fight — tap to select,
+  live `"{Pokémon}, I choose you!"` remark, confirm → `startBossFight`.
+- `_battleInitPlayerState(hp, fieldedPokemonId)` accepts the choice;
+  `ps.abilityUsed` boolean replaces per-Pokémon `abilitiesUsed[]` array.
+- `_battleRenderAbilityBar` now shows ONLY the fielded Pokémon's single
+  ability (hides for NONE / COMBO_TEAM_STRIKE).
+- `_battleRenderContribCards` redesigned (fielded Pokémon emoji+name on top,
+  `(PLAYER)` byline, HP bar, ability tag, pip dots).
+- `battleRetry` re-opens Choose Your Pokémon so the kid can re-field.
+- TEAM STRIKE migration: `_battleShowRoundSummary` + `battleArmTeamStrike`
+  updated to single-fielded model. Arm button appears only when
+  `fielded.battleAbility === 'COMBO_TEAM_STRIKE'` and `!ps.abilityUsed`;
+  arming sets `ps.abilityUsed = true` (consumes the one-ability-per-battle).
+- New CSS for Choose screen + contrib cards (v1.7.13).
+- ⚠️ Note for next design pass: Team Strike now requires fielding a
+  COMBO_TEAM_STRIKE Pokémon explicitly; the previous model implicitly allowed
+  any teammate to "share" team strike. Verify at UAT that this feels right.
+
 **Track C — ABILITY CADENCE FIX (2026-05-26, v1.29.6 — Bug #6 retry):**
 - Cadence reworked from "once per question (any Pokémon)" to "ONCE PER POKÉMON
   PER GYM" — the actual design intent. v1.28.2's per-question cadence was an

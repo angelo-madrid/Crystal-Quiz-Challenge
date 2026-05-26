@@ -1,5 +1,15 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.30.0: BATTLE MODEL CHANGE — field ONE Pokémon per boss fight (was whole team).
+//   New "Choose Your Pokémon" screen before the fight: tap to select, live
+//   "[Pokemon], I choose you!" remark, confirm → battle. The fielded Pokémon's
+//   single battleAbility is usable once for the whole battle (ps.abilityUsed
+//   boolean replaces the per-Pokémon abilitiesUsed array). Contrib cards
+//   redesigned: fielded Pokémon emoji+name on top, (PLAYER) byline, HP bar
+//   (green/amber/red/grey-fainted), ability tag below HP, pip dots. Retry
+//   re-opens Choose Your Pokémon. Team Strike arming also migrated to the
+//   single-fielded model (fielded.battleAbility === 'COMBO_TEAM_STRIKE' +
+//   ps.abilityUsed boolean). SPEC Part 14G updated.
 // v1.29.6 FIX: Pokémon ability cadence — once per gym PER POKÉMON.
 //   abilityUsedThisQuestion (single boolean, reset every loadQuestion) replaced
 //   with abilitiesUsedThisGym (array of pokemon ids, reset only at startGym).
@@ -4645,7 +4655,7 @@ async function endGym() {
     // Gym 5 — always route to boss, pass or fail.
     nextBtn.style.display = 'block';
     nextBtn.textContent   = `⚔️ Fight the Villain!`;
-    nextBtn.onclick       = () => startBossFight(STATE.currentRegion);
+    nextBtn.onclick       = () => renderChoosePokemon(STATE.currentRegion);
   }
 
   showScreen('screen-gym-complete');
@@ -4665,6 +4675,64 @@ function goNextGym() {
 // Called from the Gym 5 "⚔️ Fight the Villain!" button.
 // Shows the waiting screen and writes the player's ready status
 // into room.battleState so Papa's dashboard can see who's ready.
+// ── CHOOSE YOUR POKÉMON (v1.30) ───────────────────────────────
+// Shown before the boss fight. Player fields ONE Pokémon whose single
+// battle ability is usable once for the whole battle. Sets
+// STATE._pendingBossRegion + STATE._fieldedChoice; confirm → startBossFight.
+let _chooseSelectedId = null;
+
+function renderChoosePokemon(regionId) {
+  STATE._pendingBossRegion = regionId;
+  _chooseSelectedId = null;
+  const grid = document.getElementById('choose-grid');
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  if (!team.length) {
+    grid.innerHTML = `<div class="no-pokemon-msg">No Pokémon to field! Catch some first.</div>`;
+  } else {
+    grid.innerHTML = team.map((p, idx) => {
+      const pid = p.id || String(idx);
+      const ab  = _battleAbilityLabel(p.battleAbility || 'NONE');
+      const abText = (p.battleAbility && p.battleAbility !== 'NONE')
+        ? `${ab.icon} ${ab.name}` : 'No battle ability';
+      return `
+        <div class="choose-option" data-pid="${escapeAttr(pid)}"
+             onclick="selectFieldedPokemon('${escapeAttr(pid)}')">
+          <div class="choose-opt-emoji">${p.emoji || '🐾'}</div>
+          <div class="choose-opt-name">${escapeHTML(pokemonDisplayName(p))}</div>
+          <div class="choose-opt-ability">${abText}</div>
+        </div>`;
+    }).join('');
+  }
+  document.getElementById('choose-remark').style.display = 'none';
+  document.getElementById('choose-confirm-btn').style.display = 'none';
+  showScreen('screen-choose-pokemon');
+}
+
+function selectFieldedPokemon(pid) {
+  _chooseSelectedId = pid;
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const poke = team.find((p, idx) => (p.id || String(idx)) === pid);
+  // Highlight selection.
+  document.querySelectorAll('#choose-grid .choose-option').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('data-pid') === pid);
+  });
+  // Live remark — updates as they tap.
+  if (poke) {
+    const remark = document.getElementById('choose-remark');
+    const txt    = document.getElementById('choose-remark-text');
+    txt.textContent = `${pokemonDisplayName(poke)}, I choose you!`;
+    remark.style.display = 'block';
+    document.getElementById('choose-confirm-btn').style.display = 'block';
+  }
+}
+
+function confirmFieldedPokemon() {
+  if (!_chooseSelectedId) { showToast('⚠️ Pick a Pokémon first'); return; }
+  const region = STATE._pendingBossRegion || STATE.currentRegion;
+  STATE._fieldedChoice = _chooseSelectedId;
+  startBossFight(region);
+}
+
 async function startBossFight(regionId) {
   if (regionId < 1 || regionId > MAX_PLAYABLE_REGION) {
     console.warn('[startBossFight] regionId out of range:', regionId);
@@ -4702,7 +4770,10 @@ async function startBossFight(regionId) {
         // Register this player (or update their HP if re-entering).
         const ps = room.battleState.playerStates;
         if (!ps[STATE.player.id]) {
-          ps[STATE.player.id] = _battleInitPlayerState(playerHp);
+          ps[STATE.player.id] = _battleInitPlayerState(playerHp, STATE._fieldedChoice || null);
+        } else if (STATE._fieldedChoice) {
+          // Re-entering (retry) — update the fielded choice with the new pick.
+          ps[STATE.player.id].fieldedPokemonId = STATE._fieldedChoice;
         }
         room.battleState.playerStates = ps;
         // v1.29 (SPEC 14G fix): set the phase so the host boss panel reveals
@@ -4791,7 +4862,7 @@ function _battleInitState(regionId, boss) {
 }
 
 // Build the initial per-player state for a given HP value.
-function _battleInitPlayerState(hp) {
+function _battleInitPlayerState(hp, fieldedPokemonId = null) {
   return {
     hp,
     maxHp: hp,
@@ -4799,10 +4870,12 @@ function _battleInitPlayerState(hp) {
     answeredThisRound: false,
     answerCorrect: null,
     fainted: false,
-    // Commit 3: battle abilities (one per Pokémon per battle).
-    abilitiesUsed: [],        // pokemon ids whose ability has fired
+    // v1.30: ONE Pokémon fielded for the whole battle; its single battle
+    // ability is usable once.
+    fieldedPokemonId,         // pokemon id chosen at "Choose Your Pokémon"
+    abilityUsed: false,       // has the fielded ability fired yet this battle
     pendingAbility: null,     // ability declared THIS round, applied at resolve
-    pendingAbilityPoke: null, // pokemon id that declared it
+    pendingAbilityPoke: null, // pokemon id that declared it (== fieldedPokemonId)
   };
 }
 
@@ -5035,29 +5108,29 @@ function _battleRenderAbilityBar(bs, lockdownActive) {
   if (!bar) return;
   const ps   = bs.playerStates[STATE.player.id];
   const team = (STATE.save && STATE.save.pokemon_team) || [];
-  if (!team.length) { bar.style.display = 'none'; return; }
-  const used = (ps && ps.abilitiesUsed) || [];
+  if (!ps || !ps.fieldedPokemonId) { bar.style.display = 'none'; return; }
+  const fielded = team.find((p, idx) => (p.id || String(idx)) === ps.fieldedPokemonId);
+  if (!fielded) { bar.style.display = 'none'; return; }
+  const ability = fielded.battleAbility || 'NONE';
+  // COMBO_TEAM_STRIKE is armed on the between-round screen (Commit 4), not here.
+  if (ability === 'NONE' || ability === null || ability === 'COMBO_TEAM_STRIKE') {
+    bar.style.display = 'none'; return;
+  }
   bar.style.display = 'flex';
   if (lockdownActive) {
     bar.innerHTML = `<div class="battle-ability-locked">🔒 Lockdown — abilities blocked this round</div>`;
     return;
   }
-  const buttons = team.map(p => {
-    const ability = p.battleAbility || 'NONE';
-    // COMBO_TEAM_STRIKE is handled on the between-round screen (Commit 4).
-    if (ability === 'NONE' || ability === null || ability === 'COMBO_TEAM_STRIKE') return '';
-    const isUsed = used.includes(p.id);
-    const label  = _battleAbilityLabel(ability);
-    return `
-      <button class="battle-ability-btn${isUsed ? ' used' : ''}"
-        ${isUsed ? 'disabled' : ''}
-        onclick="battleDeclareAbility('${escapeAttr(p.id)}')">
-        <span class="bab-emoji">${p.emoji || '🐾'}</span>
-        <span class="bab-ability">${label.icon} ${label.name}</span>
-        ${isUsed ? '<span class="bab-used-tag">used</span>' : ''}
-      </button>`;
-  }).filter(Boolean).join('');
-  bar.innerHTML = buttons || '<div class="battle-ability-empty">No battle abilities on your team yet.</div>';
+  const isUsed = ps.abilityUsed;
+  const label  = _battleAbilityLabel(ability);
+  bar.innerHTML = `
+    <button class="battle-ability-btn${isUsed ? ' used' : ''}"
+      ${isUsed ? 'disabled' : ''}
+      onclick="battleDeclareAbility('${escapeAttr(fielded.id || ps.fieldedPokemonId)}')">
+      <span class="bab-emoji">${fielded.emoji || '🐾'}</span>
+      <span class="bab-ability">${label.icon} ${label.name}</span>
+      ${isUsed ? '<span class="bab-used-tag">used</span>' : ''}
+    </button>`;
 }
 
 // Human-readable label + icon for each battle ability.
@@ -5102,8 +5175,8 @@ async function battleDeclareAbility(pokeId) {
     }
     if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
     const myPs = bs.playerStates[pid];
-    if ((myPs.abilitiesUsed || []).includes(pokeId)) {
-      showToast(`⚠️ ${poke.name}'s ability is already used`);
+    if (myPs.abilityUsed) {
+      showToast(`⚠️ ${pokemonDisplayName(poke)}'s ability is already used this battle`);
       return;
     }
     if (myPs.pendingAbility) {
@@ -5112,7 +5185,7 @@ async function battleDeclareAbility(pokeId) {
     }
     myPs.pendingAbility     = ability;
     myPs.pendingAbilityPoke = pokeId;
-    myPs.abilitiesUsed      = [...(myPs.abilitiesUsed || []), pokeId];
+    myPs.abilityUsed        = true;
     room.battleState = bs;
     room.updated_at  = new Date().toISOString();
     await dbWriteRoom(code, room);
@@ -5467,20 +5540,25 @@ function _battleShowRoundSummary(bs) {
   if (bs.teamStrikeDeclared) {
     teamStrikeBlock = `<div class="battle-ts-armed">⚡ Team Strike is ARMED for next round — everyone answer correctly!</div>`;
   } else {
-    // Show the arm button only if the kid owns an unused COMBO_TEAM_STRIKE Pokémon
-    // and Order's Wrath (R7) isn't blocking it.
+    // v1.30: with single-fielded model, Team Strike is armable only if the
+    // FIELDED Pokémon's battleAbility is COMBO_TEAM_STRIKE and the player's
+    // one-ability-per-battle has not yet fired. (Was: any team Pokémon with
+    // COMBO_TEAM_STRIKE and not in abilitiesUsed[].)
     const blockTs = bs.enraged
       && BOSS_DATA[bs.regionId]?.enrage?.effect === 'block_team_strike';
-    const team = (STATE.save && STATE.save.pokemon_team) || [];
-    const used = (ps && ps.abilitiesUsed) || [];
-    const tsPoke = team.find(p => p.battleAbility === 'COMBO_TEAM_STRIKE' && !used.includes(p.id));
-    if (tsPoke && !blockTs && !myFainted) {
+    const team    = (STATE.save && STATE.save.pokemon_team) || [];
+    const fielded = (ps && ps.fieldedPokemonId)
+      ? team.find((p, idx) => (p.id || String(idx)) === ps.fieldedPokemonId)
+      : null;
+    const fieldedHasTs = fielded && fielded.battleAbility === 'COMBO_TEAM_STRIKE';
+    const tsAvailable  = fieldedHasTs && ps && !ps.abilityUsed;
+    if (tsAvailable && !blockTs && !myFainted) {
       teamStrikeBlock = `
-        <button class="btn-secondary battle-ts-arm-btn" onclick="battleArmTeamStrike('${escapeAttr(tsPoke.id)}')">
-          ⚡ Arm Team Strike (${tsPoke.emoji} ${escapeHTML(tsPoke.name)})
+        <button class="btn-secondary battle-ts-arm-btn" onclick="battleArmTeamStrike('${escapeAttr(fielded.id || ps.fieldedPokemonId)}')">
+          ⚡ Arm Team Strike (${fielded.emoji || '🐾'} ${escapeHTML(pokemonDisplayName(fielded))})
         </button>
         <div class="battle-ts-hint">All correct next round → 3× damage. Coordinate with your team!</div>`;
-    } else if (blockTs) {
+    } else if (blockTs && fieldedHasTs) {
       teamStrikeBlock = `<div class="battle-ts-hint">⚠️ Team Strike is blocked by the boss next round.</div>`;
     }
   }
@@ -5572,11 +5650,14 @@ async function battleArmTeamStrike(pokeId) {
 
     if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
     const myPs = bs.playerStates[pid];
-    if ((myPs.abilitiesUsed || []).includes(pokeId)) {
-      showToast(`⚠️ ${poke.name}'s ability is already used`);
+    // v1.30: arming Team Strike consumes the kid's one-ability-per-battle (the
+    // fielded Pokémon's COMBO_TEAM_STRIKE), same boolean as the in-question
+    // ability gate. Was: per-Pokemon abilitiesUsed array.
+    if (myPs.abilityUsed) {
+      showToast(`⚠️ ${pokemonDisplayName(poke)}'s ability is already used this battle`);
       return;
     }
-    myPs.abilitiesUsed = [...(myPs.abilitiesUsed || []), pokeId];
+    myPs.abilityUsed = true;
     bs.teamStrikeDeclared = true;
     bs.teamStrikeArmedBy  = pid;
 
@@ -5784,8 +5865,10 @@ async function battleRetry() {
       }
     } catch(e) { console.warn('[battleRetry] room write failed:', e); }
   }
-  // Re-enter the waiting screen.
-  startBossFight(STATE.currentRegion);
+  // v1.30: retry re-opens Choose Your Pokémon so the kid can field a different
+  // Pokémon if they want. (Was: straight back into startBossFight with the
+  // same fielded choice.)
+  renderChoosePokemon(STATE.currentRegion);
 }
 
 // ── DARKRAI CAMEO ─────────────────────────────────────────────
@@ -5840,37 +5923,74 @@ function _battleSyncContribCards(bs) {
   _battleRenderContribCards(bs);
 }
 
+// v1.30: fielded-Pokémon contrib cards. Top: fielded Pokémon emoji + name with
+// (PLAYER) byline. Middle: HP bar (green/amber/red, grey when fainted) +
+// ability tag if the fielded ability is a per-question one. Bottom: pip dots
+// for the N=3 minimum contribution.
 function _battleRenderContribCards(bs) {
   const container = document.getElementById('battle-contrib-row');
   if (!container) return;
+  const team = (STATE.save && STATE.save.pokemon_team) || [];
+  const fieldedOf = (ps) => {
+    if (!ps || !ps.fieldedPokemonId) return null;
+    return team.find((p, idx) => (p.id || String(idx)) === ps.fieldedPokemonId) || null;
+  };
+
   if (!bs || !bs.playerStates || !Object.keys(bs.playerStates).length) {
-    // Waiting — show just this player with full HP placeholder.
+    // Waiting — show just this player's placeholder with the fielded choice.
     const hp = _battleDerivePlayerHp();
+    const poke = fieldedOf({ fieldedPokemonId: STATE._fieldedChoice });
     container.innerHTML = `
       <div class="battle-contrib-card">
-        <div class="battle-contrib-emoji">${STATE.player?.emoji || '👤'}</div>
-        <div class="battle-contrib-name">${escapeHTML(STATE.player?.name || '…')}</div>
-        <div class="battle-contrib-hp">HP ${hp}</div>
-        <div class="battle-contrib-pips">
-          ${Array(BATTLE_MIN_CONTRIBUTION).fill('<div class="battle-pip"></div>').join('')}
+        <div class="bc-poke-field">
+          <div class="bc-poke-emoji">${poke?.emoji || STATE.player?.emoji || '👤'}</div>
+          <div class="bc-poke-name">${poke ? escapeHTML(pokemonDisplayName(poke)) : '…'}</div>
+          <div class="bc-byline">(${escapeHTML(STATE.player?.name || '…')})</div>
         </div>
+        <div class="bc-divider"></div>
+        <div class="bc-hp-row"><span>HP</span><span>${hp} / ${hp}</span></div>
+        <div class="bc-hp-track"><div class="bc-hp-fill bc-hp-green" style="width:100%"></div></div>
+        <div class="bc-pips">${Array(BATTLE_MIN_CONTRIBUTION).fill('<div class="bc-pip"></div>').join('')}</div>
       </div>`;
     return;
   }
+
   const pids = Object.keys(bs.playerStates);
   container.innerHTML = pids.map(pid => {
     const ps    = bs.playerStates[pid];
     const isMe  = pid === STATE.player?.id;
+    const poke  = fieldedOf(ps);
     const hits  = ps.correctThisBattle;
     const pips  = Array(BATTLE_MIN_CONTRIBUTION).fill(null).map((_,i) =>
-      `<div class="battle-pip${i < hits ? ' filled' : ''}"></div>`).join('');
+      `<div class="bc-pip${i < hits ? ' filled' : ''}"></div>`).join('');
     const hpPct = ps.maxHp > 0 ? Math.round((ps.hp / ps.maxHp) * 100) : 0;
+    const hpClass = ps.fainted ? 'bc-hp-gray'
+      : hpPct >= 50 ? 'bc-hp-green'
+      : hpPct >= 25 ? 'bc-hp-amber'
+      :               'bc-hp-red';
+    const playerName = isMe ? (STATE.player?.name || pid) : pid;
+    // Ability tag (the fielded Pokémon's single battle ability).
+    let abilityTag = '';
+    if (poke && poke.battleAbility && poke.battleAbility !== 'NONE' && poke.battleAbility !== 'COMBO_TEAM_STRIKE') {
+      const lbl = _battleAbilityLabel(poke.battleAbility);
+      const used = ps.abilityUsed;
+      abilityTag = `<div class="bc-ability${used ? ' used' : ''}">${lbl.icon} ${lbl.name}</div>`;
+    }
+    const hpLine = ps.fainted
+      ? `<div class="bc-fainted">💀 Fainted</div>`
+      : `<div class="bc-hp-row"><span>HP</span><span>${ps.hp} / ${ps.maxHp} · ${hpPct}%</span></div>`;
     return `
       <div class="battle-contrib-card${ps.fainted ? ' fainted' : ''}${ps.answeredThisRound ? ' answered' : ''}">
-        <div class="battle-contrib-emoji">${isMe ? (STATE.player?.emoji || '👤') : '👤'}</div>
-        <div class="battle-contrib-name">${isMe ? escapeHTML(STATE.player?.name || pid) : escapeHTML(pid)}</div>
-        <div class="battle-contrib-hp">${ps.fainted ? '💀 Fainted' : `HP ${ps.hp} (${hpPct}%)`}</div>
-        <div class="battle-contrib-pips">${pips}</div>
+        <div class="bc-poke-field">
+          <div class="bc-poke-emoji">${poke?.emoji || '👤'}</div>
+          <div class="bc-poke-name">${poke ? escapeHTML(pokemonDisplayName(poke)) : '—'}</div>
+          <div class="bc-byline">(${escapeHTML(playerName)})</div>
+        </div>
+        <div class="bc-divider"></div>
+        ${hpLine}
+        <div class="bc-hp-track"><div class="bc-hp-fill ${hpClass}" style="width:${ps.fainted ? 100 : hpPct}%"></div></div>
+        ${abilityTag}
+        <div class="bc-pips">${pips}</div>
       </div>`;
   }).join('');
 }
