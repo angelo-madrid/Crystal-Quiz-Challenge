@@ -2,8 +2,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.1   ·   LAST UPDATED: 2026-05-26         │
-│ SYNCED TO SPEC: v3.8 (economy Part 12 is BUILT @ v0.6.0;     │
+│ BUILD VERSION: v0.6.2   ·   LAST UPDATED: 2026-05-26         │
+│ SYNCED TO SPEC: v3.9 (economy Part 12 is BUILT @ v0.6.0;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
 │   ⚠️ v3.6 REMOVED boss crystals — v0.6.0 build may still    │
@@ -49,6 +49,9 @@
 | Boss mechanics (freq/reward/casting/gating) — NO boss crystals | ⬜ designed v3.7 | SPEC Part 14 |
 | Legendary gate R10 + Papa override + in-game reminders | ⬜ designed v3.7 | SPEC Part 14G-7 |
 | Boss reward Pokémon offer (keep-or-release, normal team cap) | ⬜ designed v3.7 | SPEC Part 14G-2 |
+| Player Game Management — model + migration (P1) | ✅ LIVE v1.24 | SPEC Part 15D/15E |
+| Player Game Management — game-mgmt UI (P2) | ⬜ designed v3.9 | SPEC Part 15B/15C |
+| Crystal checkpoint economy — provisional/banked + R3/R7/R10 (P3) | ⬜ designed v3.9 | SPEC Part 12-NEW |
 
 Legend: ✅ live · 🔄 in progress · ⬜ designed, not built
 
@@ -121,6 +124,14 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.24 (SPEC Part 15 P1): saves migrated from flat → player-row `{ games[],
+  active_game_id, banked_crystals }`. `STATE.save` now points at the active game's
+  progress via `activeProgress()`; `STATE.playerRow` holds the row. Lazy idempotent
+  migration in `migrateToPlayerRow`. Crystal behavior UNCHANGED in P1
+  (`banked_crystals` mirrored, not yet read by gameplay — that's P3).
+  `dbLoadRow`/`dbSaveRow` are the player's load/save path; legacy
+  `dbLoad`/`dbSave` retained for host/all-players reads (wrapped by
+  `hydratePlayerData` so the host dashboard keeps reading top-level fields).
 - v1.23 FIX: gym MOVE abilities now actually fire. The dispatcher read a nonexistent
   `abilityEffect` field; rewired to `pokemon.move.type` (SPEC Part 5 canonical names)
   with default values. CLOCK / ELIMINATE / SWAP / CLUE work in-question;

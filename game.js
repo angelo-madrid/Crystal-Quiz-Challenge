@@ -1,5 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.24: Player Game Management P1 (SPEC Part 15) — save is now a PLAYER ROW with a
+//        games[] array + active_game_id + banked_crystals (wallet, mirrored in P1).
+//        Lazy idempotent migration of legacy flat saves. Gameplay reads STATE.save =
+//        active game's progress via accessor — NO behavior change. Provisional/banked
+//        split lands in P3.
 // v1.23 FIX: MOVE ability dispatcher now reads move.type (SPEC Part 5 canonical:
 //            CLOCK/ELIMINATE/SWAP/CLUE in-question; EXTRA_SHOT/TIME_TRAVEL post-gym
 //            gated). Default values supplied (data carries none). Fixes "Unknown
@@ -57,7 +62,20 @@ async function dbLoadAllPlayers() {
   const { data, error } = await sb.from('player_saves')
     .select('data').order('updated_at', { ascending: false });
   if (error || !data) return [];
-  return data.map(d => d.data);
+  return data.map(d => hydratePlayerData(d.data));
+}
+
+// v1.24 P1: legacy-compat hydration for host/all-players reads. Host code
+// reads r.data.total_crystals / pokemon_team / regions / account_archived at
+// the top level — those moved into games[active].progress in P1. This spreads
+// the active progress over the row so the legacy field paths still resolve
+// without changing the host dashboard. Legacy flat saves pass through as-is.
+function hydratePlayerData(raw) {
+  if (!raw) return raw;
+  if (!raw.games || !raw.active_game_id) return raw;   // legacy flat — no-op
+  const g = raw.games.find(x => x.game_id === raw.active_game_id) || raw.games[0];
+  const prog = (g && g.progress) || {};
+  return { ...raw, ...prog };
 }
 
 async function dbWriteRoom(roomId, roomData) {
@@ -121,15 +139,17 @@ async function dbRegisterPlayer({ player_id, name, age, gender }) {
     emoji:    emojiFromGender(gender),
     ageGroup: ageGroupFromAge(age),
   };
-  const save = newSave(player);
-  // Insert via the regular table — fails on duplicate primary key, which
-  // we treat as "ID already taken".
+  // v1.24 P1: write the player-row shape directly (no migration needed for
+  // brand-new accounts). `save` is the active game's progress object — the
+  // 119 STATE.save.* read sites work against this reference unchanged.
+  const row = newPlayerRow(player);
+  const save = activeProgress(row);
   const { error } = await sb.from('player_saves').insert({
     player_id:  id,
     name,
     age,
     gender,
-    data:       save,
+    data:       row,
     updated_at: new Date().toISOString(),
   });
   if (error) {
@@ -137,10 +157,13 @@ async function dbRegisterPlayer({ player_id, name, age, gender }) {
     console.error('register error:', JSON.stringify(error));
     return { ok:false, reason:'db_error' };
   }
-  return { ok:true, player, save };
+  return { ok:true, player, row, save };
 }
 
-// Login: read the row by id and return { player, save } or null.
+// Login: read the row by id and return { player, row, save } or null.
+// v1.24 P1: migrates legacy flat saves on the fly; the migrated row is
+// written back the next time gameplay saves (no eager re-write here — keeps
+// login fast and the migration is idempotent on subsequent loads).
 async function dbLoginPlayer(playerId) {
   const id = normalizePlayerId(playerId);
   if (!isValidPlayerId(id)) return null;
@@ -156,7 +179,9 @@ async function dbLoginPlayer(playerId) {
     emoji:    (data.data && data.data.player_emoji) || emojiFromGender(data.gender),
     ageGroup: ageGroupFromAge(data.age),
   };
-  return { player, save: data.data || newSave(player) };
+  const row  = migrateToPlayerRow(data.data, player) || newPlayerRow(player);
+  const save = activeProgress(row);
+  return { player, row, save };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -276,7 +301,9 @@ async function dbLookupPlayer(playerId) {
   const { data, error } = await sb.from('player_saves')
     .select('player_id, name, age, gender, data').eq('player_id', id).maybeSingle();
   if (error || !data) return null;
-  const blob = data.data || {};
+  // v1.24 P1: hydrate so the active progress's fields (total_crystals,
+  // pokemon_team, …) live at the top level for legacy callers.
+  const blob = hydratePlayerData(data.data) || {};
   return {
     // identity (column-level)
     player_id:    data.player_id,
@@ -298,16 +325,34 @@ async function dbLookupPlayer(playerId) {
 // concurrent writers to the same save can race; for a 5-kid game this is
 // acceptable. The ledger is the audit trail of record.
 async function dbBumpCrystals(playerId, delta) {
-  const save = await dbLoad(playerId);
-  if (!save) { console.warn('Save not found for bump:', playerId); return null; }
-  save.total_crystals = Math.max(0, (save.total_crystals || 0) + delta);
-  save.updated_at = new Date().toISOString();
-  await dbSave(playerId, save);
-  // If this is the local player, keep STATE.save in sync.
-  if (STATE.player && STATE.player.id === playerId) {
-    STATE.save = save;
+  // v1.24 P1: migration-aware. dbLoad returns a raw blob that may be a
+  // legacy flat save OR a player-row. Bump in the right place for each.
+  const raw = await dbLoad(playerId);
+  if (!raw) { console.warn('Save not found for bump:', playerId); return null; }
+
+  // Player-row shape: bump the active game's progress.
+  if (raw.games && raw.active_game_id) {
+    const g = raw.games.find(x => x.game_id === raw.active_game_id) || raw.games[0];
+    if (!g || !g.progress) return null;
+    g.progress.total_crystals = Math.max(0, (g.progress.total_crystals || 0) + delta);
+    g.progress.updated_at = new Date().toISOString();
+    raw.updated_at = new Date().toISOString();
+    await dbSave(playerId, raw);
+    if (STATE.player && STATE.player.id === playerId) {
+      STATE.playerRow = raw;
+      STATE.save = g.progress;
+    }
+    return g.progress.total_crystals;
   }
-  return save.total_crystals;
+
+  // Legacy flat save (pre-migration) — bump in place. Auto-migrates on next load.
+  raw.total_crystals = Math.max(0, (raw.total_crystals || 0) + delta);
+  raw.updated_at = new Date().toISOString();
+  await dbSave(playerId, raw);
+  if (STATE.player && STATE.player.id === playerId) {
+    STATE.save = raw;
+  }
+  return raw.total_crystals;
 }
 
 // Write a ledger entry AND bump the balance in one go (for entries that
@@ -661,7 +706,12 @@ function getAbilityLabel(p) {
 // ── GAME STATE ────────────────────────────────────────────────
 let STATE = {
   player: null,      // { id, name, emoji, ageGroup }
-  save: null,        // full save data from Supabase
+  // v1.24 P1 (SPEC Part 15D): the player's row from Supabase — holds games[] +
+  // active_game_id + banked_crystals. `save` below is a REFERENCE to the active
+  // game's `progress` (same shape as the legacy flat save), so the 119 STATE.save.*
+  // reads work unchanged.
+  playerRow: null,
+  save: null,        // ACTIVE game's progress object (lives inside playerRow.games[i])
   questions: null,   // loaded from questions-{junior|senior}.json
   pokemon: null,     // loaded from pokemon.json (starters + regional)
   currentRegion: 1,
@@ -698,7 +748,7 @@ let STATE = {
   battle: null,   // null = no fight in progress; see startBossFight() for shape
 };
 
-// Default save structure
+// Default save structure (now used as a GAME's `progress` — see newGame below).
 function newSave(player) {
   return {
     player_id: player.id,
@@ -720,6 +770,115 @@ function newSave(player) {
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
+}
+
+// ── PLAYER-ROW SHAPE (SPEC Part 15D — v1.24 P1) ────────────────
+// The Supabase player_saves.data is now a PLAYER ROW that holds a list of GAMES.
+// Gameplay always reads/writes the ACTIVE game's `progress` (which has the same
+// shape the old flat save had — newSave above). banked_crystals is the
+// per-player wallet (Part 12); in P1 it is a NO-OP mirror — gameplay still
+// reads/writes the active progress's total_crystals exactly as before. The
+// real provisional/banked split lands in P3.
+
+function newGame(player, label) {
+  const gameId = 'g_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+  return {
+    game_id: gameId,
+    status: 'active',
+    label: label || 'Game 1',
+    created_at: new Date().toISOString(),
+    last_played_at: new Date().toISOString(),
+    room_code: null,
+    progress: newSave(player)   // per-game progress = today's flat save shape
+  };
+}
+
+function newPlayerRow(player) {
+  const g = newGame(player, 'Game 1');
+  return {
+    player_id: player.id,
+    // identity mirrored at row level (some code reads these off the save)
+    player_name: player.name,
+    player_emoji: player.emoji,
+    age_group: player.ageGroup,
+    active_game_id: g.game_id,
+    banked_crystals: 0,        // P3 will make this the real wallet; P1 keeps it mirrored
+    games: [g],
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+// Accessors — the ONE place that knows the row shape. Gameplay never reads
+// `row.games[i]` directly; it goes through these.
+function activeGame(row) {
+  if (!row || !Array.isArray(row.games)) return null;
+  return row.games.find(g => g.game_id === row.active_game_id) || row.games[0] || null;
+}
+function activeProgress(row) {
+  const g = activeGame(row);
+  return g ? g.progress : null;
+}
+
+// Lazy, idempotent, non-destructive migration of legacy flat saves → player row.
+// Called from dbLoadRow on every load; if `raw` is already a row, returns it
+// untouched. If it's a flat save, wraps it as games[0].progress and lifts
+// total_crystals to the per-player banked_crystals wallet.
+function migrateToPlayerRow(raw, player) {
+  if (!raw) return null;
+  if (raw.games && raw.active_game_id) return raw;   // already migrated — no-op
+
+  // Legacy flat save → games[0].progress; lift wallet to row level.
+  const legacy = raw;
+  const gameId = 'g_' + (legacy.created_at ? Date.parse(legacy.created_at) : Date.now());
+  return {
+    player_id: legacy.player_id,
+    // mirror identity at the row level (newPlayerRow does the same)
+    player_name: legacy.player_name || (player && player.name),
+    player_emoji: legacy.player_emoji || (player && player.emoji),
+    age_group: legacy.age_group || (player && player.ageGroup),
+    active_game_id: gameId,
+    banked_crystals: legacy.total_crystals || 0,   // lift existing balance to wallet
+    games: [{
+      game_id: gameId,
+      status: 'active',
+      label: 'Game 1',
+      created_at: legacy.created_at || new Date().toISOString(),
+      last_played_at: legacy.updated_at || new Date().toISOString(),
+      room_code: legacy.roomCode || null,
+      progress: legacy            // entire old save becomes this game's progress
+    }],
+    created_at: legacy.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+// Player-side load: returns a fully migrated player row (or null if not found).
+// Legacy dbLoad is retained for host/all-players reads — see dbLoadAllPlayers.
+async function dbLoadRow(playerId, player) {
+  const { data, error } = await sb.from('player_saves')
+    .select('data').eq('player_id', playerId).single();
+  if (error || !data) return null;
+  return migrateToPlayerRow(data.data, player || STATE.player || {});
+}
+
+// Player-side save: folds STATE.save (active progress) back into STATE.playerRow,
+// then upserts the whole row. Pre-condition: STATE.playerRow must exist.
+async function dbSaveRow(playerId) {
+  if (!STATE.playerRow) return false;
+  const g = activeGame(STATE.playerRow);
+  if (g && STATE.save) {
+    g.progress = STATE.save;                 // active progress is the live STATE.save
+    g.last_played_at = new Date().toISOString();
+  }
+  STATE.playerRow.updated_at = new Date().toISOString();
+  const { error } = await sb.from('player_saves').upsert({
+    player_id: playerId,
+    data: STATE.playerRow,
+    updated_at: STATE.playerRow.updated_at
+  });
+  if (error) console.error('Save error:', JSON.stringify(error));
+  return !error;
 }
 
 // ── QUESTION DRAW HELPERS (UAT bug-fix 1.7) ───────────────────
@@ -1031,9 +1190,10 @@ async function registerConfirm() {
     err.textContent = '❌ Could not create account. ' + (result.reason || '');
     return;
   }
-  // Persist identity to localStorage and STATE.
-  STATE.player = result.player;
-  STATE.save   = result.save;
+  // Persist identity to localStorage and STATE. v1.24 P1: also stash the player row.
+  STATE.player    = result.player;
+  STATE.playerRow = result.row;
+  STATE.save      = result.save;   // == activeProgress(result.row) — same reference
   localStorage.setItem('cqc_player_id', result.player.id);
   localStorage.setItem('cqc_player',    JSON.stringify(result.player));
   // Welcome screen
@@ -1055,8 +1215,9 @@ async function loginSubmit() {
   if (!isValidPlayerId(id)) { err.textContent = '⚠️ ID must be exactly 6 characters (A–Z, 0–9)'; return; }
   const result = await dbLoginPlayer(id);
   if (!result) { err.textContent = '❌ No account with that ID. Tap Back to register.'; return; }
-  STATE.player = result.player;
-  STATE.save   = result.save;
+  STATE.player    = result.player;
+  STATE.playerRow = result.row;
+  STATE.save      = result.save;
   localStorage.setItem('cqc_player_id', result.player.id);
   localStorage.setItem('cqc_player',    JSON.stringify(result.player));
   openPlayerDashboard();
@@ -1113,8 +1274,9 @@ async function renderPlayerDashboard() {
   const player = STATE.player;
   if (!player) return;
   // Refresh authoritative save (host bonuses, abandon approvals, etc.).
-  const fresh = await dbLoad(player.id);
-  if (fresh) STATE.save = fresh;
+  // v1.24 P1: refresh the player ROW, then re-point STATE.save at active progress.
+  const freshRow = await dbLoadRow(player.id, player);
+  if (freshRow) { STATE.playerRow = freshRow; STATE.save = activeProgress(freshRow); }
 
   // Diagnostic — log the canonical balance and trigger a balance-vs-
   // ledger drift check on every dashboard mount. If the player has
@@ -1732,7 +1894,7 @@ async function pdcConfirmRelease(idx) {
   STATE.save.pokemon_team = team;
   STATE.save.total_crystals = (STATE.save.total_crystals || 0) + tradeIn;
   STATE.save.updated_at = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
   if (STATE.player && STATE.player.id) {
     await dbLedgerInsert({
       player_id:   STATE.player.id,
@@ -1791,9 +1953,10 @@ async function pdcSendBroadcast() {
 
   // Deduct 10 from total_crystals (canonical balance).
   await dbBumpCrystals(player.id, -10);
-  // Refresh local save so the header updates immediately.
-  const fresh = await dbLoad(player.id);
-  if (fresh) STATE.save = fresh;
+  // Refresh local save so the header updates immediately. v1.24 P1: refresh
+  // through the row + re-point STATE.save at active progress.
+  const freshRow = await dbLoadRow(player.id, player);
+  if (freshRow) { STATE.playerRow = freshRow; STATE.save = activeProgress(freshRow); }
 
   // Audit row.
   await dbLedgerInsert({
@@ -1830,9 +1993,10 @@ function pdcLogout() {
   localStorage.removeItem('cqc_player');
   localStorage.removeItem('cqc_player_name');
   localStorage.removeItem('cqc_room_code');
-  STATE.player = null;
-  STATE.save   = null;
-  STATE.roomCode = null;
+  STATE.player    = null;
+  STATE.playerRow = null;
+  STATE.save      = null;
+  STATE.roomCode  = null;
   _dashboardHighlightRoom = null;
   pdcStopPoll();
   showScreen('screen-home');
@@ -2335,7 +2499,7 @@ function catchAgain() {
 async function finishPreGame() {
   // Save progress to Supabase
   STATE.save.updated_at = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
   showMap();
 }
 
@@ -2740,7 +2904,7 @@ function showRegionalCatchResult(caught) {
 
 async function finishRegionalCatch() {
   STATE.save.updated_at = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
 
   // Phase 2: all 10 regions are playable. If the player just cleared the
   // final region's last gym, flip the room to GAME_OVER (which auto-
@@ -2794,7 +2958,7 @@ function _maybeShowLegendaryReminder(regionId) {
   STATE.save.legendaryRemindersSeen.push(regionId);
   // Persist the flag (fire-and-forget — failure is fine, worst case is a
   // duplicate nudge next time).
-  dbSave(STATE.player.id, STATE.save).catch(() => {});
+  dbSaveRow(STATE.player.id).catch(() => {});
   const messages = {
     5: '🌟 Halfway there! You still need a Legendary to face the Region 10 boss — keep an eye out!',
     7: '⛩️ Only 3 regions left! No Legendary yet — Region 8, 9, and 10 are your last chances.',
@@ -2947,8 +3111,9 @@ async function renderWallet() {
   if (!player) return;
   // Refresh authoritative balance from Supabase before showing — covers
   // host-side bonuses that happened between the last local update and now.
-  const fresh = await dbLoad(player.id);
-  if (fresh) STATE.save = fresh;
+  // v1.24 P1: refresh through the row.
+  const freshRow = await dbLoadRow(player.id, player);
+  if (freshRow) { STATE.playerRow = freshRow; STATE.save = activeProgress(freshRow); }
   const balance = (STATE.save && STATE.save.total_crystals) || 0;
   // Peso removed from player UI (SPEC v3.3 Part 12I); host UI keeps peso.
 
@@ -3546,7 +3711,7 @@ async function endGym() {
   };
 
   STATE.save.updated_at = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
 
   // Ledger — ONE 'earn' row per gym (Part 12B) and a separate 'bonus' row
   // for the badge multiplier delta when passed (Part 1).
@@ -4635,7 +4800,7 @@ async function battleKeepReward(rewardId) {
   };
   STATE.save.pokemon_team = [...team, newPoke];
   STATE.save.updated_at   = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
   showToast(`✨ ${reward.name} joined your team!`);
   // Hide offer buttons so kid can't double-add.
   const offerEl = document.getElementById('battle-reward-offer');
@@ -4656,7 +4821,7 @@ async function _battleRecordDefeat(regionId, stars) {
   if (!STATE.save.bossDefeats) STATE.save.bossDefeats = {};
   STATE.save.bossDefeats[regionId] = { stars, defeatedAt: new Date().toISOString() };
   STATE.save.updated_at = new Date().toISOString();
-  await dbSave(STATE.player.id, STATE.save);
+  await dbSaveRow(STATE.player.id);
 }
 
 // Continue after win — clears battle, shows Darkrai cameo if needed, routes to regional catch.
@@ -5179,8 +5344,9 @@ function confirmReset() {
   if (confirm('⚠️ Are you sure? This will delete ALL your progress!')) {
     localStorage.removeItem('cqc_player_id');
     localStorage.removeItem('cqc_player');
-    STATE.player = null;
-    STATE.save = null;
+    STATE.player    = null;
+    STATE.playerRow = null;
+    STATE.save      = null;
     showScreen('screen-home');
   }
 }
@@ -5255,11 +5421,13 @@ async function playerJoin() {
     localStorage.setItem('cqc_room_code', code);
 
     // Ensure save loaded (refresh from Supabase in case of stale local copy).
+    // v1.24 P1: load the player row and re-point STATE.save at active progress.
     if (!STATE.save) {
-      STATE.save = await dbLoad(storedId) || newSave(STATE.player);
+      STATE.playerRow = await dbLoadRow(storedId, STATE.player) || newPlayerRow(STATE.player);
+      STATE.save      = activeProgress(STATE.playerRow);
     }
     STATE.save.last_seen = new Date().toISOString();
-    await dbSave(storedId, STATE.save);
+    await dbSaveRow(storedId);
 
     if (!room.players) room.players = [];
     room.players.push({
@@ -5304,8 +5472,11 @@ function refreshJoinIdentityCard() {
 async function reconnectExistingPlayer(code, room, playerId) {
   const err = document.getElementById('join-err');
   // Restore the player's authoritative save from Supabase.
-  const save = await dbLoad(playerId);
-  if (!save) {
+  // v1.24 P1: load the row (lazy-migrates legacy flat saves on the way).
+  // Identity fields (player_name/emoji/age_group) live at the row level in
+  // both shapes — newPlayerRow + migrateToPlayerRow mirror them.
+  const rowProvisional = await dbLoadRow(playerId, null);
+  if (!rowProvisional) {
     if (err) {
       err.textContent = `⚠️ Your save couldn't be loaded. Please clear and rejoin as new.`;
     }
@@ -5313,7 +5484,7 @@ async function reconnectExistingPlayer(code, room, playerId) {
   }
 
   // Prefer the localStorage player object (camelCase ageGroup); fall back
-  // to reconstituting from save's snake_case fields.
+  // to reconstituting from row's snake_case fields.
   let player;
   const storedPlayer = localStorage.getItem('cqc_player');
   if (storedPlayer) {
@@ -5322,24 +5493,25 @@ async function reconnectExistingPlayer(code, room, playerId) {
   if (!player || player.id !== playerId) {
     player = {
       id:       playerId,
-      name:     save.player_name,
-      emoji:    save.player_emoji,
-      ageGroup: save.age_group,
+      name:     rowProvisional.player_name,
+      emoji:    rowProvisional.player_emoji,
+      ageGroup: rowProvisional.age_group,
     };
     localStorage.setItem('cqc_player', JSON.stringify(player));
     localStorage.setItem('cqc_player_id', playerId);
   }
   localStorage.setItem('cqc_room_code', code);
 
-  STATE.player   = player;
-  STATE.save     = save;
-  STATE.roomCode = code;
-  STATE.isHost   = false;
+  STATE.player    = player;
+  STATE.playerRow = rowProvisional;
+  STATE.save      = activeProgress(rowProvisional);
+  STATE.roomCode  = code;
+  STATE.isHost    = false;
 
   // Bump heartbeat immediately so the host sees the player rejoined within
   // one dashboard poll.
   STATE.save.last_seen = new Date().toISOString();
-  await dbSave(playerId, STATE.save);
+  await dbSaveRow(playerId);
   ensureHeartbeat();
 
   // Route based on the current room phase.
@@ -6265,9 +6437,18 @@ async function col2ApproveAbandon(entryId) {
   if (!row) { showToast('❌ Could not approve abandon'); return; }
   const save = await dbLoad(row.player_id);
   if (save) {
-    const list = Array.isArray(save.abandoned_rooms) ? save.abandoned_rooms : [];
+    // v1.24 P1: abandoned_rooms is read from active progress (STATE.save).
+    // For player-row shape, write into the active game's progress; for legacy
+    // flat saves, write at top level (auto-migrates on next load).
+    let target = save;
+    if (save.games && save.active_game_id) {
+      const g = save.games.find(x => x.game_id === save.active_game_id) || save.games[0];
+      if (g && g.progress) target = g.progress;
+    }
+    const list = Array.isArray(target.abandoned_rooms) ? target.abandoned_rooms : [];
     if (row.room_code && !list.includes(row.room_code)) list.push(row.room_code);
-    save.abandoned_rooms = list;
+    target.abandoned_rooms = list;
+    target.updated_at = new Date().toISOString();
     save.updated_at = new Date().toISOString();
     await dbSave(row.player_id, save);
   }
@@ -6385,18 +6566,23 @@ async function dbLoadAllPlayersFull() {
     .select('player_id, name, age, gender, data, updated_at')
     .order('updated_at', { ascending: false });
   if (error || !data) { console.warn('dbLoadAllPlayersFull error:', error); return []; }
-  return data.map(r => ({
-    player_id: r.player_id,
-    name:      r.name || (r.data && r.data.player_name) || r.player_id,
-    age:       r.age,
-    gender:    r.gender,
-    updated_at: r.updated_at,
-    total_crystals: (r.data && r.data.total_crystals) || 0,
-    last_seen:      (r.data && r.data.last_seen) || null,
-    pokemon_team:   (r.data && r.data.pokemon_team) || [],
-    archivedAccount: !!(r.data && r.data.account_archived),
-    _data: r.data,
-  }));
+  return data.map(r => {
+    // v1.24 P1: hydrate so reads like r.data.total_crystals find the active
+    // game's progress at the top level; preserve account_archived from row.
+    const hydrated = hydratePlayerData(r.data);
+    return {
+      player_id: r.player_id,
+      name:      r.name || (hydrated && hydrated.player_name) || r.player_id,
+      age:       r.age,
+      gender:    r.gender,
+      updated_at: r.updated_at,
+      total_crystals: (hydrated && hydrated.total_crystals) || 0,
+      last_seen:      (hydrated && hydrated.last_seen) || null,
+      pokemon_team:   (hydrated && hydrated.pokemon_team) || [],
+      archivedAccount: !!(hydrated && hydrated.account_archived),
+      _data: hydrated,
+    };
+  });
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -7461,7 +7647,7 @@ function ensureHeartbeat() {
     // Skip if we're the host viewer (shouldn't write a player save).
     if (typeof HOST !== 'undefined' && HOST.isHost) return;
     STATE.save.last_seen = new Date().toISOString();
-    try { await dbSave(STATE.player.id, STATE.save); }
+    try { await dbSaveRow(STATE.player.id); }
     catch (e) { console.warn('heartbeat write failed:', e); }
   }, HEARTBEAT_INTERVAL_MS);
 }
@@ -7593,8 +7779,9 @@ window.addEventListener('load', () => {
       (async () => {
         const result = await dbLoginPlayer(storedId);
         if (result) {
-          STATE.player = result.player;
-          STATE.save   = result.save;
+          STATE.player    = result.player;
+          STATE.playerRow = result.row;
+          STATE.save      = result.save;
           openPlayerDashboard();
         }
         // If the lookup fails (e.g. row deleted in Supabase), fall back
@@ -7641,10 +7828,11 @@ async function tryAutoRejoinFromURL(code) {
     // Restore identity + save from Supabase so STATE is correct.
     const result = await dbLoginPlayer(storedId);
     if (!result) return;
-    STATE.player   = result.player;
-    STATE.save     = result.save;
-    STATE.roomCode = code;
-    STATE.isHost   = false;
+    STATE.player    = result.player;
+    STATE.playerRow = result.row;
+    STATE.save      = result.save;
+    STATE.roomCode  = code;
+    STATE.isHost    = false;
     // Persistent-identity update: bring the user to the dashboard with
     // the URL's room highlighted as the active resumable game. Replaces
     // the older "drop straight into the game screen" behavior.
@@ -7652,7 +7840,7 @@ async function tryAutoRejoinFromURL(code) {
     ensureHeartbeat();
     // Update last_seen so the host's presence dot turns green within a poll.
     STATE.save.last_seen = new Date().toISOString();
-    await dbSave(storedId, STATE.save);
+    await dbSaveRow(storedId);
     await openPlayerDashboard();
   } catch (e) {
     console.warn('auto-rejoin failed:', e);

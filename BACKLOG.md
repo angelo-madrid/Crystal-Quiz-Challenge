@@ -108,11 +108,13 @@ economy), Part 13 v3.9 amendment (banked-only spend). Detail does not need to li
 BACKLOG anymore — it lives in SPEC.
 
 BUILD PHASES (dependency order):
-40. P1 — model + migration. Introduce `active_game_id` + `banked_crystals` at the
-    player row; wrap existing flat save as `games[0]` (idempotent, non-destructive,
-    `if (!row.data.games)` guard); LIFT legacy `total_crystals` → `banked_crystals`;
-    repoint dbLoad/dbSave to the active game's `progress` via accessor. No visible
-    gameplay change. Independently testable. (SPEC 15D + 15E.)
+40. ✅ P1 — model + migration. **DONE v1.24 (2026-05-26).** Player-row shape live:
+    `active_game_id` + `banked_crystals` + `games[]` at the row; legacy flat saves
+    auto-wrap as `games[0]` (lazy, idempotent, non-destructive) and lift
+    `total_crystals` → `banked_crystals`. New helpers: `newGame`, `newPlayerRow`,
+    `activeGame`, `activeProgress`, `migrateToPlayerRow`, `dbLoadRow`, `dbSaveRow`,
+    `hydratePlayerData`. STATE.save now points at the active game's progress via
+    accessor — the 119 read sites are unchanged. NO behavior change. (SPEC 15D + 15E.)
 42. P3 — crystal checkpoint economy. Split `provisional_crystals` (per-game) from
     `banked_crystals` (per-player); add `REGION_CRYSTAL_CAP` + `banked_regions[]`;
     bank at R3/R7/R10 boss clears with `min(cap, best) − alreadyBanked` per region;
@@ -221,6 +223,20 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — PLAYER GAME MANAGEMENT P1 (2026-05-26, v1.24):**
+- Save migrated from flat → player row { games[], active_game_id, banked_crystals }
+- Lazy idempotent migration of legacy flat saves (`migrateToPlayerRow`)
+- New helpers: `newGame`, `newPlayerRow`, `activeGame`/`activeProgress`,
+  `dbLoadRow`/`dbSaveRow`, `hydratePlayerData` (host-side legacy-field compat)
+- `dbRegisterPlayer`/`dbLoginPlayer` now emit `{ player, row, save }`
+- `dbBumpCrystals` migration-aware (bumps active progress on row-shaped data)
+- `col2ApproveAbandon` writes `abandoned_rooms` into active progress (where
+  gameplay reads it from `STATE.save`)
+- 11 player-side `dbSave(..., STATE.save)` calls swapped → `dbSaveRow(...)`
+- `STATE.playerRow` field added; the 119 STATE.save.* read sites unchanged
+- NO gameplay/economy change in P1 — banked_crystals mirrored but not yet
+  spent by gameplay (P3 introduces the provisional/banked split)
 
 **Track C — BATTLE ENGINE R1–R3 BUILT (2026-05-26, Commits 1–4 + hotfixes):**
 - Commit 1 (v1.18): BOSS_FIGHT phase scaffold; BOSS_DATA + BOSS_REWARD_POKEMON (all 10
