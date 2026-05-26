@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.6 FIX: Pokémon ability cadence — once per gym PER POKÉMON.
+//   abilityUsedThisQuestion (single boolean, reset every loadQuestion) replaced
+//   with abilitiesUsedThisGym (array of pokemon ids, reset only at startGym).
+//   Multiple DIFFERENT Pokémon may fire on the same question (combo allowed);
+//   the SAME Pokémon is locked for the rest of the gym. renderPokemonTeam greys
+//   + disables used slots and appends a ✓ to the label. (Fix was written for
+//   v1.29.3 but never applied to live; applied retroactively as v1.29.6.)
 // v1.29.5: Boss loss screen — replaced "The villain escaped!" with villain
 //   taunt ("Haha, nice try!") + encouraging sub-message ("You guys need more
 //   practice — come back stronger!"). North star: teach without punishing.
@@ -1214,7 +1221,7 @@ let STATE = {
   // Indexed by question position; null = timeout/skip. Persisted to
   // save.regions[r].gymResults[g].questions[i].chosen at endGym.
   gymAnswerLog: [],
-  abilityUsedThisQuestion: false,
+  abilitiesUsedThisGym: [],  // pokemon ids used this gym; resets at startGym (v1.29.6)
   pendingAbilityPokemon: null,
   // v1.22 (SPEC Part 3B/8): Pokémon whose ability was used THIS question.
   // If the kid then answers correctly, awardXpEvent grows its HP (appreciating
@@ -4191,7 +4198,7 @@ async function startGym(regionId, gymId) {
   STATE.gymCorrect = 0;
   STATE.gymAnswerLog = [];     // review feature: per-question answer log
   STATE.answered = false;
-  STATE.abilityUsedThisQuestion = false;
+  STATE.abilitiesUsedThisGym = [];   // v1.29.6: per-Pokémon ability lock for this gym
 
   const qData = await loadQuestions();
   if (!qData) {
@@ -4247,11 +4254,11 @@ function loadQuestion() {
   STATE.answered = false;
   // 1.5: clear any ability modifiers left over from the previous question.
   STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
-  // v1.22: fresh question, no Pokémon ability used yet (XP marker resets).
+  // v1.22: XP marker resets each question (which Pokémon earned XP this question).
+  // Ability availability is per-gym per-Pokémon — see STATE.abilitiesUsedThisGym
+  // (v1.29.6: a Pokémon may use its ability ONCE per gym; multiple Pokémon may
+  // fire on the same question; resets only in startGym, not here).
   STATE.pendingXpPokemon = null;
-  // v1.28.2: one ability use per QUESTION (was one per gym). Reset each
-  // question so the kid can activate a Pokémon's ability on every round.
-  STATE.abilityUsedThisQuestion = false;
 
   const q = STATE.currentQData[STATE.currentQ];
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
@@ -5908,8 +5915,10 @@ function renderPokemonTeam() {
         <div class="poke-level">${stars}</div>
         <div class="poke-hp">❤️ ${p.hp || computeHp(p)} HP</div>
         <div class="poke-xp-bar"><div class="poke-xp-fill" style="width:${Math.round(xpRatioOf(p)*100)}%"></div></div>
-        <button class="poke-ability-btn" onclick="activateAbility(${idx})">
-          ${p.emoji} ${getAbilityLabel(p)}
+        <button class="poke-ability-btn${(STATE.abilitiesUsedThisGym || []).includes(p.id || String(idx)) ? ' used' : ''}"
+          ${(STATE.abilitiesUsedThisGym || []).includes(p.id || String(idx)) ? 'disabled' : ''}
+          onclick="activateAbility(${idx})">
+          ${p.emoji} ${getAbilityLabel(p)}${(STATE.abilitiesUsedThisGym || []).includes(p.id || String(idx)) ? ' ✓' : ''}
         </button>
         <div class="poke-ability-desc">${getAbilityDesc(p)}</div>
       </div>
@@ -5923,24 +5932,30 @@ function renderPokemonTeam() {
 // RETRY/SHIELD shims). Each caught Pokémon carries abilityEffect = { mechanic,
 // value, description } from pokemon.json. NON-CONSUMING (v1.22, SPEC Part 3B):
 // abilities no longer remove the Pokémon — instead, use MOVE + correct answer
-// awards an XP event that grows HP (Part 8 formula). v1.28.2: cadence is one
-// ability use per QUESTION (was one per gym) via STATE.abilityUsedThisQuestion,
-// reset in loadQuestion(). Each question the kid can activate one Pokémon's
-// ability; multiple abilities on a single question are NOT allowed.
+// awards an XP event that grows HP (Part 8 formula). v1.29.6: cadence is ONCE
+// PER POKÉMON PER GYM (was one per question in v1.28.2). Each Pokémon may fire
+// its ability once per gym; multiple DIFFERENT Pokémon may fire on the same
+// question (combo allowed); the SAME Pokémon is locked for the rest of the gym.
+// State tracked in STATE.abilitiesUsedThisGym (array of pokemon ids); reset
+// only in startGym.
 
 // Fires the Pokémon's ability IMMEDIATELY (no confirmation modal — the popup
-// burned the kid's attention mid-question). One use per QUESTION (non-consuming).
+// burned the kid's attention mid-question). Once per Pokémon per gym
+// (non-consuming).
 function activateAbility(pokemonIdx) {
-  if (STATE.abilityUsedThisQuestion) {
-    showToast('⚠️ One Pokémon ability per question');
-    return;
-  }
   if (STATE.answered) {
     showToast('⚠️ Too late — you already answered');
     return;
   }
   const pokemon = STATE.save.pokemon_team[pokemonIdx];
   if (!pokemon) return;
+  // v1.29.6: per-Pokémon, per-gym lock. Multiple different Pokémon may fire on
+  // the same question; the SAME Pokémon can only fire once per gym.
+  const pokeId = pokemon.id || String(pokemonIdx);
+  if ((STATE.abilitiesUsedThisGym || []).includes(pokeId)) {
+    showToast(`⚠️ ${pokemonDisplayName(pokemon)} already used their ability this gym`);
+    return;
+  }
   // v1.23 FIX: Post-gym rescue moves (EXTRA_SHOT / TIME_TRAVEL) aren't usable
   // mid-question — surface a clear message instead of consuming a tap.
   const mt = String(pokemon.move?.type || '').toUpperCase();
@@ -6038,13 +6053,21 @@ async function useAbility(pokemonIdx) {
     return;
   }
 
-  STATE.abilityUsedThisQuestion = true;
+  // v1.29.6: mark THIS Pokémon as used for the rest of the gym. (Mirrors the
+  // gate's `pokemon.id || String(pokemonIdx)` so both sides agree on the key.
+  // The local `pokemon` is in scope here — STATE.pendingXpPokemon is still
+  // null at this line; it gets set just below.)
+  const _usedPokeId = pokemon.id || String(pokemonIdx);
+  if (!STATE.abilitiesUsedThisGym) STATE.abilitiesUsedThisGym = [];
+  if (!STATE.abilitiesUsedThisGym.includes(_usedPokeId)) {
+    STATE.abilitiesUsedThisGym.push(_usedPokeId);
+  }
   // SPEC Part 3B/8 (v1.22): mark which Pokémon was used this question. If the
   // kid answers correctly, checkAnswer awards it an XP event (grows HP). NOT
   // consumed — the dead v2 pokemon_team.splice was the real "ability won't
   // refresh" bug.
   STATE.pendingXpPokemon = pokemon;
-  renderPokemonTeam();   // re-render (button now greys via abilityUsedThisQuestion)
+  renderPokemonTeam();   // re-render (used button now greyed + disabled + ✓)
 
   // Toast feedback (replaces the modal + feedback-bar combo).
   const label = getAbilityLabel(pokemon);

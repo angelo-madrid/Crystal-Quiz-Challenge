@@ -132,6 +132,17 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29.6 FIX: Pokémon ability cadence reworked from "once per question (any
+  Pokémon)" to "ONCE PER POKÉMON PER GYM" (the actual design intent — the v1.28.2
+  per-question cadence was an earlier interpretation that didn't match). Single
+  boolean `abilityUsedThisQuestion` replaced with `abilitiesUsedThisGym[]`
+  (array of pokemon ids); reset moved from `loadQuestion` to `startGym`.
+  Multiple DIFFERENT Pokémon may fire on the same question (combo allowed); the
+  SAME Pokémon is locked for the rest of the gym. `renderPokemonTeam` greys +
+  disables used slots and appends ✓ to the label. Note: SPEC Part 8 v3.8
+  implementation note still describes "one per QUESTION" — that note dates from
+  v1.28.2 and should be revisited at the next SPEC sync; the IN-FILE cadence is
+  now per-Pokémon-per-gym.
 - v1.29.5 COPY: boss loss screen reworded to teach without punishing.
   `_battleShowLoss` now stamps a villain taunt into a new `#battle-loss-title`
   (`{villain}: "Haha, nice try!"`) and writes an encouraging sub-message

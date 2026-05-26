@@ -297,6 +297,25 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — ABILITY CADENCE FIX (2026-05-26, v1.29.6 — Bug #6 retry):**
+- Cadence reworked from "once per question (any Pokémon)" to "ONCE PER POKÉMON
+  PER GYM" — the actual design intent. v1.28.2's per-question cadence was an
+  earlier interpretation that didn't match.
+- Single boolean `STATE.abilityUsedThisQuestion` replaced with array
+  `STATE.abilitiesUsedThisGym[]` (pokemon ids); reset moved from `loadQuestion`
+  to `startGym`.
+- 6 sites patched in `game.js` + CSS + one stale comment fixup.
+- Multiple DIFFERENT Pokémon may fire on the same question (combo allowed);
+  the SAME Pokémon is locked for the rest of the gym.
+- `renderPokemonTeam` greys + disables used buttons + appends ✓ to the label.
+- New CSS: `.poke-ability-btn.used` + `:disabled` state (grey gradient, 0.55
+  opacity, not-allowed cursor, no hover lift).
+- Fix was originally written for v1.29.3 but never applied to live; ships
+  retroactively as v1.29.6.
+- ⚠️ SPEC Part 8 v3.8 implementation note still describes "one per QUESTION"
+  (from v1.28.2). Should be revisited at next SPEC sync — the IN-FILE cadence
+  is now per-Pokémon-per-gym.
+
 **Track C — BOSS LOSS SCREEN COPY REWORK (2026-05-26, v1.29.5):**
 - Reworded the boss loss screen from punishing to encouraging (north star:
   teach without punishing).

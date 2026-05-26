@@ -639,6 +639,18 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   line-height: 1.3;
 }
 .poke-ability-btn:hover { filter: brightness(1.2); transform: scale(1.03); }
+/* v1.29.6: ability already used this gym — greyed out, no hover lift, ✓ in label */
+.poke-ability-btn.used,
+.poke-ability-btn:disabled {
+  background: linear-gradient(135deg, #555, #333);
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.poke-ability-btn.used:hover,
+.poke-ability-btn:disabled:hover {
+  filter: none;
+  transform: none;
+}
 .poke-ability-desc { font-size: 0.62rem; color: var(--gray); text-align: center; line-height: 1.3; }
 
 .no-pokemon-msg {
