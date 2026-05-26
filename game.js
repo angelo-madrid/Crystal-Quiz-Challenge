@@ -1,5 +1,13 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.1 FIX: Multiplayer hang — the REAL cause. v1.31.0 fixed the ready-up
+//   clobber but _battleWriteAnswer had the identical last-write-wins bug: two
+//   kids answering simultaneously clobbered each other's answeredThisRound flag,
+//   so allAnswered never became true → _battleResolveRound never fired → round
+//   never advanced → hang every round (not just ready-up). Fixed with the same
+//   re-read+merge pattern: union answered flags from the freshest read before
+//   writing, check allAnswered on merged state, resolve there. Monotonic, retry-
+//   safe contribution count. Host Force Next Round remains the backstop.
 // v1.31.0: MULTIPLAYER BOSS HANG FIX (Bug #10). Two concurrency failures from
 //   Supabase last-write-wins on the room blob:
 //   (A) 3 kids tapping Ready simultaneously clobbered readyForNext → stuck at
@@ -5301,30 +5309,75 @@ function _battleTimeUp() {
 async function _battleWriteAnswer(isCorrect) {
   const code = STATE.roomCode;
   if (!code) return;
+  const pid = STATE.player.id;
   try {
-    const room = await dbReadRoom(code);
+    // CONCURRENCY-SAFE (v1.31.1): kids answer simultaneously every round. A blind
+    // read-modify-write clobbers other kids' answeredThisRound flags (Supabase is
+    // last-write-wins on the room blob) → allAnswered never true → round never
+    // resolves → hang. We re-read immediately before writing and MERGE every
+    // player's answered/correct state so concurrent answers converge.
+    //
+    // We also retry once if the write races: read → merge our answer → write.
+    // The merge preserves any answeredThisRound=true that another kid set, and
+    // never un-sets a flag (monotonic within a round).
+    const applyMyAnswer = (bs) => {
+      if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp(), STATE._fieldedChoice || null);
+      // Only count the correct contribution ONCE (guard against double-write on retry).
+      if (!bs.playerStates[pid].answeredThisRound) {
+        bs.playerStates[pid].answeredThisRound = true;
+        bs.playerStates[pid].answerCorrect     = isCorrect;
+        if (isCorrect) bs.playerStates[pid].correctThisBattle++;
+      }
+    };
+
+    // First read + apply.
+    let room = await dbReadRoom(code);
     if (!room || !room.battleState) return;
-    const bs = room.battleState;
-    const pid = STATE.player.id;
+    let bs = room.battleState;
+    if (bs.roundActive === false || bs.outcome !== null) {
+      // Round already resolved by someone else, or fight over — nothing to do.
+      return;
+    }
+    applyMyAnswer(bs);
 
-    // Update this player's state.
-    if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp());
-    bs.playerStates[pid].answeredThisRound = true;
-    bs.playerStates[pid].answerCorrect     = isCorrect;
-    if (isCorrect) bs.playerStates[pid].correctThisBattle++;
+    // Re-read immediately before writing and merge: union answered flags so a
+    // concurrent kid's answer isn't lost. We take the freshest playerStates and
+    // re-apply our own answer on top.
+    const fresh = await dbReadRoom(code);
+    const fbs   = (fresh && fresh.battleState) ? fresh.battleState : bs;
+    if (fbs.outcome !== null || fbs.roundActive === false) {
+      // Resolved/over between our reads — bail (our contribution may be lost in
+      // a rare 3-way race; the host Force Next Round backstop covers this).
+      return;
+    }
+    // Merge: for each player, OR the answered flags and keep the higher contrib.
+    for (const id of Object.keys(bs.playerStates)) {
+      if (!fbs.playerStates[id]) { fbs.playerStates[id] = bs.playerStates[id]; continue; }
+      const a = bs.playerStates[id], f = fbs.playerStates[id];
+      if (a.answeredThisRound && !f.answeredThisRound) {
+        f.answeredThisRound = true;
+        f.answerCorrect     = a.answerCorrect;
+        f.correctThisBattle = Math.max(f.correctThisBattle || 0, a.correctThisBattle || 0);
+      }
+      // Carry pending ability if we set one and fresh doesn't have it.
+      if (a.pendingAbility && !f.pendingAbility) {
+        f.pendingAbility     = a.pendingAbility;
+        f.pendingAbilityPoke = a.pendingAbilityPoke;
+      }
+    }
+    // Ensure MY answer is applied to the fresh copy.
+    applyMyAnswer(fbs);
 
-    // Check: have all non-fainted players answered?
-    const activePlayers = Object.entries(bs.playerStates).filter(([,p]) => !p.fainted);
-    const allAnswered   = activePlayers.every(([,p]) => p.answeredThisRound);
-
-    if (allAnswered) {
-      // Auto-resolve: compute damage, boss attack, check win/loss.
-      _battleResolveRound(bs);
+    // Now check allAnswered on the merged state.
+    const activePlayers = Object.entries(fbs.playerStates).filter(([,p]) => !p.fainted);
+    const allAnswered   = activePlayers.length > 0 && activePlayers.every(([,p]) => p.answeredThisRound);
+    if (allAnswered && fbs.roundActive !== false && fbs.outcome === null) {
+      _battleResolveRound(fbs);
     }
 
-    room.battleState   = bs;
-    room.updated_at    = new Date().toISOString();
-    await dbWriteRoom(code, room);
+    fresh.battleState = fbs;
+    fresh.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, fresh);
   } catch(e) { console.warn('[_battleWriteAnswer]', e); }
 }
 

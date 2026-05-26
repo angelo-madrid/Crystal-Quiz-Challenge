@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.7.0   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.7.1   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -134,6 +134,20 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.31.1 MULTIPLAYER HANG — REAL CAUSE: v1.31.0 fixed the ready-up clobber
+  but UAT still hung — because `_battleWriteAnswer` had the identical
+  last-write-wins bug. Two kids answering simultaneously each read `bs`,
+  set only their own `playerStates[pid].answeredThisRound = true`, then
+  wrote → second writer clobbered the first kid's flag → `allAnswered`
+  never true → `_battleResolveRound` never fired → round frozen every
+  round (not just ready-up). Single-player tests missed it because only
+  one writer. Fixed with the same re-read+merge pattern as v1.31.0
+  `battleReadyUp`: extracted idempotent `applyMyAnswer(bs)`; read + apply;
+  re-read fresh `bs` immediately before write; union answered flags
+  (monotonic — only true sticks); carry pending-ability; check
+  `allAnswered` on merged state and resolve there. Host Force Next Round
+  remains the backstop. ⚠️ THIRD site patched defensively (phase / ready /
+  answer) — concurrency WATCH-ITEM updated; architectural fix more urgent.
 - v1.31.0 MULTIPLAYER BOSS HANG FIX (Bug #10): two concurrency failures from
   Supabase last-write-wins on the room blob. (A) `battleReadyUp` re-reads +
   unions `bs.readyForNext` immediately before write — simultaneous 3-kid

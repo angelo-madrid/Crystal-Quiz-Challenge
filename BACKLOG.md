@@ -193,14 +193,20 @@ OPEN QUESTIONS (resolve before build):
 
 ## 🟡 WATCH-ITEMS (locked, monitor in playtest)
 
-- Room-blob last-write-wins concurrency (v1.31.0): battle `readyForNext` +
-  `room.phase` patched defensively (re-read-merge on the kid side + widened
-  host gates + Force-Next-Round phase heal). Architectural root is unfixed —
-  every `dbWriteRoom` on the same blob is last-write-wins. Audit other
-  multiplayer writes for the same clobber risk: presence heartbeat, gym
-  progress, gymsCompleted writes, broadcast announcements. Real fix needs
-  atomic server-side updates (Supabase RPC / Postgres function) or
-  per-player sub-records instead of a single `room.battleState` JSONB blob.
+- Room-blob last-write-wins concurrency (v1.31.0 + v1.31.1): THREE sites
+  now patched defensively — `room.phase` (v1.31.0 C/D), `bs.readyForNext`
+  (v1.31.0 A `battleReadyUp` re-read-merge), and `bs.playerStates[*].
+  answeredThisRound` (v1.31.1 `_battleWriteAnswer` re-read-merge — the
+  REAL cause of the hang after v1.31.0). Host Force Next Round + widened
+  panel gates (v1.31.0 B/C) are the architectural backstop. Architectural
+  root is STILL unfixed — every `dbWriteRoom` on the same blob is
+  last-write-wins. Audit other multiplayer writes for the same clobber
+  risk: presence heartbeat, gym progress, gymsCompleted writes, broadcast
+  announcements, battle pending-ability declarations. Three defensive
+  patches is a smell — the proper fix (atomic server-side updates via
+  Supabase RPC / Postgres function, or per-player sub-records replacing
+  the single `room.battleState` JSONB blob) is now more urgent and
+  should land before scaling to 5 simultaneous kids.
 - Post-gym rescue coverage gap: EXTRA SHOT/TIME TRAVEL on Rare+ only — low-level kids
   can't field a post-gym rescue. Watch for frustration.
 - Draft pacing / host complexity: turn-order, whose-turn UI, pass handling, soft timer.
@@ -304,6 +310,29 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — MULTIPLAYER HANG: THE REAL CAUSE (2026-05-26, v1.31.1 — Bug #10):**
+- v1.31.0 fixed the ready-up clobber, but UAT still hung — because
+  `_battleWriteAnswer` had the identical last-write-wins bug.
+- Two kids answering near-simultaneously each read `bs`, set only their
+  own `playerStates[pid].answeredThisRound = true`, then wrote. The second
+  writer clobbered the first kid's flag → `allAnswered` never became true
+  → `_battleResolveRound` never fired → round frozen on the answered
+  screen every round (not just ready-up). Single-player tests never hit
+  this because there's only one writer.
+- Fixed with the same re-read+merge pattern as v1.31.0 `battleReadyUp`:
+  first read + apply our answer (idempotent — only sets answered→true
+  and increments `correctThisBattle` once); re-read fresh `bs` immediately
+  before write; union `playerStates[*].answeredThisRound/answerCorrect/
+  correctThisBattle` (monotonic); carry `pendingAbility` if we set one;
+  re-apply our answer to the merged copy; check `allAnswered` on merged
+  state and resolve there. Bail-out branches for already-resolved /
+  fight-over conditions.
+- Host Force Next Round (v1.31.0) remains the backstop for rare 3-way
+  simultaneous races that still slip through.
+- ⚠️ THIRD site patched defensively for room-blob last-write-wins
+  (phase / ready / answer). WATCH-ITEM updated — the architectural fix
+  is now more urgent.
 
 **Track C — MULTIPLAYER BOSS HANG FIX (2026-05-26, v1.31.0 — Bug #10):**
 - 3-kid UAT surfaced two concurrency failures from Supabase last-write-wins
