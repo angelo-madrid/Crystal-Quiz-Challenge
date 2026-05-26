@@ -128,12 +128,18 @@ BUILD PHASES (dependency order):
     ⚠️ DEFERRED to item 43: flipping the Prize Store buy to banked-only — there's no
     Prize Store buy code yet. Pokeball + broadcast spends stay on provisional for
     early-game playability; see WATCH-ITEM.
-43. PRIZE STORE — banked-only spend. Make the store always open + browsable; spend
-    flows debit `banked_crystals` only; "earning this game — bank at R3/R7/R10"
-    indicator separates provisional from banked. Build items 24/26/27 (5-tier store +
-    effort + team-pool sync) layered on top. (SPEC Part 13 v3.9 amendment.)
-44. VOUCHER — TIER VOUCHER system per SPEC 13R (crystal→voucher purchase, printable
-    PNG + unique code, redeem-and-burn, host code-verify). Existing build item 25.
+43. ✅ PRIZE STORE — banked-only spend. **DONE v1.26 (2026-05-26).** `screen-prize-store`
+    live with 3 tier cards (Bronze 8k / Silver 20k / Gold 40k — placeholder prices);
+    spend debits `row.banked_crystals`; banked vs provisional clearly separated; entry
+    button on player-dashboard col-2 wallet. Tiers affordability-gated only (effort/team
+    gate deferred — see WATCH-ITEM). (SPEC Part 13 v3.9 amendment.)
+44. ✅ VOUCHER — TIER VOUCHER system. **DONE v1.26 (2026-05-26).** `buyVoucher(tier)`
+    deducts banked, generates unique code (`TIER-PLAYER-TIME-rand`), pushes to
+    `row.vouchers[]`, writes ledger `redeem_request` audit row (status `approved`,
+    note `VOUCHER <Tier> [code]`). `screen-voucher` shows themed printable keepsake;
+    `redeemVoucher(code)` flips voucher status `active→redeemed` (host verify-and-burn).
+    Print CSS hides everything except the keepsake on `window.print()`. PNG artwork
+    user-supplied later — themed CSS placeholder lives in `.voucher-keepsake`. (SPEC 13R.)
 45. P2 — game management UI. My Games list (active/abandoned/finished/archived),
     switch/restart/abandon/archive/restore confirms, banked-vs-provisional display.
     Reference the player-dashboard mockup from the 2026-05-26 design session.
@@ -192,6 +198,13 @@ OPEN QUESTIONS (resolve before build):
   (23 EXTRA_SHOT + 34 TIME_TRAVEL) currently no-op their MOVE with a "post-gym rescue"
   toast. Wire the post-gym rescue flow so these Pokémon's moves become usable; until
   then they stay gated.
+- EFFORT/TEAM GATING (deferred from v1.26 Prize Store, SPEC 13C/13D): tier unlock is
+  affordability-only for now (`isTierUnlocked` stubbed `true`; Effort Score
+  display-only). To wire the real two-gate (team effort unlocks tiers): build
+  (a) per-gym improvement history (40% weight, SPEC 13C), (b) Did-You-Know/CLUE
+  engagement tracking (25%), (c) 50/50 team pool sync on the host dashboard.
+  Tune unlock thresholds + voucher prices at UAT. Replace the `isTierUnlocked`
+  body with the real check — no other restructuring needed.
 - v1.25 SPEND-SITE POLICY (deliberate): only the Prize Store should spend BANKED
   crystals (SPEC Part 13 v3.9 amendment). Today the only in-game spends are
   Pokeball buy (regional catch) + broadcast message (10 💎) — both kept on
@@ -239,6 +252,21 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — PRIZE STORE + TIER VOUCHERS (2026-05-26, v1.26):**
+- Prize Store live: `screen-prize-store` with 3 tier cards (Bronze 8k / Silver 20k /
+  Gold 40k — placeholder prices), banked-only spend, tier cards affordability-gated
+- `buyVoucher(tier)` debits `row.banked_crystals`, generates unique code, pushes
+  voucher to `row.vouchers[]`, writes ledger `redeem_request` audit row
+- `screen-voucher` printable keepsake (themed CSS placeholder; PNG art later)
+- `redeemVoucher(code)` flips status active→redeemed (host verify-and-burn)
+- Effort Score (`computeEffortScore` from badges + total_correct) DISPLAY-ONLY —
+  SPEC 13C full blend deferred (needs improvement history + engagement tracking)
+- `isTierUnlocked(tier, save)` stubbed `true` — SPEC 13D effort/team gating
+  deferred (needs dashboard sync + team pool); slots in here later
+- Player Dashboard col-2 wallet now shows banked vs provisional + 🎁 Prize Store
+  entry button
+- Print CSS hides everything except the keepsake on `window.print()`
 
 **Track C — CRYSTAL CHECKPOINT ECONOMY P3 (2026-05-26, v1.25):**
 - Crystals now PROVISIONAL→BANKED (SPEC 12-NEW-A…G)

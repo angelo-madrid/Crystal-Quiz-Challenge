@@ -3319,3 +3319,156 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   text-align: center;
   margin-top: 4px;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PRIZE STORE + TIER VOUCHERS (v1.26, SPEC Part 13 / 13R)
+   ═══════════════════════════════════════════════════════════ */
+#screen-prize-store {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 0 14px 28px;
+}
+.store-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0 16px;
+  text-align: center;
+}
+.store-wallet {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  font-weight: 800;
+  font-size: 1rem;
+}
+.store-wallet .wallet-banked {
+  color: var(--gold, #ffcb05);
+}
+.store-wallet .wallet-prov {
+  opacity: 0.7;
+  font-weight: 600;
+  font-size: 0.85em;
+}
+.store-effort {
+  opacity: 0.85;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+/* Tier grid */
+.store-tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 10px 0 20px;
+}
+.tier-card {
+  background: rgba(255,255,255,0.04);
+  border: 2px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 18px 14px 16px;
+  text-align: center;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.tier-card.tier-bronze { border-color: rgba(205,127,50,0.5); }
+.tier-card.tier-silver { border-color: rgba(192,192,192,0.5); }
+.tier-card.tier-gold   { border-color: rgba(255,203,5,0.65); }
+.tier-card.disabled { opacity: 0.45; }
+.tier-card:not(.disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+.tier-emoji { font-size: 2.8rem; line-height: 1; }
+.tier-name  { font-weight: 900; font-size: 1.05rem; margin: 8px 0 2px; }
+.tier-cost  { color: var(--gold, #ffcb05); font-weight: 800; font-family: var(--font-mono, monospace); margin-bottom: 6px; }
+.tier-blurb { opacity: 0.75; font-size: 0.82rem; line-height: 1.45; margin-bottom: 12px; }
+.btn-buy    { width: 100%; }
+.btn-buy:disabled { cursor: not-allowed; }
+
+/* Owned vouchers */
+.store-vouchers { padding-top: 4px; }
+.store-vouchers h3 { font-size: 0.95rem; opacity: 0.85; margin: 6px 0 10px; }
+.vouchers-empty { opacity: 0.55; text-align: center; padding: 12px 0; font-size: 0.85rem; }
+.voucher-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin: 6px 0;
+  background: rgba(255,255,255,0.04);
+  border-left: 4px solid rgba(255,203,5,0.6);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.voucher-chip:hover { background: rgba(255,255,255,0.08); }
+.voucher-chip.voucher-bronze { border-left-color: rgba(205,127,50,0.85); }
+.voucher-chip.voucher-silver { border-left-color: rgba(192,192,192,0.85); }
+.voucher-chip.voucher-gold   { border-left-color: rgba(255,203,5,0.85); }
+.voucher-chip.burned { opacity: 0.55; text-decoration: line-through; }
+.voucher-chip-tier { font-weight: 800; }
+.voucher-chip .voucher-code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+/* Player-dashboard Prize Store entry button alongside Redeem */
+.pdc-store-btn { margin-top: 8px; width: 100%; }
+
+/* Voucher keepsake (printable) */
+#screen-voucher {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 24px 14px;
+  min-height: 100vh;
+}
+.voucher-art { width: 100%; max-width: 520px; }
+.voucher-keepsake {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 3px solid var(--gold, #ffcb05);
+  border-radius: 22px;
+  padding: 30px 22px;
+  text-align: center;
+  box-shadow: 0 14px 50px rgba(0,0,0,0.45);
+  color: #fff;
+}
+.voucher-keepsake.voucher-bronze { border-color: #cd7f32; }
+.voucher-keepsake.voucher-silver { border-color: #c0c0c0; }
+.voucher-keepsake.voucher-gold   { border-color: var(--gold, #ffcb05); }
+.vk-emoji  { font-size: 5rem; line-height: 1; margin-bottom: 6px; }
+.vk-tier   { font-size: 1.6rem; font-weight: 900; margin-bottom: 10px; letter-spacing: 0.5px; }
+.vk-name   { font-size: 1.1rem; opacity: 0.92; margin-bottom: 16px; }
+.vk-blurb  { font-size: 0.92rem; opacity: 0.8; margin-bottom: 18px; padding: 0 8px; }
+.vk-code   {
+  font-family: var(--font-mono, monospace);
+  font-size: 1.05rem;
+  letter-spacing: 1.5px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 10px;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+.vk-status { font-weight: 800; font-size: 0.92rem; opacity: 0.95; }
+.voucher-actions {
+  display: flex; gap: 12px; margin-top: 22px; width: 100%; max-width: 520px;
+}
+.voucher-actions .btn-primary, .voucher-actions .btn-secondary { flex: 1; }
+
+/* Print: keepsake only — hide chrome. */
+@media print {
+  body { background: #fff !important; color: #000 !important; }
+  .screen:not(#screen-voucher) { display: none !important; }
+  #screen-voucher { padding: 0; min-height: auto; }
+  .no-print { display: none !important; }
+  .voucher-keepsake {
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    border-width: 4px !important;
+  }
+  .vk-code { background: rgba(0,0,0,0.05) !important; }
+}

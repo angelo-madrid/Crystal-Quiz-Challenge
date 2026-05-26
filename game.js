@@ -1,5 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.26: Prize Store + Tier Vouchers (SPEC 13/13R). Buy Bronze/Silver/Gold vouchers
+//        with BANKED crystals; unique code; printable keepsake; ledger-tracked
+//        redeem-and-burn. Effort Score computed from available data (badges + correct)
+//        DISPLAY-ONLY. Tier unlock stubbed open (isTierUnlocked) — effort/team gating
+//        (SPEC 13D) deferred to post-UAT.
 // v1.25: Crystal Checkpoint Economy P3 (SPEC 12-NEW-A…G). Gym crystals are PROVISIONAL
 //        (progress.total_crystals + per-region progress.region_crystals); they BANK
 //        into the per-player wallet (row.banked_crystals) at R3/R7/R10 boss wins,
@@ -519,6 +524,180 @@ function resetGameProgress(game) {
   game.progress.banked_regions  = {};
   game.progress.updated_at      = new Date().toISOString();
   game.last_played_at           = new Date().toISOString();
+}
+
+// ── PRIZE STORE + TIER VOUCHERS (SPEC Part 13 / 13R · v1.26) ──
+// 3 fixed-price tiers, banked-only spend, unique-coded printable voucher.
+// Effort Score (13C) is DISPLAY-ONLY in v1.26 — tiers gated by affordability via
+// isTierUnlocked() stub. Real effort→tier gating + 50/50 team pool (SPEC 13D)
+// is DEFERRED post-UAT (needs per-gym improvement history + dashboard sync
+// that don't exist yet). See BACKLOG.
+
+// SPEC 13I/13L — tier voucher prices (PLACEHOLDER crystals, tune at UAT).
+const VOUCHER_TIERS = {
+  bronze: { label: 'Bronze', cost: 8000,  emoji: '🥉', blurb: 'A common card or basic pack' },
+  silver: { label: 'Silver', cost: 20000, emoji: '🥈', blurb: 'An uncommon — better packs, foil singles' },
+  gold:   { label: 'Gold',   cost: 40000, emoji: '🥇', blurb: 'A chase prize — booster box, holo/rare' },
+};
+const VOUCHER_TIER_ORDER = ['bronze', 'silver', 'gold'];
+
+// SPEC 13C — Effort Score. v1.26: computed from AVAILABLE data only (badges + accuracy).
+// DEFERRED (need data not yet built): 40% personal-improvement (no per-gym score
+// history) + 25% learning-engagement (no Did-You-Know/CLUE tracking). Those weights
+// are 0 here. DISPLAY-ONLY — does NOT gate tiers yet.
+function computeEffortScore(save) {
+  if (!save) return 0;
+  const badges  = save.badges_earned || 0;       // 35% weight (SPEC 13C) — available
+  const correct = save.total_correct || 0;       // proxy for engagement until real tracking
+  return Math.round(badges * 100 + correct * 2);
+}
+
+// SPEC 13D tier unlock — DEFERRED gate. Stub returns true (all tiers open) until
+// the effort metric + team pool sync are built. The real check slots in HERE.
+function isTierUnlocked(tier, save) {
+  // TODO (post-UAT): gate on TEAM effort pool (SPEC 13D). For now: affordability only.
+  return true;
+}
+
+// SPEC 13R — buy a tier voucher with BANKED crystals. Unique code; ledger-tracked;
+// change persists (leftover banked rolls forward). Returns the voucher or null.
+async function buyVoucher(tier) {
+  const t = VOUCHER_TIERS[tier];
+  if (!t || !STATE.playerRow) return null;
+
+  if (!isTierUnlocked(tier, STATE.save)) {
+    alert(`${t.label} isn't unlocked yet.`);
+    return null;
+  }
+  const wallet = STATE.playerRow.banked_crystals || 0;
+  if (wallet < t.cost) {
+    alert(`Need ${t.cost.toLocaleString()} banked 🔮 for a ${t.label} voucher. Bank more by beating a checkpoint boss (R3/R7/R10).`);
+    return null;
+  }
+
+  // Unique, human-verifiable code: TIER-PLAYER-TIME-rand (Papa verifies at redemption).
+  const code = `${tier.toUpperCase().slice(0,3)}-${(STATE.player.id||'').slice(-4)}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,5)}`.toUpperCase();
+
+  const voucher = {
+    code, tier, cost: t.cost,
+    status: 'active',                 // active → redeemed (burned)
+    created_at: new Date().toISOString(),
+    room_code: STATE.roomCode || null,
+  };
+
+  // Deduct banked (change persists — we only subtract the cost).
+  STATE.playerRow.banked_crystals = wallet - t.cost;
+  if (!Array.isArray(STATE.playerRow.vouchers)) STATE.playerRow.vouchers = [];
+  STATE.playerRow.vouchers.push(voucher);
+
+  // Ledger row (audit-only). type='redeem_request' (only allowed types per
+  // MIGRATIONS.md), status='approved' (purchase already settled — keeps it out
+  // of the existing pending queue), amount=-cost (audit of debit), note carries
+  // VOUCHER: prefix so a future host UI can filter for vouchers.
+  try {
+    await dbLedgerInsert({
+      player_id:   STATE.player.id,
+      room_code:   STATE.roomCode || null,
+      type:        'redeem_request',
+      amount:      -t.cost,
+      status:      'approved',
+      note:        `VOUCHER ${t.label} [${code}]`,
+      resolved_at: new Date().toISOString(),
+    });
+  } catch (e) { console.warn('[voucher] ledger insert failed:', e); }
+
+  await dbSaveRow(STATE.player.id);
+  return voucher;
+}
+
+// Mark a voucher redeemed/burned (host verifies at the real store). One voucher
+// = one use. SOURCE OF TRUTH = row.vouchers[code].status (the ledger row is
+// purchase audit, not redemption state).
+async function redeemVoucher(code) {
+  if (!STATE.playerRow || !Array.isArray(STATE.playerRow.vouchers)) return false;
+  const v = STATE.playerRow.vouchers.find(x => x.code === code && x.status === 'active');
+  if (!v) return false;
+  v.status = 'redeemed';
+  v.redeemed_at = new Date().toISOString();
+  await dbSaveRow(STATE.player.id);
+  return true;
+}
+
+// ── PRIZE STORE UI (renderPrizeStore + onBuyVoucher + showVoucher) ─
+function renderPrizeStore() {
+  const banked      = (STATE.playerRow && STATE.playerRow.banked_crystals) || 0;
+  const provisional = (STATE.save && STATE.save.total_crystals) || 0;
+  const effort      = computeEffortScore(STATE.save);
+
+  const wEl = document.getElementById('store-wallet');
+  if (wEl) wEl.innerHTML =
+    `<span class="wallet-banked">💎 ${banked.toLocaleString()} banked</span>` +
+    `<span class="wallet-prov">✨ ${provisional.toLocaleString()} earning this game — banks at R3/R7/R10</span>`;
+
+  const eEl = document.getElementById('store-effort');
+  if (eEl) eEl.textContent = `⭐ Effort Score: ${effort.toLocaleString()}`;
+
+  // Tier cards.
+  const tiersEl = document.getElementById('store-tiers');
+  if (tiersEl) tiersEl.innerHTML = VOUCHER_TIER_ORDER.map(tier => {
+    const t = VOUCHER_TIERS[tier];
+    const unlocked = isTierUnlocked(tier, STATE.save);
+    const afford   = banked >= t.cost;
+    const canBuy   = unlocked && afford;
+    return `
+      <div class="tier-card tier-${tier}${canBuy ? '' : ' disabled'}">
+        <div class="tier-emoji">${t.emoji}</div>
+        <div class="tier-name">${t.label} Voucher</div>
+        <div class="tier-cost">${t.cost.toLocaleString()} 🔮</div>
+        <div class="tier-blurb">${t.blurb}</div>
+        <button class="btn-primary btn-buy" ${canBuy ? '' : 'disabled'} onclick="onBuyVoucher('${tier}')">
+          ${!unlocked ? 'Locked' : (afford ? 'Buy Voucher' : 'Not enough banked')}
+        </button>
+      </div>`;
+  }).join('');
+
+  // Owned vouchers.
+  const vEl = document.getElementById('store-vouchers');
+  const vouchers = (STATE.playerRow && STATE.playerRow.vouchers) || [];
+  if (vEl) vEl.innerHTML = vouchers.length === 0
+    ? `<div class="vouchers-empty">No vouchers yet — buy one above to claim a prize!</div>`
+    : `<h3>Your Vouchers</h3>` + vouchers.map(v => {
+        const t = VOUCHER_TIERS[v.tier] || { label: v.tier, emoji: '🎟️' };
+        const burned = v.status === 'redeemed';
+        return `
+          <div class="voucher-chip voucher-${v.tier}${burned ? ' burned' : ''}"
+               onclick="showVoucher('${v.code}')">
+            <span class="voucher-chip-tier">${t.emoji} ${t.label}${burned ? ' · REDEEMED' : ''}</span>
+            <span class="voucher-code">${v.code}</span>
+          </div>`;
+      }).join('');
+}
+
+async function onBuyVoucher(tier) {
+  const v = await buyVoucher(tier);
+  if (v) {
+    renderPrizeStore();
+    showVoucher(v.code);
+  }
+}
+
+function showVoucher(code) {
+  const v = (STATE.playerRow && STATE.playerRow.vouchers || []).find(x => x.code === code);
+  if (!v) return;
+  const t = VOUCHER_TIERS[v.tier] || { label: v.tier, emoji: '🎟️' };
+  const art = document.getElementById('voucher-art');
+  if (art) art.innerHTML = `
+    <div class="voucher-keepsake voucher-${v.tier}">
+      <div class="vk-emoji">${t.emoji}</div>
+      <div class="vk-tier">${t.label} Voucher</div>
+      <div class="vk-name">${STATE.player && STATE.player.name || 'Trainer'}</div>
+      <div class="vk-blurb">Redeemable for ${t.blurb.toLowerCase()}</div>
+      <div class="vk-code">Code: ${v.code}</div>
+      <div class="vk-status">${v.status === 'redeemed'
+        ? '✅ REDEEMED'
+        : 'Bring this to Papa to claim your prize'}</div>
+    </div>`;
+  showScreen('screen-voucher');
 }
 // Pity softener — 3 consecutive misses on the same Pokemon → next catch
 // question one tier easier (Part 12G).
@@ -1092,6 +1271,10 @@ function showScreen(id) {
   if (id === 'screen-register' && typeof registerResetState === 'function') {
     // Fresh wizard each visit
     registerResetState();
+  }
+  // v1.26: render the Prize Store on entry so balances/vouchers are live.
+  if (id === 'screen-prize-store' && typeof renderPrizeStore === 'function') {
+    renderPrizeStore();
   }
 }
 
@@ -1687,14 +1870,21 @@ function pdcToggleArchived() {
 async function pdcRenderCol2Wallet() {
   const player = STATE.player;
   if (!player) return;
-  const balance = (STATE.save && STATE.save.total_crystals) || 0;
-  document.getElementById('pdc-balance-big').textContent = balance.toLocaleString();
+  // v1.25 P3 / v1.26: show BANKED (spendable now) prominently + PROVISIONAL
+  // (earning this game) as a small subline so the kid knows what's spendable.
+  const banked      = (STATE.playerRow && STATE.playerRow.banked_crystals) || 0;
+  const provisional = (STATE.save && STATE.save.total_crystals) || 0;
+  const balEl = document.getElementById('pdc-balance-big');
+  balEl.innerHTML = provisional > 0
+    ? `${banked.toLocaleString()} <span style="font-size:.5em;font-weight:600;opacity:.65">· ✨ ${provisional.toLocaleString()} earning · banks R3/R7/R10</span>`
+    : `${banked.toLocaleString()}`;
   // Peso removed from player UI per SPEC v3.3 Part 12I — crystals are
   // arcade tickets, no money framing. Host UI retains peso for prize pricing.
 
-  // Redeem button — disabled while a redemption is already pending
+  // Redeem button + Prize Store entry — both are "spend banked" actions.
   const hasPending = await dbHasPendingRedemption(player.id);
   const zone = document.getElementById('pdc-redeem-zone');
+  const storeBtn = `<button class="btn-secondary pdc-store-btn" onclick="showScreen('screen-prize-store')">🎁 Prize Store</button>`;
   if (hasPending) {
     // Find the pending amount for display
     const pendings = await dbLedgerForPlayer(player.id, 50);
@@ -1703,9 +1893,10 @@ async function pdcRenderCol2Wallet() {
     zone.innerHTML = `
       <div class="pdc-redeem-pending">
         ⏳ Redemption pending — ${amt.toLocaleString()} 💎
-      </div>`;
+      </div>
+      ${storeBtn}`;
   } else {
-    zone.innerHTML = `<button class="btn-primary" id="pdc-redeem-toggle" onclick="pdcShowRedeemForm()">🎁 Redeem Crystals</button>`;
+    zone.innerHTML = `<button class="btn-primary" id="pdc-redeem-toggle" onclick="pdcShowRedeemForm()">🎁 Redeem Crystals</button>${storeBtn}`;
   }
 
   // Ledger

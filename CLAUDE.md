@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.3   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.6.4   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -45,7 +45,10 @@
 | MOVES (ELIMINATE/CLOCK/SWAP/EXTRA SHOT/CLUE/TIME TRAVEL) | ⬜ designed | SPEC Part 5, 11 |
 | Battle system / bosses (3v1, simultaneous, enrage, star rating) | ⬜ designed v3.7 | SPEC Part 9, 14G |
 | Economy (earn model, ball/redeem/trade-in, cap growth, persistence) | ✅ LIVE v0.6.0 | SPEC Part 12 |
-| Prize Store & bayanihan mechanics (5-tier, TIER VOUCHER, team prize) | ⬜ designed v3.6 | SPEC Part 13 |
+| Prize Store — 3-tier voucher spend (afford-gated) | ✅ LIVE v1.26 | SPEC Part 13 / 13R |
+| TIER VOUCHER — unique code + printable keepsake + ledger audit + burn | ✅ LIVE v1.26 | SPEC 13R |
+| Effort Score — full SPEC 13C blend (improvement + engagement) | ⬜ deferred | SPEC Part 13C |
+| Effort→tier-unlock gating + 50/50 team pool (SPEC 13D) | ⬜ deferred | SPEC Part 13D |
 | Boss mechanics (freq/reward/casting/gating) — NO boss crystals | ⬜ designed v3.7 | SPEC Part 14 |
 | Legendary gate R10 + Papa override + in-game reminders | ⬜ designed v3.7 | SPEC Part 14G-7 |
 | Boss reward Pokémon offer (keep-or-release, normal team cap) | ⬜ designed v3.7 | SPEC Part 14G-2 |
@@ -124,6 +127,18 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.26 (SPEC Part 13 / 13R): Prize Store + Tier Vouchers LIVE. 3 tiers
+  (Bronze 8k / Silver 20k / Gold 40k — placeholder prices, tune at UAT). Buy
+  with `row.banked_crystals` (change persists), unique code, printable
+  keepsake (`screen-voucher`), ledger `redeem_request` audit row,
+  `redeemVoucher(code)` flips status `active→redeemed`. Vouchers persist on
+  `row.vouchers[]`. Effort Score (`computeEffortScore`) computed from
+  badges + total_correct and shown in the store — **DISPLAY-ONLY**, does NOT
+  gate tiers. `isTierUnlocked()` stubbed `true`. ⚠️ DEFERRED: SPEC 13C full
+  effort blend (needs per-gym improvement history + Did-You-Know/CLUE
+  engagement tracking), SPEC 13D 50/50 team pool + effort→tier gating
+  (needs dashboard sync). All tiers affordability-gated for now. Tracked in
+  BACKLOG.
 - v1.25 (SPEC 12-NEW P3): crystals now PROVISIONAL→BANKED. Gym earn accrues
   `progress.total_crystals` (visible provisional) + `progress.region_crystals[rid]`.
   Banking at R3/R7/R10 via `bankCrystalsForCheckpoint()` hooked in

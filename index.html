@@ -479,6 +479,29 @@
     </div>
   </div>
 
+  <!-- PRIZE STORE (SPEC Part 13 / 13R · v1.26) — banked crystals → tier vouchers -->
+  <div id="screen-prize-store" class="screen">
+    <div class="screen-header">
+      <button class="back-btn" onclick="showScreen('screen-player-dashboard')">← Back</button>
+      <h2>🎁 Prize Store</h2>
+    </div>
+    <div class="store-header">
+      <div id="store-wallet" class="store-wallet"></div>
+      <div id="store-effort" class="store-effort"></div>
+    </div>
+    <div id="store-tiers" class="store-tiers"></div>
+    <div id="store-vouchers" class="store-vouchers"></div>
+  </div>
+
+  <!-- VOUCHER KEEPSAKE — printable per-voucher card -->
+  <div id="screen-voucher" class="screen">
+    <div id="voucher-art" class="voucher-art"><!-- rendered by JS --></div>
+    <div class="voucher-actions no-print">
+      <button class="btn-primary" onclick="window.print()">🖨️ Print Keepsake</button>
+      <button class="btn-secondary" onclick="showScreen('screen-prize-store')">← Back to Store</button>
+    </div>
+  </div>
+
   <!-- GYM REVIEW (read-only) — opens when tapping a completed gym -->
   <div id="screen-gym-review" class="screen">
     <div class="screen-header">
