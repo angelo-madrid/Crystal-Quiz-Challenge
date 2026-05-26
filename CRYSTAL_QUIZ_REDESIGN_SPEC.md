@@ -2,13 +2,20 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ DESIGN VERSION: v3.8   ·   LAST UPDATED: 2026-05-26          │
+│ DESIGN VERSION: v3.9   ·   LAST UPDATED: 2026-05-26          │
 │ STATUS: active design bible (source of truth for DESIGN)     │
 │ This file's version advances each design session that locks  │
 │ decisions. CLAUDE.md carries a "Synced to SPEC: v3.X" line   │
 │ — if it lags this number, CLAUDE.md is behind.               │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**v3.9 (2026-05-26):** PLAYER GAME MANAGEMENT + CRYSTAL CHECKPOINT ECONOMY adopted
+(was staged in BACKLOG). NEW Part 15 (multi-game save slots, 4 states, Model A games
+array, migration). Part 12 REWRITTEN (crystals PROVISIONAL per-game → BANKED per-player
+at R3/R7/R10 checkpoints, per-region caps; v3.3 lifetime-wallet superseded/retained).
+Part 13 AMENDED (Prize Store spends banked-only; always browsable). Build follows
+(P1→P3→Store→Voucher→P2→Podium). Supersedes v3.8.
 
 **v3.8 (2026-05-26):** CATCH AVAILABILITY (Part 11) — catching is now offered on the
 gym-complete screen after EVERY gym (not only at region end), gated by the Part 4
@@ -823,12 +830,45 @@ that assumed a personal pool.)
 
 ## PART 12 — ECONOMY (v3.3 — LOCKED)
 
-> **⚠️ REDESIGN STAGED (2026-05-26, not yet adopted):** a provisional→banked crystal
-> checkpoint economy (bank at R3/R7/R10, per-region caps, spend banked-only) is DESIGNED
-> and staged in BACKLOG (Player Game Management item), pending UAT validation. When
-> adopted it will REWRITE this Part 12, amend Part 13 (Prize Store spends banked crystals
-> only), and add Part 15 (Player Game Management). Until then, THIS Part 12 (lifetime
-> wallet, immediately-spendable) remains the live/locked design that the code implements.
+> **⚙️ ECONOMY MODEL — v3.9 ADOPTED (2026-05-26): PROVISIONAL → BANKED CHECKPOINT.**
+> Supersedes the v3.3 "lifetime wallet, immediately-spendable" model below (retained
+> for history). Crystals are earned PER-GAME as PROVISIONAL (not spendable), and BANK
+> into a per-PLAYER lifetime wallet at checkpoints. See Part 15 for the game/save model
+> this rides on.
+>
+> **12-NEW-A — Two crystal pools:**
+> - **Provisional** (per-game, `progress.provisional_crystals`): earned in gym play,
+>   NOT spendable, reset on Restart, lost on Abandon.
+> - **Banked** (per-player, `banked_crystals`): the lifetime spendable wallet. Only
+>   banked crystals buy Prize Store vouchers. Survive Restart/Abandon.
+>
+> **12-NEW-B — Banking checkpoints = R3 / R7 / R10** (the Darkrai narrative beats):
+> R3 banks regions 1–3, R7 banks 4–7, R10 banks 8–10. Clearing a checkpoint boss credits
+> the capped value of each not-yet-banked region in that segment.
+>
+> **12-NEW-C — Per-region cap (anti-grind):** each region banks UP TO a fixed ceiling
+> `REGION_CRYSTAL_CAP[regionId]` (tunable). Replay (fresh questions) can REACH the cap
+> (recover a weak first pass) but NEVER exceed it → removes the farming incentive with
+> no penalty mechanic. Tracked in `banked_regions[regionId] = { banked, cap }`; banking
+> credits `min(cap, bestProvisionalEarned) − alreadyBanked`, floored at 0.
+>
+> **12-NEW-D — Fresh questions on replay** make replay genuine learning (draw-without-
+> replacement via existing pickQuestion). ⚠️ pool-depth dependent — see Part 5 / backlog.
+>
+> **12-NEW-E — Learning/economy split:** badges + team/HP growth accrue on replay
+> UNCAPPED (learning rewards, Part 8); crystals are CAPPED per region (economy guard).
+>
+> **12-NEW-F — Reruns:** FREE in solo play; forward-only BY DESIGN in group play (a kid
+> re-running blocks the team at the synchronized boss gate). Current enforcement = crystal
+> cap + SOCIAL (Papa paces); auto forward-only lock deferred (build only if UAT shows
+> backtracking). Boss-LOSS re-attempt always allowed (recoverable failure ≠ grinding,
+> Part 9).
+>
+> **12-NEW-G — crystal_ledger stays per-PLAYER** (audit trail for the banked wallet).
+> Banking events at checkpoints write ledger rows; provisional crystals are NOT ledgered.
+
+> **⚠️ SUPERSEDED by v3.9 (12-NEW-A…G above).** The v3.3 immediately-spendable lifetime
+> wallet is retained below for history. Crystals now bank at checkpoints (above).
 
 > Settles the numbers deferred from Parts 3, 7, 10E, and 11 (P3/P7). Anchored to
 > the LIVE earn-rate discovered in game.js this session, not the stale SPEC
@@ -1009,11 +1049,11 @@ against real-world value.
 
 ## PART 13 — PRIZE STORE & BAYANIHAN MECHANICS (v3.4 — LOCKED)
 
-> **⚠️ REDESIGN STAGED (2026-05-26, not yet adopted):** the staged crystal checkpoint
-> economy (see Part 12 note + BACKLOG Player Game Management item) will AMEND this Part
-> with: Prize Store is always open + browsable, but spends BANKED crystals only;
-> provisional (un-banked) crystals are shown separately ("earning this game — bank at
-> R3/R7/R10"). Pending UAT validation. Until adopted, the current Part 13 spend rules stand.
+> **⚙️ v3.9 AMENDMENT (2026-05-26, ADOPTED):** the Prize Store spends BANKED crystals
+> only (see Part 12-NEW). The store is always open + browsable; provisional (un-banked)
+> crystals are shown separately ("earning this game — bank at R3/R7/R10") and cannot be
+> spent until banked. All other Part 13 mechanics (tiers, vouchers 13R, effort metric,
+> team prize) are unchanged.
 
 > Solves the UAT social problem, NOT just payout. UAT pain: kids compared crystals/
 > pesos instead of learning; lower performers complained the game was rigged toward
@@ -2070,3 +2110,45 @@ Q: Philippine national hero? → José Rizal
    parallel duels + 8 abilities + guardrails (P9). 7. TIME TRAVEL (own session —
    structural). 8. Team cap/release rework (P7). 9. Prize screen. 10. Backlog:
    rarity table, teamwork, combination.
+
+---
+
+## PART 15 — PLAYER GAME MANAGEMENT (v3.9 — NEW)
+
+> Players own MULTIPLE game playthroughs ("games") as save slots, rather than one flat
+> save. Pairs with the Part 12 provisional→banked economy. Build phases P1/P2/P3.
+
+**15A — A "game" = one campaign playthrough** with its own progress. A player is an
+identity + a collection of games. ONE active at a time.
+
+**15B — Four states:** `active` (playing now; Continue resumes) · `abandoned` (set
+aside, resumable) · `finished` (completed, read-only) · `archived` (preserved, out of
+the active list, restorable). **No player-facing hard delete** — archive is reversible;
+hard delete lives in Host/dev tooling only.
+
+**15C — Operations:** Continue · New game · Switch-to (previous active → abandoned) ·
+Restart (wipe that game's progress to fresh, KEEP the slot/id) · Abandon & start new ·
+Archive (any state) · Restore (archived → abandoned/active).
+
+**15D — Data model (Model A — games array in the player row):**
+- player row: `active_game_id`, `banked_crystals` (per-player wallet, Part 12), `games:[
+  {game_id, status, created_at, last_played_at, room_code, label,
+   progress:{ regions, badges_earned, pokemon_team, pokeballs, provisional_crystals,
+   banked_regions:{}, seen_question_ids }} ]`
+- Gameplay reads/writes the ACTIVE game's `progress` via an accessor; banked crystals +
+  ledger live at the player level.
+
+**15E — Migration (lazy, idempotent, non-destructive):** existing flat saves wrap as
+`games[0]` (active); legacy `total_crystals` LIFTS to `banked_crystals`;
+`provisional_crystals→0`, `banked_regions→{}`. Guarded by `if (!row.data.games)`.
+
+**15F — Restart/Abandon crystal semantics:** Restart → provisional→0, banked_regions→{}
+for that game, wallet UNTOUCHED. Abandon → game frozen, provisional never banks, wallet
+untouched. Switch → per-game state carried; wallet shared.
+
+**15G — Build phases:** P1 model+migration (no visible change) → P3 crystal economy
+(Part 12-NEW) → Prize Store (Part 13) → voucher → P2 game-management UI → podium.
+
+**15H — OPEN (resolve at build):** switch-active side effect (previous→abandoned
+proposed); finished-game replay (read-only + restart-makes-new proposed); max games cap
+(~10 soft cap proposed).
