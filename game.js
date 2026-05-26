@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.4 FIX: rdStartGame (Start Game button in Room Detail Overlay) was
+//   silently failing — no try/catch, so Supabase read/write errors produced
+//   no feedback and the room stayed in lobby. Added try/catch + toasts on
+//   all failure paths (null room read, already-started guard, empty-players
+//   guard, write error). Same pattern applied to rdTogglePause / rdArchive /
+//   rdEndGame for consistency.
 // v1.29.2 FIX: Gym 5 → boss fight now reachable on PASS and FAIL.
 //   Bug A: showGymComplete was gating the ⚔️ Fight the Villain! button on
 //   regionComplete (all 5 gyms in gymsCompleted). Failed gym 5 is never pushed
@@ -7967,15 +7973,20 @@ async function rdStartBossFight() {
 
 async function rdTogglePause() {
   const code = HOST_UI.detailRoomCode;
-  if (!code) return;
-  const room = await dbReadRoom(code);
-  if (!room) return;
-  room.isPaused = !room.isPaused;
-  room.updated_at = new Date().toISOString();
-  await dbWriteRoom(code, room);
-  showToast(room.isPaused ? '⏸️ Paused' : '▶️ Resumed');
-  renderRoomDetail();
-  renderHostDashboard();
+  if (!code) { showToast('⚠️ No room selected'); return; }
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) { showToast('⚠️ Could not read room — try again'); return; }
+    room.isPaused = !room.isPaused;
+    room.updated_at = new Date().toISOString();
+    await dbWriteRoom(code, room);
+    showToast(room.isPaused ? '⏸️ Paused' : '▶️ Resumed');
+    renderRoomDetail();
+    renderHostDashboard();
+  } catch (e) {
+    console.error('[rdTogglePause]', e);
+    showToast(`⚠️ Pause toggle failed: ${(e && e.message) || 'unknown error'}`);
+  }
 }
 // Start the room's game from the Room Detail Overlay. Mirrors the
 // hostStartGame() transition (lobby → PREGAME_CATCH) but scoped to
@@ -7983,66 +7994,81 @@ async function rdTogglePause() {
 // stays on the three-column dashboard.
 async function rdStartGame() {
   const code = HOST_UI.detailRoomCode;
-  if (!code) return;
-  const room = await dbReadRoom(code);
-  if (!room) return;
-  if (room.phase !== 'lobby') {
-    showToast('⚠️ Game already started');
-    return;
+  if (!code) { showToast('⚠️ No room selected'); return; }
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) { showToast('⚠️ Could not read room — try again'); return; }
+    if (room.phase !== 'lobby') { showToast('⚠️ Game already started'); return; }
+
+    // Strip out any legacy host-viewer entries the way hostStartGame does.
+    const realPlayers = (room.players || []).filter(p =>
+      p.id !== 'HOST_VIEWER' && p.id !== 'host' && !p.isHost
+    );
+    if (realPlayers.length === 0) {
+      showToast('⚠️ At least 1 player must join before starting');
+      return;
+    }
+
+    room.phase         = 'PREGAME_CATCH';
+    room.players       = realPlayers;
+    room.currentRegion = 1;
+    room.currentGym    = 1;
+    room.isPaused      = false;
+    room.startedAt     = new Date().toISOString();
+    room.updated_at    = new Date().toISOString();
+    await dbWriteRoom(code, room);
+
+    // Keep HOST.* in sync if it points at this room so Column 3 reflects
+    // the new phase on the next render.
+    if (HOST.roomCode === code) {
+      HOST.currentPhase  = 'PREGAME_CATCH';
+      HOST.players       = realPlayers;
+      HOST.currentRegion = 1;
+      HOST.currentGym    = 1;
+      HOST.isPaused      = false;
+    }
+    showToast(`🚀 ${code} — game started`);
+    renderRoomDetail();
+    renderHostDashboard();
+  } catch (e) {
+    console.error('[rdStartGame]', e);
+    showToast(`⚠️ Start failed: ${(e && e.message) || 'unknown error'}`);
   }
-  // Strip out any legacy host-viewer entries the way hostStartGame does.
-  const realPlayers = (room.players || []).filter(p =>
-    p.id !== 'HOST_VIEWER' && p.id !== 'host' && !p.isHost
-  );
-  if (realPlayers.length === 0) {
-    showToast('⚠️ At least 1 player must join before starting');
-    return;
-  }
-  room.phase         = 'PREGAME_CATCH';
-  room.players       = realPlayers;
-  room.currentRegion = 1;
-  room.currentGym    = 1;
-  room.isPaused      = false;
-  room.startedAt     = new Date().toISOString();
-  room.updated_at    = new Date().toISOString();
-  await dbWriteRoom(code, room);
-  // Keep HOST.* in sync if it points at this room so Column 3 reflects
-  // the new phase on the next render.
-  if (HOST.roomCode === code) {
-    HOST.currentPhase  = 'PREGAME_CATCH';
-    HOST.players       = realPlayers;
-    HOST.currentRegion = 1;
-    HOST.currentGym    = 1;
-    HOST.isPaused      = false;
-  }
-  showToast(`🚀 ${code} — game started`);
-  renderRoomDetail();
-  renderHostDashboard();
 }
 async function rdArchive() {
   const code = HOST_UI.detailRoomCode;
-  if (!code) return;
-  const room = await dbReadRoom(code);
-  if (!room) return;
-  room.archived = !room.archived;
-  room.updated_at = new Date().toISOString();
-  await dbWriteRoom(code, room);
-  showToast(room.archived ? '🗄️ Archived ✓' : '📤 Unarchived ✓');
-  renderRoomDetail();
-  renderHostDashboard();
+  if (!code) { showToast('⚠️ No room selected'); return; }
+  try {
+    const room = await dbReadRoom(code);
+    if (!room) { showToast('⚠️ Could not read room — try again'); return; }
+    room.archived = !room.archived;
+    room.updated_at = new Date().toISOString();
+    await dbWriteRoom(code, room);
+    showToast(room.archived ? '🗄️ Archived ✓' : '📤 Unarchived ✓');
+    renderRoomDetail();
+    renderHostDashboard();
+  } catch (e) {
+    console.error('[rdArchive]', e);
+    showToast(`⚠️ Archive failed: ${(e && e.message) || 'unknown error'}`);
+  }
 }
 async function rdEndGame() {
   const code = HOST_UI.detailRoomCode;
-  if (!code) return;
+  if (!code) { showToast('⚠️ No room selected'); return; }
   confirmDialog('End this game?', 'This sets the room to GAME_OVER and auto-archives it. This cannot be undone.', async () => {
-    const room = await dbReadRoom(code);
-    if (!room) return;
-    room.phase = 'GAME_OVER'; room.archived = true;
-    room.updated_at = new Date().toISOString();
-    await dbWriteRoom(code, room);
-    showToast('🏁 Game ended');
-    closeRoomDetail();
-    renderHostDashboard();
+    try {
+      const room = await dbReadRoom(code);
+      if (!room) { showToast('⚠️ Could not read room — try again'); return; }
+      room.phase = 'GAME_OVER'; room.archived = true;
+      room.updated_at = new Date().toISOString();
+      await dbWriteRoom(code, room);
+      showToast('🏁 Game ended');
+      closeRoomDetail();
+      renderHostDashboard();
+    } catch (e) {
+      console.error('[rdEndGame]', e);
+      showToast(`⚠️ End-game failed: ${(e && e.message) || 'unknown error'}`);
+    }
   });
 }
 

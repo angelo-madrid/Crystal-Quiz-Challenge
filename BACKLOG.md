@@ -297,6 +297,20 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — START GAME SILENT FAILURE FIX (2026-05-26, v1.29.4 — Bug #9):**
+- `rdStartGame` (🚀 Start Game button in Room Detail Overlay) had no try/catch
+  and silent `return` on `!code` / `!room` — any Supabase read/write error
+  produced no feedback, leaving the room in `lobby` and the host confused.
+- Wrapped in try/catch + added toasts on every silent path:
+  - `!code` → "⚠️ No room selected"
+  - `!room` → "⚠️ Could not read room — try again"
+  - `phase !== 'lobby'` → "⚠️ Game already started"
+  - `realPlayers.length === 0` → "⚠️ At least 1 player must join…"
+  - write/exception → "⚠️ Start failed: <message>"
+- Same try/catch + toast pattern applied to sibling overlay actions:
+  `rdTogglePause`, `rdArchive`, `rdEndGame` (latter wraps the
+  `confirmDialog` callback so writes inside the promise are caught too).
+
 **Track C — GYM 5 BOSS-REACHABILITY FIX (2026-05-26, v1.29.2 — Bug #5):**
 - `showGymComplete` was gating the ⚔️ Fight the Villain! button on
   `regionComplete` (`gymsCompleted.length >= 5`). A FAILED gym 5 never writes

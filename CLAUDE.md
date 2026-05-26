@@ -132,6 +132,14 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29.4 FIX (Bug #9): `rdStartGame` (🚀 Start Game button in the Room Detail
+  Overlay) was silently failing — no try/catch around `dbReadRoom`/`dbWriteRoom`,
+  so any Supabase read/write error left the room in `lobby` with no toast and no
+  console hint at the call site. Wrapped in try/catch + added toasts on every
+  silent return path (`!code`, `!room`, already-started, empty-players,
+  write-error). Same defensive pattern applied to sibling overlay actions:
+  `rdTogglePause`, `rdArchive`, `rdEndGame` (the latter wraps the inner
+  `confirmDialog` callback so writes inside that promise are caught too).
 - v1.29.2 FIX: Gym 5 → boss fight reachable on PASS and FAIL. Two bugs combined
   to strand the kid after gym 5: (A) `showGymComplete` was gating the
   ⚔️ Fight the Villain! button on `regionComplete` (`gymsCompleted.length >= 5`),
