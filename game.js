@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.28.1 HOTFIX: host view (?host=true) no longer shows stray player voucher/podium
+//                 buttons. Root cause was in style.css — `#screen-voucher { display:flex }`
+//                 (ID-specificity 1,0,0) won over `.screen { display:none }`, so the
+//                 voucher screen was ALWAYS visible regardless of `.active`. Scoped to
+//                 `#screen-voucher.active`. Defense-in-depth: showScreen now hides
+//                 `.voucher-actions`/`.podium-actions` when HOST.isHost is set.
 // v1.28: Game ↔ Room binding + My Games UI (SPEC Part 15 P2). A GAME is a
 //        per-room campaign (room_code is the key). bindGameToRoom() create-or-resume
 //        on join/rejoin; new room → fresh self-contained game; rejoin → resume.
@@ -1460,6 +1466,14 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0, 0);
+  // HOTFIX v1.28.1 (defense-in-depth): host view should never expose
+  // player-only action bars. If a CSS bug ever lets a player screen leak
+  // into the host viewport again, this catches the visible bits. The real
+  // fix is keeping each `#screen-*` CSS rule scoped to `.active`.
+  if (typeof HOST !== 'undefined' && HOST.isHost) {
+    document.querySelectorAll('.voucher-actions, .podium-actions')
+      .forEach(el => { el.style.display = 'none'; });
+  }
   // Persistent-identity: rendering the join screen shows who's logged in.
   if (id === 'screen-join' && typeof refreshJoinIdentityCard === 'function') {
     refreshJoinIdentityCard();

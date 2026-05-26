@@ -132,6 +132,14 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- HOTFIX v1.28.1: host view (`?host=true`) was leaking the player voucher
+  screen's "🖨️ Print Keepsake" + "← Back to Store" buttons. Root cause: CSS
+  ID-specificity — `#screen-voucher { display:flex }` (specificity 1,0,0) won
+  over `.screen { display:none }` (0,1,0), so the voucher screen was always
+  visible regardless of `.active`. Fixed by scoping to `#screen-voucher.active`
+  (same pattern as `.pdc-3col-screen.screen.active`). Defense-in-depth:
+  `showScreen` now hides `.voucher-actions` + `.podium-actions` when
+  `HOST.isHost` after each screen transition.
 - v1.28 (SPEC Part 15 P2): GAME ↔ ROOM BINDING + My Games UI LIVE. A GAME is now a
   per-room campaign (`room_code` is the key). `bindGameToRoom(row, code, player)`
   create-or-resume on join/rejoin; joining a new room creates a fresh self-contained

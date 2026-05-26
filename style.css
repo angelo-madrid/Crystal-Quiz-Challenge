@@ -3420,7 +3420,12 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
 .pdc-store-btn { margin-top: 8px; width: 100%; }
 
 /* Voucher keepsake (printable) */
-#screen-voucher {
+/* HOTFIX v1.28.1: scope to .active so the ID-specificity `display: flex` only
+   applies when the screen IS active. Without `.active` the rule used to win
+   over `.screen { display: none }` and leak the voucher (+ its Print/Back
+   buttons) onto host view. See also `.pdc-3col-screen.screen.active` which
+   uses the same correctly-scoped pattern. */
+#screen-voucher.active {
   display: flex; flex-direction: column; align-items: center;
   padding: 24px 14px;
   min-height: 100vh;
