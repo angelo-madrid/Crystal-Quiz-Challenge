@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.7.1   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.7.2   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -134,6 +134,16 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.31.2 HOST REGION TRACKER: room-detail overlay GAME PROGRESS strip
+  replaced with an interactive tracker — clickable R1–R10 tabs (✅/🔄/○)
+  + per-region phase row (Gyms → Boss Fight → Crystal Checkpoint) + a
+  per-player table (Player / Position / Crystals / Status). Active region
+  reads `bs.regionId` when a battle is live (fixes the drift where the
+  overlay showed R2 while kids fought the R1 boss). Player position reads
+  EACH kid's own `regions[rid].gymsCompleted.length` (Gym N/5 / Gyms
+  cleared / ⚔️ Boss fight / Region cleared / —) instead of the shared
+  `room.currentGym`. Files: game.js v1.31.2, index.html v1.8.14,
+  style.css v1.7.14.
 - v1.31.1 MULTIPLAYER HANG — REAL CAUSE: v1.31.0 fixed the ready-up clobber
   but UAT still hung — because `_battleWriteAnswer` had the identical
   last-write-wins bug. Two kids answering simultaneously each read `bs`,

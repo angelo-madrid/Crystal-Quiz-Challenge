@@ -1062,9 +1062,22 @@
         <div id="rd-player-list"></div>
       </section>
 
+      <!-- v1.31.2: Region tracker (replaces static R1-R10 progress strip).
+           Clickable region tabs + per-region phase row + per-player table that
+           reads each player's OWN gym position (not the shared room.currentGym
+           that drifts during boss fights). -->
       <section class="modal-section">
-        <div class="modal-section-label">🗺️ GAME PROGRESS</div>
-        <div class="rd-progress-row" id="rd-progress"></div>
+        <div class="modal-section-label">📊 REGION TRACKER</div>
+        <div id="rd-region-tabs" class="rd-region-tabs"></div>
+        <div id="rd-region-phases" class="rd-region-phases"></div>
+        <div id="rd-region-table-wrap">
+          <table class="rd-region-table">
+            <thead>
+              <tr><th>Player</th><th>Position</th><th>Crystals</th><th>Status</th></tr>
+            </thead>
+            <tbody id="rd-region-table-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="modal-section" id="rd-pokemon-section" style="display:none">

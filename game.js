@@ -1,5 +1,11 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.2: Host region tracker — replaced static R1-R10 progress strip in the
+//   room-detail overlay with clickable region tabs + a per-region phase row
+//   (Gyms → Boss Fight → Crystal Checkpoint) + a player table showing each
+//   player's OWN gym position (gym-level, no per-question writes). Active region
+//   reads bs.regionId when a battle is live (fixes the drift where the host saw
+//   R2 while kids fought the R1 boss). Position no longer hardcodes room.currentGym.
 // v1.31.1 FIX: Multiplayer hang — the REAL cause. v1.31.0 fixed the ready-up
 //   clobber but _battleWriteAnswer had the identical last-write-wins bug: two
 //   kids answering simultaneously clobbered each other's answeredThisRound flag,
@@ -7319,6 +7325,7 @@ const HOST_UI = {
   detailRoomCode: null,        // currently-open Room Detail Overlay
   ledgerModalPid: null,        // currently-open ledger modal
   uiPollInt: null,             // 15s slow poll for the 3-col data
+  trackerRegion: null,         // v1.31.2: which region tab is open in the tracker (defaults to active)
 };
 
 async function renderHostDashboard() {
@@ -8085,6 +8092,7 @@ async function col3ResetRoom() {
 // ═══════════════════════════════════════════════════════════
 async function openRoomDetail(code) {
   HOST_UI.detailRoomCode = code;
+  HOST_UI.trackerRegion = null;   // v1.31.2: defaults to active region on each fresh open
   await renderRoomDetail();
   document.getElementById('room-detail-overlay').style.display = 'flex';
 }
@@ -8094,6 +8102,108 @@ function closeRoomDetail() {
 }
 function roomDetailMaybeClose(e) {
   if (e.target.classList.contains('modal-overlay')) closeRoomDetail();
+}
+
+// v1.31.2: Region tracker — tabs + phase row + per-player table. Reads each
+// player's OWN progress (not shared room.currentGym). When a battle is live,
+// the "active region" is bs.regionId (room.currentRegion can drift).
+function _trackerActiveRegion(room) {
+  // True current region: battle region if live, else room.currentRegion.
+  if (room.battleState && room.battleState.outcome == null) {
+    return room.battleState.regionId || room.currentRegion || 1;
+  }
+  return room.currentRegion || 1;
+}
+
+function _trackerPlayerRegionState(p, regionId) {
+  // p.regions is the enriched save blob's regions map.
+  const reg = (p.regions && p.regions[regionId]) || {};
+  const done = Array.isArray(reg.gymsCompleted) ? reg.gymsCompleted : [];
+  return { gymsCompleted: done, count: done.length };
+}
+
+function renderRegionTracker(room, enriched) {
+  const activeRegion = _trackerActiveRegion(room);
+  if (HOST_UI.trackerRegion == null) HOST_UI.trackerRegion = activeRegion;
+  const sel = HOST_UI.trackerRegion;
+
+  // Tabs.
+  const tabsEl = document.getElementById('rd-region-tabs');
+  if (tabsEl) {
+    tabsEl.innerHTML = REGIONS.map(r => {
+      let cls = 'rd-region-tab';
+      let mark = '';
+      if (r.id < activeRegion) { cls += ' done'; mark = ' ✅'; }
+      else if (r.id === activeRegion) { cls += ' active-region'; mark = ' 🔄'; }
+      if (r.id === sel) cls += ' selected';
+      return `<button class="${cls}" onclick="selectTrackerRegion(${r.id})">R${r.id}${mark}</button>`;
+    }).join('');
+  }
+
+  // Phase row for the SELECTED region.
+  const phasesEl = document.getElementById('rd-region-phases');
+  if (phasesEl) {
+    const battleLive = room.battleState && room.battleState.outcome == null && (room.battleState.regionId === sel);
+    const battleWon  = room.battleState && room.battleState.outcome === 'win' && room.battleState.regionId === sel;
+    // Gyms phase: how many players cleared all 5 in this region (rough state).
+    const allGymsDone = enriched.length > 0 && enriched.every(p => _trackerPlayerRegionState(p, sel).count >= 5);
+
+    let gymsState, bossState, cpState;
+    if (sel < activeRegion) {
+      gymsState = 'done'; bossState = 'done'; cpState = 'done';
+    } else if (sel > activeRegion) {
+      gymsState = 'locked'; bossState = 'locked'; cpState = 'locked';
+    } else {
+      // Active region.
+      gymsState = allGymsDone ? 'done' : 'active';
+      bossState = battleWon ? 'done' : (battleLive ? 'active' : (allGymsDone ? 'active' : 'locked'));
+      cpState   = battleWon ? 'active' : 'pending';
+    }
+    const phase = (label, state, valMap) => `
+      <div class="rd-phase ${state}">
+        <div class="rd-phase-label">${label}</div>
+        <div class="rd-phase-val">${valMap[state] || ''}</div>
+      </div>`;
+    phasesEl.innerHTML =
+      phase('Gyms', gymsState, { active:'In progress', done:'Cleared', locked:'Locked' }) +
+      phase('Boss Fight', bossState, { active: battleLive ? 'Fighting' : 'Ready', done:'Defeated', locked:'Locked' }) +
+      phase('Crystal Checkpoint', cpState, { active:'Banking', pending:'Pending', done:'Banked', locked:'Locked' });
+  }
+
+  // Player table for the SELECTED region.
+  const bodyEl = document.getElementById('rd-region-table-body');
+  if (bodyEl) {
+    bodyEl.innerHTML = enriched.length ? enriched.map(p => {
+      const pres = presenceStatus(p.last_seen);
+      const presCls = pres.cls === 'connected' ? 'on' : (pres.cls === 'reconnecting' ? 'recon' : 'off');
+      const st = _trackerPlayerRegionState(p, sel);
+      // Position: gym-level only (no per-question writes — see v1.31.2 design note).
+      let pos;
+      if (sel < activeRegion) pos = 'Region cleared';
+      else if (sel > activeRegion) pos = '—';
+      else {
+        const live = room.battleState && room.battleState.outcome == null && room.battleState.regionId === sel && room.battleState.playerStates && room.battleState.playerStates[p.player_id];
+        pos = live ? '⚔️ Boss fight'
+            : st.count >= 5 ? 'Gyms cleared'
+            : `Gym ${st.count + 1} / 5`;
+      }
+      const band = p.ageGroup === 'junior' ? 'Junior' : 'Senior';
+      return `
+        <tr>
+          <td><div class="rt-player">${escapeHTML(p.name)}</div><div class="rt-sub">${band}</div></td>
+          <td>${pos}</td>
+          <td class="rt-crystals">💎 ${(p.total_crystals || 0).toLocaleString()}</td>
+          <td class="rt-presence ${presCls}">${pres.label}</td>
+        </tr>`;
+    }).join('') : `<tr><td colspan="4" class="col1-empty">No players yet.</td></tr>`;
+  }
+}
+
+function selectTrackerRegion(regionId) {
+  HOST_UI.trackerRegion = regionId;
+  // Re-render just the tracker using the last-read room. Simplest: re-render the
+  // whole overlay (cheap; it re-reads the room).
+  renderRoomDetail();
 }
 
 async function renderRoomDetail() {
@@ -8158,15 +8268,10 @@ async function renderRoomDetail() {
       }).join('')
     : '<div class="col1-empty">No players yet.</div>';
 
-  // Game progress R1..R10
-  const progressHTML = REGIONS.map(r => {
-    let cls = 'rd-progress-pill';
-    let icon = '○';
-    if (r.id < room.currentRegion) { cls += ' done'; icon = '✅'; }
-    else if (r.id === room.currentRegion) { cls += ' active'; icon = '🔄'; }
-    return `<span class="${cls}">${icon} R${r.id}</span>`;
-  }).join('');
-  document.getElementById('rd-progress').innerHTML = progressHTML;
+  // v1.31.2: Region tracker (replaces the old static R1-R10 progress strip).
+  // Reads each player's OWN progress + bs.regionId during live battles so the
+  // host sees the real region instead of drifted room.currentRegion.
+  renderRegionTracker(room, enriched);
 
   // Pokemon Available — only show during catch phases
   const pokeSection = document.getElementById('rd-pokemon-section');

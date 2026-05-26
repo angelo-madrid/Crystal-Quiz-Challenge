@@ -311,6 +311,20 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — HOST REGION TRACKER (2026-05-26, v1.31.2):**
+- Replaced the static R1–R10 progress strip in the room-detail overlay
+  with an interactive region tracker: clickable region tabs (✅/🔄/○),
+  per-region phase row (Gyms → Boss Fight → Crystal Checkpoint), and a
+  per-player table (Player / Position / Crystals / Status).
+- Active region reads `bs.regionId` whenever a battle is live — fixes
+  the drift where the overlay showed R2 while kids fought the R1 boss.
+- Player position reads EACH kid's own `regions[rid].gymsCompleted.length`
+  (`Gym N/5`, `Gyms cleared`, `⚔️ Boss fight`, `Region cleared`, or `—`)
+  instead of the shared `room.currentGym` that drifts.
+- `HOST_UI.trackerRegion` defaults to the active region on each fresh
+  `openRoomDetail`; clicking a tab overrides for the viewing session.
+- Files: game.js v1.31.2, index.html v1.8.14, style.css v1.7.14.
+
 **Track C — MULTIPLAYER HANG: THE REAL CAUSE (2026-05-26, v1.31.1 — Bug #10):**
 - v1.31.0 fixed the ready-up clobber, but UAT still hung — because
   `_battleWriteAnswer` had the identical last-write-wins bug.

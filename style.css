@@ -3753,3 +3753,32 @@ input[type=text]::placeholder { color: rgba(255,255,255,0.3); }
   border: 1px solid rgba(255,255,255,0.2);
 }
 .bc-pip.filled { background: #BA7517; border-color: #BA7517; }
+
+/* v1.31.2 — region tracker (room-detail overlay) */
+.rd-region-tabs { display:flex; gap:4px; flex-wrap:wrap; margin-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,0.1); }
+.rd-region-tab { padding:7px 12px; border-radius:8px 8px 0 0; border:1px solid transparent;
+  background:transparent; font-size:13px; color:rgba(255,255,255,0.6); cursor:pointer; }
+.rd-region-tab.done { color:#9ae6a0; }
+.rd-region-tab.selected { background:rgba(255,255,255,0.06);
+  border-color:rgba(255,255,255,0.12); border-bottom-color:transparent; color:#fff; font-weight:600; }
+.rd-region-phases { display:flex; gap:8px; margin-bottom:14px; }
+.rd-phase { flex:1; padding:10px; border-radius:8px; background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1); text-align:center; }
+.rd-phase.active { border:2px solid #f5c542; background:rgba(245,197,66,0.12); }
+.rd-phase.done { background:rgba(99,153,34,0.18); border-color:rgba(99,153,34,0.4); }
+.rd-phase.locked { opacity:0.5; }
+.rd-phase-label { font-size:11px; color:rgba(255,255,255,0.6); text-transform:uppercase; letter-spacing:0.04em; }
+.rd-phase-val { font-size:13px; font-weight:600; margin-top:3px; }
+.rd-phase.active .rd-phase-val { color:#f5c542; }
+.rd-phase.done .rd-phase-val { color:#9ae6a0; }
+.rd-region-table { width:100%; border-collapse:collapse; font-size:13px; }
+.rd-region-table th { text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.04em;
+  color:rgba(255,255,255,0.4); font-weight:400; padding:6px 10px; border-bottom:1px solid rgba(255,255,255,0.1); }
+.rd-region-table td { padding:9px 10px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.rt-player { font-weight:600; }
+.rt-sub { font-size:11px; color:rgba(255,255,255,0.55); }
+.rt-crystals { color:#7fd4ff; font-weight:600; }
+.rt-presence.on { color:#9ae6a0; }
+.rt-presence.recon { color:#f5c542; }
+.rt-presence.off { color:rgba(255,255,255,0.4); }
