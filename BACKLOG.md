@@ -297,6 +297,16 @@ OPEN QUESTIONS (resolve before build):
 
 ## ✅ DONE (rolling archive)
 
+**Track C — BOSS LOSS SCREEN COPY REWORK (2026-05-26, v1.29.5):**
+- Reworded the boss loss screen from punishing to encouraging (north star:
+  teach without punishing).
+- HTML title `<h2>The villain escaped!</h2>` → `<h2 id="battle-loss-title">Haha,
+  nice try!</h2>` so JS can stamp the per-region villain name.
+- `_battleShowLoss` writes `{villain}: "Haha, nice try!"` to the title and
+  "You guys need more practice — come back stronger!" to the sub-message
+  (with `(X/3 hits — aim for 3 next time!)` appended when contribution < N=3).
+- Try Again + Back to Map buttons unchanged.
+
 **Track C — BOSS ROUND SUMMARY FIX (2026-05-26, v1.29.3 RETRY):**
 - Bug: after a player answered, the round summary never appeared → kid stuck
   on the answered question screen forever (blocking the entire boss loop).

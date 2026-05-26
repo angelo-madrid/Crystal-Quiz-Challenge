@@ -1,5 +1,8 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.5: Boss loss screen — replaced "The villain escaped!" with villain
+//   taunt ("Haha, nice try!") + encouraging sub-message ("You guys need more
+//   practice — come back stronger!"). North star: teach without punishing.
 // v1.29.3 FIX (applied retroactively — original v1.29.3 prompt was missed; this
 //   ships AFTER v1.29.4 chronologically, but the FIX it carries is v1.29.3):
 //   Boss round summary never appears after answering.
@@ -5727,9 +5730,16 @@ function _battleShowLoss(bs) {
   const boss = BOSS_DATA[bs.regionId];
   const ps   = bs.playerStates[STATE.player.id];
   const myContrib = ps ? ps.correctThisBattle : 0;
-  let msg = `${boss?.villain || 'The villain'} got away!`;
+  const villain = (boss && boss.villain) || 'The villain';
+
+  // v1.29.5: taunt title — villain gloats. North star: teach without punishing.
+  const titleEl = document.getElementById('battle-loss-title');
+  if (titleEl) titleEl.textContent = `${villain}: "Haha, nice try!"`;
+
+  // Sub-message — encouraging, not punishing.
+  let msg = 'You guys need more practice — come back stronger!';
   if (myContrib < BATTLE_MIN_CONTRIBUTION) {
-    msg += ` You got ${myContrib}/${BATTLE_MIN_CONTRIBUTION} answers in — try to hit ${BATTLE_MIN_CONTRIBUTION} next time.`;
+    msg += ` (${myContrib}/${BATTLE_MIN_CONTRIBUTION} hits — aim for ${BATTLE_MIN_CONTRIBUTION} next time!)`;
   }
   document.getElementById('battle-loss-msg').textContent = msg;
   document.getElementById('battle-loss').style.display = 'block';

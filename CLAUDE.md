@@ -132,6 +132,13 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.29.5 COPY: boss loss screen reworded to teach without punishing.
+  `_battleShowLoss` now stamps a villain taunt into a new `#battle-loss-title`
+  (`{villain}: "Haha, nice try!"`) and writes an encouraging sub-message
+  ("You guys need more practice — come back stronger!" + N=3 contribution
+  hint when relevant). Was: "{villain} got away!" + punishing
+  "You got X/3 answers in — try to hit 3 next time." Try Again + Back to
+  Map buttons unchanged.
 - v1.29.3 RETRY FIX (applied retroactively after v1.29.4): boss round summary
   never appeared after a player answered → kid stuck on the answered question
   screen forever, blocking the boss loop. `_battlePollTick`'s
