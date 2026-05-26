@@ -132,6 +132,13 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- HOTFIX v1.28.3: `pokemonDisplayName` reads `catchForm` (primary) for the 183
+  regional Pokémon — they carry the real name in `catchForm`, not `name`. The
+  v1.28.2 resolver fell through to prettify-id, mangling hyphenated names
+  (Jangmo-o → "Jangmo O", Ho-Oh → "Ho Oh"). Prettify-id demoted to last resort
+  for stub objects; id-lookup now also accepts `match.catchForm`. The
+  v1.28.2 catch-site stamps (`name: src.name || pokemonDisplayName(src)`) now
+  correctly stamp regional catches with `catchForm` automatically.
 - HOTFIX v1.28.2 (UAT batch): (1) ability cadence changed from one-per-gym to
   ONE-PER-QUESTION (`abilityUsedThisGym` → `abilityUsedThisQuestion`, reset in
   `loadQuestion`). Pace is now up to ~10 XP events/gym (~50/region). Per-gym

@@ -1,5 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.28.3 HOTFIX: pokemonDisplayName now reads `catchForm` (the real regional name)
+//                 before the id-prettify fallback — fixes mangled names like
+//                 Jangmo-o / Ho-Oh / Philippine-Eagle / Mariang-Makiling. The
+//                 v1.28.2 resolver fell through to prettify-id for all 183 regional
+//                 entries; data is correct, code just wasn't reading the right field.
 // v1.28.2 HOTFIX (UAT batch):
 //   (1) abilities now usable ONE PER QUESTION (was one per gym) —
 //       `abilityUsedThisGym` renamed to `abilityUsedThisQuestion`, reset each
@@ -1113,7 +1118,8 @@ function getAbilityLabel(p) {
 // older saves / catch objects spread from a source without a `name` field.
 function pokemonDisplayName(p) {
   if (!p) return 'Pokémon';
-  if (p.name) return p.name;
+  if (p.name) return p.name;            // starters + bench carry `name`
+  if (p.catchForm) return p.catchForm;  // ← regional: the real caught-form name (FIX v1.28.3)
   // Try to recover from the loaded pokemon data by id. STATE.pokemon is the
   // global cache (populated by loadPokemon()) with shape:
   //   { starters: [...], regional: { "1": [...], … }, bench: [...] }
@@ -1129,9 +1135,10 @@ function pokemonDisplayName(p) {
     if (Array.isArray(STATE.pokemon.bench)) pools.push(STATE.pokemon.bench);
     for (const pool of pools) {
       const match = pool.find(x => x && x.id === id);
-      if (match && match.name) return match.name;
+      if (match && (match.name || match.catchForm)) return match.name || match.catchForm;
     }
-    // Last resort: prettify the id.
+    // Last resort: prettify the id (and only used now if name AND catchForm are
+    // both missing on the source entry — a malformed/stub object).
     return String(id).replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
   }
   return 'Pokémon';

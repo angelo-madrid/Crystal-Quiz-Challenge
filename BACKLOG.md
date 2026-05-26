@@ -210,13 +210,14 @@ OPEN QUESTIONS (resolve before build):
   allowed. Watch at UAT: does HP growth now feel rewarding without overshooting?
   Tune `STATE.abilityUsedThisQuestion` if a softer cadence is wanted (it's the
   lever). v1.22: code now matches SPEC v3 appreciating-asset model.
-- POKEMON.JSON DATA GAP (surfaced by v1.28.2 hotfix): only 10/193 entries carry
-  a `name` field (the 10 starters). 183 regional entries are nameless — they
-  rely on the v1.28.2 `pokemonDisplayName` id-prettify fallback (e.g. `caterpie`
-  → `Caterpie`). Works for english-ish ids but loses casing/punctuation for
-  multi-word or non-ascii names. POPULATE `name` on all regional + bench
-  entries in pokemon.json for proper display. Resolver protects against
-  regressions either way.
+- ~~POKEMON.JSON DATA GAP (surfaced by v1.28.2 hotfix)~~ ✅ RESOLVED v1.28.3 —
+  MISDIAGNOSIS. The names exist on all 183 regional entries; they live in the
+  `catchForm` field, not `name`. v1.28.3 resolver reads `catchForm` as the
+  primary fallback before the id-prettify path, picking up the correct
+  hyphenated names (Jangmo-o, Ho-Oh, Philippine-Eagle, Mariang-Makiling). Not
+  a data gap. The evolution-data model (`catchForm` + `evolutionChain` +
+  `stages`) is already in pokemon.json, ready for the future evolution build
+  (BACKLOG items 29–31).
 - CATCH-BETWEEN-GYMS (v1.22): more catches/region than the region-end economy
   assumed (up to 5 catch screens/region vs 1). Watch ball economy + team-fill
   speed + strong/struggling gap at UAT.
