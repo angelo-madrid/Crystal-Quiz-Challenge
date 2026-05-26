@@ -1,5 +1,10 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.29.1 HOTFIX: regional-catch SELECTION grid + click-update + result toasts now use
+//                 pokemonDisplayName() — was reading raw `.name` so all 183 regional
+//                 Pokémon (which carry name in `catchForm`, not `name`) showed
+//                 "undefined". Six sites total (3 in renderRegionalCatch + 1 in
+//                 selectRegionalPokemon + 2 in showRegionalCatchResult).
 // v1.29: BOSS FIGHT reachability fix (SPEC 14G). `startBossFight` now sets
 //        `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` so the host boss panel
 //        reveals (was gated on phase === 'BOSS_FIGHT' but phase was never set →
@@ -3327,7 +3332,7 @@ function selectRegionalPokemon(pokeId) {
     throwBtn.disabled = !canThrow;
     throwBtn.style.opacity = canThrow ? '' : '0.4';
     throwBtn.textContent = canThrow
-      ? `⚡ Throw Pokeball at ${poke.emoji} ${poke.name}!`
+      ? `⚡ Throw Pokeball at ${poke.emoji} ${pokemonDisplayName(poke)}!`
       : `⚡ ${s.pokeballs <= 0 ? 'Buy a Pokeball first' : 'Throw Pokeball!'}`;
   }
 }
@@ -3346,7 +3351,7 @@ function renderRegionalCatch() {
   const canBuy = s.ballsThrown + s.pokeballs < 3 && have >= cost;
   const canThrow = s.pokeballs > 0 && s.selectedPokemon;
   const caughtNames = s.caughtPokemon.length > 0
-    ? s.caughtPokemon.map(p => `${p.emoji} ${p.name}`).join(', ')
+    ? s.caughtPokemon.map(p => `${p.emoji} ${pokemonDisplayName(p)}`).join(', ')
     : '—';
 
   // Phase 1 step 1.4: 10 catchable region Pokemon with race-rule greyout.
@@ -3371,7 +3376,7 @@ function renderRegionalCatch() {
                id="rsc-${p.id}"
                onclick="${isCaught ? '' : `selectRegionalPokemon('${p.id}')`}">
             <div class="sc-emoji">${p.emoji}</div>
-            <div class="sc-name">${p.name}</div>
+            <div class="sc-name">${pokemonDisplayName(p)}</div>
             <div class="sc-type">${p.type}</div>
             <div class="sc-ability">⚡ ${getAbilityLabel(p)}</div>
             <div class="sc-desc">${getAbilityDesc(p)}</div>
@@ -3408,7 +3413,7 @@ function renderRegionalCatch() {
               ${canThrow ? '' : 'disabled style="opacity:0.4"'}
               onclick="attemptRegionalCatch()">
         ${canThrow
-          ? `⚡ Throw Pokeball at ${s.selectedPokemon.emoji} ${s.selectedPokemon.name}!`
+          ? `⚡ Throw Pokeball at ${s.selectedPokemon.emoji} ${pokemonDisplayName(s.selectedPokemon)}!`
           : (s.pokeballs <= 0 ? '⚡ Buy a Pokeball first' : '⚡ Pick a Pokemon first')}
       </button>
       <button class="btn-secondary" onclick="finishRegionalCatch()">
@@ -3635,7 +3640,7 @@ function showRegionalCatchResult(caught) {
     recordCatchInRoom(newPokemon);
     // SPEC Part 12G: a successful catch resets the pity counter.
     resetPityCounter(target.id);
-    fb.textContent = `🎉 ${target.emoji} ${target.name} caught! (${target.rarity})`;
+    fb.textContent = `🎉 ${target.emoji} ${pokemonDisplayName(target)} caught! (${target.rarity})`;
     fb.className = 'feedback-bar correct';
   } else {
     // SPEC Part 12G: bump the pity counter on miss. If we've now crossed
@@ -3643,9 +3648,10 @@ function showRegionalCatchResult(caught) {
     if (target) {
       const n = bumpPityCounter(target.id);
       const pityFires = n >= PITY_MISS_THRESHOLD;
+      const tname = pokemonDisplayName(target);
       fb.textContent = pityFires
-        ? `💨 ${target.emoji} ${target.name} broke free! (${n} misses — next try is one tier easier 🙏)`
-        : `💨 ${target.emoji} ${target.name} broke free! Ball wasted.`;
+        ? `💨 ${target.emoji} ${tname} broke free! (${n} misses — next try is one tier easier 🙏)`
+        : `💨 ${target.emoji} ${tname} broke free! Ball wasted.`;
     } else {
       fb.textContent = `💨 It broke free! Ball wasted.`;
     }

@@ -215,7 +215,10 @@ OPEN QUESTIONS (resolve before build):
   allowed. Watch at UAT: does HP growth now feel rewarding without overshooting?
   Tune `STATE.abilityUsedThisQuestion` if a softer cadence is wanted (it's the
   lever). v1.22: code now matches SPEC v3 appreciating-asset model.
-- ~~POKEMON.JSON DATA GAP (surfaced by v1.28.2 hotfix)~~ ✅ RESOLVED v1.28.3 —
+- ~~POKEMON.JSON DATA GAP (surfaced by v1.28.2 hotfix)~~ ✅ RESOLVED v1.28.3
+  (+ v1.29.1 follow-up: 6 catch-grid render sites missed by v1.28.2 also wired
+  through `pokemonDisplayName` — `renderRegionalCatch` ×3, `selectRegionalPokemon`,
+  `showRegionalCatchResult` ×2) —
   MISDIAGNOSIS. The names exist on all 183 regional entries; they live in the
   `catchForm` field, not `name`. v1.28.3 resolver reads `catchForm` as the
   primary fallback before the id-prettify path, picking up the correct

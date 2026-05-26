@@ -132,6 +132,14 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- HOTFIX v1.29.1: regional-catch SELECTION grid (and click-update + result
+  toasts) now route through `pokemonDisplayName()`. v1.28.2 wired the resolver
+  into team/battle/dashboard renders but missed the catch grid — all 183
+  regional Pokémon (which carry their name in `catchForm`, not `name`) were
+  showing "undefined" on the catch-selection screen. Six sites swapped:
+  `renderRegionalCatch` (card name, caughtNames list, Throw button initial),
+  `selectRegionalPokemon` (Throw button on tap), `showRegionalCatchResult`
+  (catch + broke-free toasts).
 - v1.29 (SPEC 14G boss reachability — THE #1 UAT BLOCKER fix): `startBossFight`
   now sets `room.phase = 'BOSS_FIGHT'` + `room.currentRegion` on player arrival
   (was only writing `battleState`, but the host boss panel gates on
