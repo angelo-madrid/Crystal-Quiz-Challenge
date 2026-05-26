@@ -193,6 +193,14 @@ OPEN QUESTIONS (resolve before build):
 
 ## 🟡 WATCH-ITEMS (locked, monitor in playtest)
 
+- Room-blob last-write-wins concurrency (v1.31.0): battle `readyForNext` +
+  `room.phase` patched defensively (re-read-merge on the kid side + widened
+  host gates + Force-Next-Round phase heal). Architectural root is unfixed —
+  every `dbWriteRoom` on the same blob is last-write-wins. Audit other
+  multiplayer writes for the same clobber risk: presence heartbeat, gym
+  progress, gymsCompleted writes, broadcast announcements. Real fix needs
+  atomic server-side updates (Supabase RPC / Postgres function) or
+  per-player sub-records instead of a single `room.battleState` JSONB blob.
 - Post-gym rescue coverage gap: EXTRA SHOT/TIME TRAVEL on Rare+ only — low-level kids
   can't field a post-gym rescue. Watch for frustration.
 - Draft pacing / host complexity: turn-order, whose-turn UI, pass handling, soft timer.
@@ -296,6 +304,27 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — MULTIPLAYER BOSS HANG FIX (2026-05-26, v1.31.0 — Bug #10):**
+- 3-kid UAT surfaced two concurrency failures from Supabase last-write-wins
+  on the room blob.
+- (A) `battleReadyUp` re-read+union: simultaneous Ready taps clobbered
+  `bs.readyForNext` → stuck at "waiting (2/3)". Now re-reads the room
+  immediately before write, unions both `readyForNext` arrays, then writes.
+  Bail-out branch added if a parallel writer already advanced the round.
+- (B) Host boss panel gate widened: `renderRoomDetail` (room-detail overlay)
+  AND dashboard col3 now show the boss panel whenever `room.battleState`
+  is live (`outcome == null`), not just when `phase === 'BOSS_FIGHT'` — so
+  phase drift from concurrent writes no longer hides Force Next Round.
+- (C) `hostBattleForceNextRound` forces the round regardless of ready
+  count (disconnect / clobbered-ready recovery) AND re-stamps
+  `phase = 'BOSS_FIGHT'` + `currentRegion = bs.regionId` to heal drift.
+  Re-renders the room-detail overlay if open.
+- (D) `_battlePollTick` self-heal: any kid noticing a live battle with
+  the wrong `room.phase` re-stamps `'BOSS_FIGHT'`. Cheap and idempotent.
+- ⚠️ This is a defensive patch — the architectural root (room blob
+  last-write-wins) is logged as a new WATCH-ITEM. Audit other
+  multiplayer writes (heartbeat, progress) for the same clobber risk.
 
 **Track C — CHOOSE YOUR POKÉMON + SINGLE-FIELDED BATTLE MODEL (2026-05-26, v1.30.0):**
 - Battle model changed from whole-team-contributes-abilities to ONE fielded

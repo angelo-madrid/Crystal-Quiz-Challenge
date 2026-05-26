@@ -1,5 +1,15 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.0: MULTIPLAYER BOSS HANG FIX (Bug #10). Two concurrency failures from
+//   Supabase last-write-wins on the room blob:
+//   (A) 3 kids tapping Ready simultaneously clobbered readyForNext → stuck at
+//       "waiting (2/3)". battleReadyUp now re-reads + unions the ready array
+//       immediately before writing so simultaneous readies converge.
+//   (B) room.phase drifted off 'BOSS_FIGHT' (clobbered) → host boss panel hidden
+//       → no Force Next Round. Host panel (both renderRoomDetail + col3) now shows
+//       whenever battleState is live, regardless of phase. Force Next Round forces
+//       the round regardless of ready count AND re-stamps phase=BOSS_FIGHT.
+//   (C/D) phase self-heal on force + in player poll.
 // v1.30.1 TUNING: BOSS_DAMAGE_PER_HIT 35 → 18. At level-1 HP (~120), 35 dmg
 //   killed solo players in ~4 rounds — unwinnable before N=3 + boss kill.
 //   18 gives ~6–7 rounds of survivability. Single knob; adjust 12–25 in UAT.
@@ -4955,6 +4965,15 @@ async function _battlePollTick() {
     if (!room || !room.battleState) return;
     const bs = room.battleState;
 
+    // v1.31: self-heal phase drift — if a battle is live but room.phase isn't
+    // BOSS_FIGHT (clobbered by a concurrent write), the host panel would hide.
+    // Any kid that notices re-stamps it. Cheap and idempotent.
+    if (bs.outcome == null && room.phase !== 'BOSS_FIGHT') {
+      room.phase = 'BOSS_FIGHT';
+      room.updated_at = new Date().toISOString();
+      try { await dbWriteRoom(STATE.roomCode, room); } catch(_) {}
+    }
+
     // Always refresh HP bar + round info from authoritative room state.
     _battleSyncHpBar(bs);
     _battleSyncContribCards(bs);
@@ -5602,27 +5621,41 @@ async function battleReadyUp() {
     if (bs.outcome !== null) return;           // fight over
     if (bs.roundActive) return;                // next round already started
 
+    // CONCURRENCY-SAFE MERGE: other kids may have written their ready id between
+    // our read and write. We can't prevent last-write-wins on the blob, but we
+    // CAN minimise the window: append our id to whatever the freshest read has,
+    // then re-read once more right before writing and merge again. This makes
+    // simultaneous readies converge instead of clobbering each other.
     if (!Array.isArray(bs.readyForNext)) bs.readyForNext = [];
     if (!bs.readyForNext.includes(pid)) bs.readyForNext.push(pid);
 
+    // Re-read immediately before write and union the ready arrays.
+    const fresh = await dbReadRoom(code);
+    const fbs   = (fresh && fresh.battleState) ? fresh.battleState : bs;
+    if (fbs.outcome !== null || fbs.roundActive) {
+      // Someone already advanced — sync local and bail.
+      room.battleState = fbs;
+      _battleRoundAnswered = false;
+      return;
+    }
+    const merged = Array.from(new Set([...(fbs.readyForNext || []), ...bs.readyForNext]));
+    fbs.readyForNext = merged;
+
     // All active (non-fainted) players ready? → start the next round.
-    const activeIds = Object.keys(bs.playerStates).filter(id => !bs.playerStates[id].fainted);
-    const allReady  = activeIds.length > 0 && activeIds.every(id => bs.readyForNext.includes(id));
+    const activeIds = Object.keys(fbs.playerStates).filter(id => !fbs.playerStates[id].fainted);
+    const allReady  = activeIds.length > 0 && activeIds.every(id => merged.includes(id));
     if (allReady) {
-      bs.roundActive  = true;
-      bs.readyForNext = [];
+      fbs.roundActive  = true;
+      fbs.readyForNext = [];
     }
 
-    room.battleState = bs;
-    room.updated_at  = new Date().toISOString();
-    await dbWriteRoom(code, room);
+    fresh.battleState = fbs;
+    fresh.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, fresh);
 
-    // Local UI: re-render the summary so the ready count updates, OR if the
-    // round just started, the next poll tick will serve the question.
-    if (!bs.roundActive) {
-      _battleShowRoundSummary(bs);
+    if (!fbs.roundActive) {
+      _battleShowRoundSummary(fbs);
     } else {
-      // Reset answered flag so the poll serves the new round to us.
       _battleRoundAnswered = false;
     }
   } catch(e) { console.warn('[battleReadyUp]', e); }
@@ -7694,9 +7727,10 @@ async function renderCol3Controls() {
     lockBtn.classList.toggle('on', !!room.locked);
   }
 
-  // ── BOSS FIGHT panel — only shown when phase === BOSS_FIGHT ──
+  // ── BOSS FIGHT panel — shown when phase === BOSS_FIGHT OR a battle is live
+  //    (v1.31: phase can drift off BOSS_FIGHT via concurrent writes). ──
   const battlePanel = document.getElementById('col3-battle-panel');
-  if (room.phase === 'BOSS_FIGHT') {
+  if (room.phase === 'BOSS_FIGHT' || (room.battleState && room.battleState.outcome == null)) {
     if (battlePanel) {
       await _hostRenderBattlePanel(code, room, battlePanel);
       battlePanel.style.display = 'block';
@@ -7828,17 +7862,24 @@ async function hostBattleStartRound(code) {
 // Normal flow is kid-paced (last Ready tap auto-starts); this is the escape hatch.
 async function hostBattleForceNextRound(code) {
   const room = await dbReadRoom(code);
-  if (!room || !room.battleState) return;
+  if (!room || !room.battleState) { showToast('⚠️ No battle in progress'); return; }
   const bs = room.battleState;
-  if (bs.roundActive) { showToast('Round already active'); return; }
   if (bs.outcome !== null) { showToast('Fight already over'); return; }
+  if (bs.roundActive) { showToast('Round already active'); return; }
+  // Force the round regardless of ready count (disconnect / clobbered-ready
+  // recovery). Also re-stamp phase=BOSS_FIGHT to heal any drift so the panel
+  // and kid screens stay coherent.
   bs.roundActive  = true;
   bs.readyForNext = [];
   room.battleState = bs;
-  room.updated_at  = new Date().toISOString();
+  room.phase      = 'BOSS_FIGHT';
+  room.currentRegion = bs.regionId || room.currentRegion;
+  room.updated_at = new Date().toISOString();
   await dbWriteRoom(code, room);
+  if (HOST.roomCode === code) HOST.currentPhase = 'BOSS_FIGHT';
   showToast(`▶ Forced Round ${bs.round}`);
   renderHostDashboard();
+  if (HOST_UI.detailRoomCode === code) { try { renderRoomDetail(); } catch(_){} }
 }
 
 // Papa grants a R10 Legendary-gate override for a specific kid. Logged
@@ -8118,7 +8159,12 @@ async function renderRoomDetail() {
   const rdBattleSection = document.getElementById('rd-battle-section');
   const rdBattlePanel   = document.getElementById('rd-battle-panel');
   if (rdBattleSection && rdBattlePanel) {
-    if (room.phase === 'BOSS_FIGHT') {
+    // v1.31: show the boss panel whenever a battle is LIVE (battleState exists
+    // and not resolved), even if room.phase drifted away from 'BOSS_FIGHT' due
+    // to concurrent writes. This guarantees the host always has Force Next Round
+    // + End Fight while kids are mid-battle.
+    const battleLive = room.battleState && room.battleState.outcome == null;
+    if (room.phase === 'BOSS_FIGHT' || battleLive) {
       await _hostRenderBattlePanel(code, room, rdBattlePanel);
       rdBattleSection.style.display = 'block';
     } else {

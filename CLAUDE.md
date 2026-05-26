@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.6.9   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.7.0   ·   LAST UPDATED: 2026-05-26         │
 │ SYNCED TO SPEC: v3.9 (economy 12-NEW now BUILT @ v0.6.3;     │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -134,6 +134,20 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.31.0 MULTIPLAYER BOSS HANG FIX (Bug #10): two concurrency failures from
+  Supabase last-write-wins on the room blob. (A) `battleReadyUp` re-reads +
+  unions `bs.readyForNext` immediately before write — simultaneous 3-kid
+  Ready taps no longer clobber each other into a 2/3 stall. (B) Host boss
+  panel gate widened at BOTH render sites (`renderRoomDetail` overlay +
+  dashboard col3) to show whenever `battleState.outcome == null`, not just
+  when `phase === 'BOSS_FIGHT'` — so phase drift from concurrent writes no
+  longer hides Force Next Round. (C) `hostBattleForceNextRound` forces the
+  round regardless of ready count AND re-stamps `phase = 'BOSS_FIGHT'` +
+  `currentRegion` to heal drift. (D) `_battlePollTick` self-heals phase
+  drift on every kid's poll. ⚠️ ARCHITECTURAL: blob-level last-write-wins
+  is the root — defensive patches only. New WATCH-ITEM logged: audit
+  other multiplayer writes (heartbeat, progress) for the same clobber risk.
+  Real fix needs atomic server-side updates or per-player sub-records.
 - v1.30.1 TUNING: `BOSS_DAMAGE_PER_HIT` 35 → 18. At level-1 HP ~120, 35 dmg/hit
   killed solo players in ~4 rounds — unwinnable before N=3 + boss kill,
   especially tight under the v1.30 single-fielded model (fewer abilities).
