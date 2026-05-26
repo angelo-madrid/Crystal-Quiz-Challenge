@@ -374,11 +374,15 @@ forces forward; host pause freezes each kid’s question timer. Schema: add
 
 ## PART 8 — HP, XP & DAMAGE NUMBERS  *(NEW in v3 · v3.8 implementation note)*
 
-> **IMPLEMENTATION NOTE (v3.8):** the build (v1.22) KEEPS one ability use per gym
-> (non-consuming), so a kid earns ~5 XP events/region, not the ~15 the original
-> "~1 region per band" estimate below assumes. Effective pace ≈ 2 regions per
-> band. Deliberate (gentler economy); revisit at UAT — removing the per-gym limit
-> is the lever if growth feels too slow.
+> **IMPLEMENTATION NOTE (v3.8 → v1.28.2 UAT pull):** the v1.22 build initially KEPT
+> one ability use per gym, yielding ~5 XP events/region. UAT (2026-05-26) found that
+> cadence too restrictive, and the **per-gym lever was pulled**: from v1.28.2 the
+> build allows one ability use per QUESTION (still non-consuming, still one per
+> question — multiple abilities on a single question are NOT allowed). Pace is now
+> up to ~10 XP events per gym (~50 per region), bringing the curve back in line
+> with — even slightly above — the original "~1 region per band" estimate below.
+> Tune at UAT against the observed growth feel; the lever still exists in
+> `STATE.abilityUsedThisQuestion` if a softer cadence is wanted.
 
 **Target duel length:** ~10 rounds.
 **HP = the single strength stat (INPUT). Attack damage = OUTPUT, derived from

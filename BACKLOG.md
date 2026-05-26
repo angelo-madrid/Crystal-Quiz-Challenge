@@ -204,10 +204,19 @@ OPEN QUESTIONS (resolve before build):
   pre-game; AUDIT the other phase screens (gym, regional catch, boss fight) for
   the same re-entry pattern during UAT — confirm reconnect always routes to the
   correct CURRENT state, never a completed one.
-- ABILITY ECONOMY (v1.22): code now matches SPEC v3 appreciating-asset model
-  (was still running dead v2 consume-on-use). Watch at UAT: does HP growth feel
-  rewarding? Is +band/10 per use noticeable? Is one-use-per-gym too slow vs the
-  Part 8 curve (which assumed ~3/gym)? Removing the per-gym limit is the lever.
+- ABILITY ECONOMY — UPDATED v1.28.2 (UAT pulled the lever): one-per-gym was too
+  restrictive, cadence is now **one ability per QUESTION** (up to ~10 XP events
+  per gym, ~50 per region). Multiple abilities on a SINGLE question still NOT
+  allowed. Watch at UAT: does HP growth now feel rewarding without overshooting?
+  Tune `STATE.abilityUsedThisQuestion` if a softer cadence is wanted (it's the
+  lever). v1.22: code now matches SPEC v3 appreciating-asset model.
+- POKEMON.JSON DATA GAP (surfaced by v1.28.2 hotfix): only 10/193 entries carry
+  a `name` field (the 10 starters). 183 regional entries are nameless — they
+  rely on the v1.28.2 `pokemonDisplayName` id-prettify fallback (e.g. `caterpie`
+  → `Caterpie`). Works for english-ish ids but loses casing/punctuation for
+  multi-word or non-ascii names. POPULATE `name` on all regional + bench
+  entries in pokemon.json for proper display. Resolver protects against
+  regressions either way.
 - CATCH-BETWEEN-GYMS (v1.22): more catches/region than the region-end economy
   assumed (up to 5 catch screens/region vs 1). Watch ball economy + team-fill
   speed + strong/struggling gap at UAT.

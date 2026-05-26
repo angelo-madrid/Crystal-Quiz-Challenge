@@ -132,6 +132,16 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- HOTFIX v1.28.2 (UAT batch): (1) ability cadence changed from one-per-gym to
+  ONE-PER-QUESTION (`abilityUsedThisGym` → `abilityUsedThisQuestion`, reset in
+  `loadQuestion`). Pace is now up to ~10 XP events/gym (~50/region). Per-gym
+  lever pulled at UAT; the per-question one still exists if a softer cadence
+  is wanted. SPEC Part 8 v3.8 implementation note revised. (2) `pokemonDisplayName`
+  resolver added (field → STATE.pokemon id-lookup → prettified id) to fix
+  "undefined" team names — pokemon.json carries `name` on only 10/193 entries
+  (starters only), so 183 regional entries are nameless. `name` stamped at all
+  3 catch sites (pregame/regional/boss) going forward; resolver handles existing
+  saves.
 - HOTFIX v1.28.1: host view (`?host=true`) was leaking the player voucher
   screen's "🖨️ Print Keepsake" + "← Back to Store" buttons. Root cause: CSS
   ID-specificity — `#screen-voucher { display:flex }` (specificity 1,0,0) won

@@ -1,5 +1,14 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.28.2 HOTFIX (UAT batch):
+//   (1) abilities now usable ONE PER QUESTION (was one per gym) —
+//       `abilityUsedThisGym` renamed to `abilityUsedThisQuestion`, reset each
+//       `loadQuestion`. SPEC Part 8 v3.8 note revised: pace is up to ~10 ability
+//       XP events per gym (not 1).
+//   (2) Pokémon name resolver (`pokemonDisplayName`) fixes "undefined" team
+//       names from nameless catch objects (only 10/193 pokemon.json entries carry
+//       `name`; resolver falls back field → id-lookup → prettified id). `name`
+//       stamped at all 3 catch sites (pregame / regional / boss reward).
 // v1.28.1 HOTFIX: host view (?host=true) no longer shows stray player voucher/podium
 //                 buttons. Root cause was in style.css — `#screen-voucher { display:flex }`
 //                 (ID-specificity 1,0,0) won over `.screen { display:none }`, so the
@@ -1098,6 +1107,36 @@ function getAbilityLabel(p) {
   return '';
 }
 
+// Robust display name for a team Pokémon (v1.28.2). Falls back through likely
+// fields, then re-derives from id via the loaded pokemon.json pools, finally
+// prettifies the id. Fixes "undefined" names in team renders that came from
+// older saves / catch objects spread from a source without a `name` field.
+function pokemonDisplayName(p) {
+  if (!p) return 'Pokémon';
+  if (p.name) return p.name;
+  // Try to recover from the loaded pokemon data by id. STATE.pokemon is the
+  // global cache (populated by loadPokemon()) with shape:
+  //   { starters: [...], regional: { "1": [...], … }, bench: [...] }
+  const id = p.id;
+  if (id && STATE && STATE.pokemon) {
+    const pools = [];
+    if (Array.isArray(STATE.pokemon.starters)) pools.push(STATE.pokemon.starters);
+    if (STATE.pokemon.regional && typeof STATE.pokemon.regional === 'object') {
+      for (const v of Object.values(STATE.pokemon.regional)) {
+        if (Array.isArray(v)) pools.push(v);
+      }
+    }
+    if (Array.isArray(STATE.pokemon.bench)) pools.push(STATE.pokemon.bench);
+    for (const pool of pools) {
+      const match = pool.find(x => x && x.id === id);
+      if (match && match.name) return match.name;
+    }
+    // Last resort: prettify the id.
+    return String(id).replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  return 'Pokémon';
+}
+
 // ── GAME STATE ────────────────────────────────────────────────
 let STATE = {
   player: null,      // { id, name, emoji, ageGroup }
@@ -1124,7 +1163,7 @@ let STATE = {
   // Indexed by question position; null = timeout/skip. Persisted to
   // save.regions[r].gymResults[g].questions[i].chosen at endGym.
   gymAnswerLog: [],
-  abilityUsedThisGym: false,
+  abilityUsedThisQuestion: false,
   pendingAbilityPokemon: null,
   // v1.22 (SPEC Part 3B/8): Pokémon whose ability was used THIS question.
   // If the kid then answers correctly, awardXpEvent grows its HP (appreciating
@@ -2547,7 +2586,7 @@ async function pdcRenderPokemonTeam() {
       return `
         <div class="pdc-pokemon-row filled">
           <span class="pdc-poke-emoji">${p.emoji || '🐾'}</span>
-          <span class="pdc-poke-name">${escapeHTML(p.name || '?')}</span>
+          <span class="pdc-poke-name">${escapeHTML(pokemonDisplayName(p))}</span>
           <span class="pdc-poke-rarity ${r}">${r.toUpperCase()}</span>
           ${p.roomCode ? `<span class="pdc-poke-room">${escapeHTML(p.roomCode)}</span>` : ''}
           ${releaseBtn}
@@ -3100,6 +3139,10 @@ function showCatchResult(caught) {
     // abilityEffect, type) and add the runtime fields level + caughtAt.
     const newPokemon = {
       ...poke,
+      // v1.28.2: guarantee a name — pokemon.json has 183 nameless regional entries
+      // (only starters carry `name`). pokemonDisplayName synthesizes from id when
+      // needed so saved Pokémon never render as "undefined".
+      name: poke.name || pokemonDisplayName(poke),
       level: 1,
       xp: 0, xpCap: 100, xpRatio: 0,       // appreciating-asset XP track (Part 3C)
       caughtAt: 'pregame',
@@ -3563,6 +3606,8 @@ function showRegionalCatchResult(caught) {
   if (caught && target) {
     const newPokemon = {
       ...target,
+      // v1.28.2: guarantee a name (regional entries in pokemon.json are nameless).
+      name: target.name || pokemonDisplayName(target),
       level: currentPlayerLevel(),         // SPEC Part 4: born at player's level
       xp: 0, xpCap: 100, xpRatio: 0,       // appreciating-asset XP track (Part 3C)
       caughtAt: `region${s.region.id}`,
@@ -4094,7 +4139,7 @@ async function startGym(regionId, gymId) {
   STATE.gymCorrect = 0;
   STATE.gymAnswerLog = [];     // review feature: per-question answer log
   STATE.answered = false;
-  STATE.abilityUsedThisGym = false;
+  STATE.abilityUsedThisQuestion = false;
 
   const qData = await loadQuestions();
   if (!qData) {
@@ -4152,6 +4197,9 @@ function loadQuestion() {
   STATE.pendingMods = { multiplier: 1, doubleOrNothing: false, retry: false, shield: false };
   // v1.22: fresh question, no Pokémon ability used yet (XP marker resets).
   STATE.pendingXpPokemon = null;
+  // v1.28.2: one ability use per QUESTION (was one per gym). Reset each
+  // question so the kid can activate a Pokémon's ability on every round.
+  STATE.abilityUsedThisQuestion = false;
 
   const q = STATE.currentQData[STATE.currentQ];
   const region = REGIONS.find(r => r.id === STATE.currentRegion);
@@ -5537,6 +5585,9 @@ async function battleKeepReward(rewardId) {
   }
   const newPoke = {
     ...reward,
+    // v1.28.2: BOSS_REWARD_POKEMON entries already carry name, but stamp
+    // defensively so future data changes can't reintroduce "undefined".
+    name: reward.name || pokemonDisplayName(reward),
     level:    currentPlayerLevel(),
     xp: 0, xpCap: 100, xpRatio: 0,
     caughtAt: `boss_r${STATE.currentRegion}`,
@@ -5778,7 +5829,7 @@ function renderPokemonTeam() {
     return `
       <div class="pokemon-card">
         <div class="poke-emoji">${p.emoji}</div>
-        <div class="poke-name">${p.name}</div>
+        <div class="poke-name">${escapeHTML(pokemonDisplayName(p))}</div>
         <div class="poke-level">${stars}</div>
         <div class="poke-hp">❤️ ${p.hp || computeHp(p)} HP</div>
         <div class="poke-xp-bar"><div class="poke-xp-fill" style="width:${Math.round(xpRatioOf(p)*100)}%"></div></div>
@@ -5797,14 +5848,16 @@ function renderPokemonTeam() {
 // RETRY/SHIELD shims). Each caught Pokémon carries abilityEffect = { mechanic,
 // value, description } from pokemon.json. NON-CONSUMING (v1.22, SPEC Part 3B):
 // abilities no longer remove the Pokémon — instead, use MOVE + correct answer
-// awards an XP event that grows HP (Part 8 formula). Still one use per gym
-// via STATE.abilityUsedThisGym.
+// awards an XP event that grows HP (Part 8 formula). v1.28.2: cadence is one
+// ability use per QUESTION (was one per gym) via STATE.abilityUsedThisQuestion,
+// reset in loadQuestion(). Each question the kid can activate one Pokémon's
+// ability; multiple abilities on a single question are NOT allowed.
 
 // Fires the Pokémon's ability IMMEDIATELY (no confirmation modal — the popup
-// burned the kid's attention mid-question). One use per gym (non-consuming).
+// burned the kid's attention mid-question). One use per QUESTION (non-consuming).
 function activateAbility(pokemonIdx) {
-  if (STATE.abilityUsedThisGym) {
-    showToast('⚠️ One Pokémon ability per gym');
+  if (STATE.abilityUsedThisQuestion) {
+    showToast('⚠️ One Pokémon ability per question');
     return;
   }
   if (STATE.answered) {
@@ -5910,13 +5963,13 @@ async function useAbility(pokemonIdx) {
     return;
   }
 
-  STATE.abilityUsedThisGym = true;
+  STATE.abilityUsedThisQuestion = true;
   // SPEC Part 3B/8 (v1.22): mark which Pokémon was used this question. If the
   // kid answers correctly, checkAnswer awards it an XP event (grows HP). NOT
   // consumed — the dead v2 pokemon_team.splice was the real "ability won't
   // refresh" bug.
   STATE.pendingXpPokemon = pokemon;
-  renderPokemonTeam();   // re-render (button now greys via abilityUsedThisGym)
+  renderPokemonTeam();   // re-render (button now greys via abilityUsedThisQuestion)
 
   // Toast feedback (replaces the modal + feedback-bar combo).
   const label = getAbilityLabel(pokemon);
