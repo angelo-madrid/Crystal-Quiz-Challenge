@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.5 FIX: (A) Boss answers were ALWAYS scored wrong — battleAnswer used
+//   strict chosen === correct, which fails when the answer field differs from the
+//   option by case/whitespace (unscramble questions). Now uses _battleAnswersMatch
+//   (trim + lowercase + collapsed whitespace). Boss now takes damage / contributions
+//   count. (B) Each device rolled its OWN random question — boss rounds now use ONE
+//   shared question stored in bs.roundQuestion (first server writes it, teammates
+//   adopt it), cleared at round resolve.
 // v1.31.4 FIX: Multiplayer answer hang — the REAL fix. Client read-merge-write
 //   (v1.31.1) could not close the concurrent-write clobber window. Replaced with
 //   an atomic Supabase RPC (battle_submit_answer) that merges one player's answer
@@ -5057,6 +5064,17 @@ async function _battlePollTick() {
 // ── SERVE QUESTION ────────────────────────────────────────────
 // Called when poll detects a new active round. Draws a question from
 // the gym_bank (same pool as gyms — battle uses gym-tier questions).
+// v1.31.5: robust answer match — strict === fails when the answer field differs
+// from the option string by case/whitespace/punctuation (common in unscramble
+// questions). Normalize both sides before comparing.
+function _battleAnswersMatch(a, b) {
+  const norm = s => String(s == null ? '' : s)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ');
+  return norm(a) === norm(b);
+}
+
 async function _battleServeQuestion(bs) {
   _battleHideAllPanels();
   _battleRoundAnswered = false;
@@ -5085,14 +5103,46 @@ async function _battleServeQuestion(bs) {
     return;
   }
 
-  const { picked } = pickQuestion(pool);
-  if (!picked) { console.error('[_battleServeQuestion] pickQuestion returned null'); return; }
+  // v1.31.5: ONE shared question per round, stored in bs.roundQuestion so every
+  // kid answers the same one (team fight). If bs already has this round's
+  // question, use it; otherwise pick + write it to bs (first device to serve
+  // wins; written atomically-ish — see note).
+  let picked = null;
+  if (bs.roundQuestion && bs.roundQuestionForRound === bs.round) {
+    picked = bs.roundQuestion;
+  } else {
+    const r = pickQuestion(pool);
+    picked = r.picked;
+    if (!picked) { console.error('[_battleServeQuestion] pickQuestion returned null'); return; }
+    // Persist the chosen question to battleState so teammates serve the same one.
+    try {
+      const room = await dbReadRoom(STATE.roomCode);
+      if (room && room.battleState) {
+        if (room.battleState.roundQuestion && room.battleState.roundQuestionForRound === room.battleState.round) {
+          // Someone else already set it — adopt theirs.
+          picked = room.battleState.roundQuestion;
+          bs = room.battleState;
+        } else {
+          room.battleState.roundQuestion         = picked;
+          room.battleState.roundQuestionForRound = room.battleState.round;
+          room.updated_at = new Date().toISOString();
+          await dbWriteRoom(STATE.roomCode, room);
+          bs = room.battleState;
+        }
+      }
+    } catch(e) { console.warn('[_battleServeQuestion shared-q]', e); }
+  }
   markQuestionSeen(picked.id);
 
-  // Stash current question on STATE.battle for battleAnswer() to read.
+  // Stash on STATE.battle for battleAnswer(). Use the SHARED choice order if the
+  // question carried one (so all kids see the same option layout); else shuffle.
   if (!STATE.battle) STATE.battle = {};
   STATE.battle.currentQuestion  = picked;
-  STATE.battle.currentChoices   = [...picked.options].sort(() => Math.random() - 0.5);
+  if (picked._choiceOrder) {
+    STATE.battle.currentChoices = picked._choiceOrder;
+  } else {
+    STATE.battle.currentChoices = [...picked.options].sort(() => Math.random() - 0.5);
+  }
   STATE.battle.currentRound     = bs.round;
   STATE.battle.regionId         = bs.regionId;
   STATE.battle.teamStrike       = bs.teamStrikeDeclared;
@@ -5285,8 +5335,10 @@ function battleAnswer(idx) {
 
   const chosen   = STATE.battle.currentChoices[idx];
   const correct  = STATE.battle.currentQuestion.answer;
-  const isCorrect = chosen === correct;
-  const correctIdx = STATE.battle.currentChoices.indexOf(correct);
+  const isCorrect = _battleAnswersMatch(chosen, correct);
+  // Find the correct button by normalized match (handles case/whitespace drift).
+  let correctIdx = STATE.battle.currentChoices.findIndex(c => _battleAnswersMatch(c, correct));
+  if (correctIdx < 0) correctIdx = STATE.battle.currentChoices.indexOf(correct);
 
   // Reveal answers.
   for (let i = 0; i < 4; i++) {
@@ -5312,7 +5364,8 @@ function battleAnswer(idx) {
 
 function _battleTimeUp() {
   _battleRoundAnswered = true;
-  const correctIdx = STATE.battle.currentChoices.indexOf(STATE.battle.currentQuestion.answer);
+  let correctIdx = STATE.battle.currentChoices.findIndex(c => _battleAnswersMatch(c, STATE.battle.currentQuestion.answer));
+  if (correctIdx < 0) correctIdx = STATE.battle.currentChoices.indexOf(STATE.battle.currentQuestion.answer);
   for (let i = 0; i < 4; i++) {
     const btn = document.getElementById(`bans${i}`);
     if (!btn || btn.style.display === 'none') continue;
@@ -5549,6 +5602,9 @@ function _battleResolveRound(bs) {
     players[id].pendingAbilityPoke= null;
   });
   bs.teamStrikeDeclared = false;
+  // v1.31.5: clear the shared question so the next round picks a new one.
+  bs.roundQuestion         = null;
+  bs.roundQuestionForRound = null;
 
   // --- Win/loss check ---
   // Win: boss HP = 0 AND every active (non-fainted) player has hit N=3.

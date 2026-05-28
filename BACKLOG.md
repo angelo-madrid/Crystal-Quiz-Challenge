@@ -193,6 +193,15 @@ OPEN QUESTIONS (resolve before build):
 
 ## 🟡 WATCH-ITEMS (locked, monitor in playtest)
 
+- Answer-scoring normalizer reach (v1.31.5): `_battleAnswersMatch`
+  (trim + lowercase + collapsed whitespace) is currently only used in
+  the BOSS scoring path. The same strict `===` comparison exists in
+  three other scoring sites — GYM (line ~3686/3702), pre-game catch
+  (~3214/3231), and regional catch (~4410/4509). If UAT exposes the
+  same case/whitespace drift there (especially on unscramble questions),
+  port the normalizer to those sites too. Low-risk change (normalization
+  only matches answers that ARE the same after canonicalization — it
+  doesn't accept genuinely wrong picks).
 - Room-blob last-write-wins concurrency (v1.31.0 / v1.31.1 / v1.31.4):
   ANSWERS are now properly atomic on the server (v1.31.4 RPC
   `battle_submit_answer` — Postgres `FOR UPDATE` row lock, serializes
@@ -313,6 +322,30 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — BOSS SCORING + SHARED QUESTION (2026-05-28, v1.31.5):**
+- Once v1.31.4 made rounds advance, UAT surfaced two more bugs.
+- (A) **Every answer scored WRONG.** UAT screenshot: kid taps "Wicked" on
+  an unscramble question (picked option = correct answer text), banner
+  says "The answer was Wicked", scored wrong → boss takes 0 damage →
+  "0/3 contributions" everyone → unwinnable. Root: `battleAnswer` used
+  strict `chosen === correct`, which fails when the `answer` field
+  differs from the option string by case/whitespace/punctuation
+  (unscramble especially). Fixed with new `_battleAnswersMatch(a, b)`
+  normalizer (trim + lowercase + collapsed whitespace) — used in both
+  `battleAnswer` and `_battleTimeUp` for `isCorrect` and `correctIdx`.
+  Does NOT mask genuine misses; only matches that are equal after
+  normalization.
+- (B) **Each device rolled its OWN random question.** `_battleServeQuestion`
+  called `pickQuestion(pool)` independently per kid → in a TEAM boss
+  fight everyone saw a different question. Now ONE shared question per
+  round, stored in `bs.roundQuestion` + `bs.roundQuestionForRound`:
+  first server writes it, teammates adopt the persisted one (first-
+  server-wins). Cleared at round resolve. Choice order still per-device
+  (acceptable for kids; prevents copying tap position).
+- Together these unbreak the fight: answers now score correctly →
+  damage lands → contributions count → boss HP drops → fight winnable.
+  The team framing is also coherent (same question each round).
 
 **Track C — ATOMIC ANSWER WRITE: Bug #10 REAL fix (2026-05-26, v1.31.4):**
 - v1.31.1's client read-merge-write could not close the concurrent-write

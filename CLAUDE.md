@@ -2,7 +2,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ BUILD VERSION: v0.7.3   ·   LAST UPDATED: 2026-05-26         │
+│ BUILD VERSION: v0.7.4   ·   LAST UPDATED: 2026-05-28         │
 │ SYNCED TO SPEC: v3.10 (economy 12-NEW now BUILT @ v0.6.3;    │
 │   prize v3.4-6 + boss v3.5-7 are DESIGNED & ahead of build;  │
 │   battle session v3.7 FULLY DESIGNED — not yet built;        │
@@ -134,6 +134,19 @@ peso credits for real Pokemon cards.
     `startPreGameCatch()` self-guards on `team.length > 0` (routes to map),
     and the waiting-lobby poll guards before invoking it. Closes the
     "re-enter catch with a team + 0 balls + no exit" trap.
+- v1.31.5 BOSS SCORING + SHARED QUESTION: two bugs that surfaced once
+  v1.31.4 made rounds advance. (A) `battleAnswer` used strict
+  `chosen === correct` and failed on case/whitespace/punctuation drift
+  (unscramble questions especially) → every answer scored WRONG → boss
+  took 0 damage → "0/3 contributions" → unwinnable. Fixed with new
+  `_battleAnswersMatch(a, b)` normalizer (trim + lowercase + collapsed
+  whitespace) used in `battleAnswer` + `_battleTimeUp`. (B) Each device
+  rolled its OWN random question → team fight had each kid on a
+  different question. Now ONE shared question per round in
+  `bs.roundQuestion` / `bs.roundQuestionForRound`: first server writes
+  it, teammates adopt (first-server-wins), cleared at round resolve.
+  Choice order still per-device. WATCH-ITEM: same normalizer may belong
+  in gym/regional-catch scoring if drift exists there too.
 - v1.31.3 ECONOMY TIMING CHANGE: crystals now bank into the per-player wallet
   on EVERY region's boss win (R1 through R10), not only R3/R7/R10. SPEC Part
   12-NEW-B rewritten to v3.10. Rationale: kids want to spend banked crystals
