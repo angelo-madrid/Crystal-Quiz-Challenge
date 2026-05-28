@@ -129,3 +129,113 @@ create policy "anon can update ledger rows"
 Pre-launch convention is "anon can do anything" since the only client
 is the kid's browser and there's no auth tier. Tighten this before
 public release if the threat model changes.
+
+---
+
+## 2026-05-26 — atomic battle answer write (v1.31.4, Bug #10 REAL fix)
+
+**Why this exists.** Bug #10 (the multiplayer boss-fight hang) was caused
+by concurrent kids writing to `rooms.data.battleState.playerStates` from
+their browsers. Last-write-wins on the JSONB blob meant a near-simultaneous
+answer from a teammate clobbered the first kid's `answeredThisRound`
+flag → `allAnswered` never became true → the round never resolved → hang
+every round. v1.31.1 tried to close the window client-side
+(read-merge-write), but PEPE11's second read could still happen *before*
+PAPA19's write committed, so the merge had nothing to merge.
+
+The only correct fix is **atomic on the server.** This RPC reads,
+modifies, and writes inside one Postgres transaction with a `FOR UPDATE`
+row lock — two concurrent calls are serialized, no flag is ever lost.
+The function intentionally does NOT do round resolution (damage / boss
+attack / win-loss logic stays in JS for now); it only guarantees the
+answered flags converge. Resolution then runs client-side on the
+guaranteed-correct merged state.
+
+The JS client (game.js `_battleWriteAnswer`) calls this RPC. If the RPC
+is missing or errors, the client falls back to the old best-effort
+merge — so shipping JS before SQL degrades gracefully instead of breaking.
+
+**Run in Supabase Studio → SQL Editor → New query → Run:**
+
+```sql
+-- v1.31.4: atomic per-player answer merge into rooms.data.battleState.
+-- Serializes concurrent answers so no kid's answeredThisRound flag is clobbered.
+create or replace function battle_submit_answer(
+  p_room_id   text,
+  p_player_id text,
+  p_correct   boolean
+)
+returns jsonb
+language plpgsql
+as $$
+declare
+  v_data jsonb;
+  v_ps   jsonb;
+  v_already boolean;
+  v_contrib int;
+begin
+  -- Lock the room row for the duration of this transaction.
+  select data into v_data from rooms where id = p_room_id for update;
+  if v_data is null then
+    return null;
+  end if;
+
+  -- Bail if no battle, round inactive, or fight over.
+  if (v_data->'battleState') is null
+     or (v_data->'battleState'->>'roundActive')::boolean is distinct from true
+     or (v_data->'battleState'->>'outcome') is not null then
+    return v_data;
+  end if;
+
+  v_ps := v_data->'battleState'->'playerStates'->p_player_id;
+  if v_ps is null then
+    -- Player not initialised in battle — nothing to do here; client init covers it.
+    return v_data;
+  end if;
+
+  -- Only apply once (monotonic within a round).
+  v_already := coalesce((v_ps->>'answeredThisRound')::boolean, false);
+  if not v_already then
+    v_contrib := coalesce((v_ps->>'correctThisBattle')::int, 0);
+    if p_correct then
+      v_contrib := v_contrib + 1;
+    end if;
+    v_ps := jsonb_set(v_ps, '{answeredThisRound}', 'true'::jsonb, true);
+    v_ps := jsonb_set(v_ps, '{answerCorrect}', to_jsonb(p_correct), true);
+    v_ps := jsonb_set(v_ps, '{correctThisBattle}', to_jsonb(v_contrib), true);
+    v_data := jsonb_set(v_data,
+      array['battleState','playerStates',p_player_id], v_ps, true);
+    update rooms set data = v_data, updated_at = now() where id = p_room_id;
+  end if;
+
+  return v_data;
+end;
+$$;
+```
+
+**Verify (smoke test in SQL Editor):**
+
+```sql
+-- Should return the room's data jsonb (or null if room absent).
+select battle_submit_answer('TEST20', 'PAPA19', true);
+```
+
+If it errors with permission-denied on the `update rooms` step, the
+function needs `security definer` (so it runs as the function owner,
+who has table privileges, instead of the calling anon role):
+
+```sql
+-- Re-run with security definer:
+alter function battle_submit_answer(text, text, boolean) security definer;
+```
+
+**Deployment order.** Run the SQL **first**, verify, then ship game.js
+v1.31.4. If JS ships first, the fallback keeps the game working
+(imperfectly under concurrency); once SQL is live, the RPC path
+activates automatically with no further deploy.
+
+**Followups (BACKLOG WATCH-ITEM).** The room-blob last-write-wins root
+also affects `bs.readyForNext` and `room.phase`. v1.31.0 patched both
+defensively (client merge + host backstop). If they stall under load,
+give them the same RPC treatment: e.g. `battle_ready_up(p_room_id,
+p_player_id)` and `battle_heal_phase(p_room_id)`.

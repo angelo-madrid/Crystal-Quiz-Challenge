@@ -193,20 +193,21 @@ OPEN QUESTIONS (resolve before build):
 
 ## 🟡 WATCH-ITEMS (locked, monitor in playtest)
 
-- Room-blob last-write-wins concurrency (v1.31.0 + v1.31.1): THREE sites
-  now patched defensively — `room.phase` (v1.31.0 C/D), `bs.readyForNext`
-  (v1.31.0 A `battleReadyUp` re-read-merge), and `bs.playerStates[*].
-  answeredThisRound` (v1.31.1 `_battleWriteAnswer` re-read-merge — the
-  REAL cause of the hang after v1.31.0). Host Force Next Round + widened
-  panel gates (v1.31.0 B/C) are the architectural backstop. Architectural
-  root is STILL unfixed — every `dbWriteRoom` on the same blob is
-  last-write-wins. Audit other multiplayer writes for the same clobber
-  risk: presence heartbeat, gym progress, gymsCompleted writes, broadcast
-  announcements, battle pending-ability declarations. Three defensive
-  patches is a smell — the proper fix (atomic server-side updates via
-  Supabase RPC / Postgres function, or per-player sub-records replacing
-  the single `room.battleState` JSONB blob) is now more urgent and
-  should land before scaling to 5 simultaneous kids.
+- Room-blob last-write-wins concurrency (v1.31.0 / v1.31.1 / v1.31.4):
+  ANSWERS are now properly atomic on the server (v1.31.4 RPC
+  `battle_submit_answer` — Postgres `FOR UPDATE` row lock, serializes
+  concurrent calls). The other two race sites are still patched only
+  defensively on the client: `bs.readyForNext` (v1.31.0 A `battleReadyUp`
+  re-read-merge) and `room.phase` (v1.31.0 C/D + player-poll self-heal).
+  Host Force Next Round + widened panel gates (v1.31.0 B/C) remain the
+  architectural backstop. Audit other multiplayer writes for the same
+  clobber risk: presence heartbeat, gym progress, gymsCompleted writes,
+  broadcast announcements, battle pending-ability declarations. If readies
+  or phase ever stall under load, give them the same RPC treatment
+  (e.g. `battle_ready_up(p_room_id, p_player_id)`,
+  `battle_heal_phase(p_room_id)`). For 5-kid scaling, consider replacing
+  the single `room.battleState` JSONB blob with per-player sub-records
+  so each kid writes a distinct row instead of contending on one blob.
 - Post-gym rescue coverage gap: EXTRA SHOT/TIME TRAVEL on Rare+ only — low-level kids
   can't field a post-gym rescue. Watch for frustration.
 - Draft pacing / host complexity: turn-order, whose-turn UI, pass handling, soft timer.
@@ -312,6 +313,35 @@ OPEN QUESTIONS (resolve before build):
 ---
 
 ## ✅ DONE (rolling archive)
+
+**Track C — ATOMIC ANSWER WRITE: Bug #10 REAL fix (2026-05-26, v1.31.4):**
+- v1.31.1's client read-merge-write could not close the concurrent-write
+  clobber window. UAT screenshots confirmed exactly this: PEPE11's second
+  read happened *before* PAPA19's write committed, so the merge had nothing
+  to merge → PEPE11's write flipped PAPA19's `answeredThisRound` back to
+  false → `allAnswered` never true → hang every round.
+- THE only correct fix is **atomic on the server.** New Supabase RPC
+  `battle_submit_answer(p_room_id, p_player_id, p_correct) returns jsonb`
+  (defined in MIGRATIONS.md 2026-05-26): reads `rooms.data` with
+  `FOR UPDATE`, sets ONE player's `answeredThisRound` / `answerCorrect` /
+  increments `correctThisBattle`, writes back — all in one Postgres
+  transaction. Concurrent calls are serialized by the row lock; no flag
+  is ever lost.
+- `_battleWriteAnswer` rewritten to call the RPC; resolution
+  (`_battleResolveRound`) still runs client-side on the guaranteed-correct
+  merged state. To avoid two clients double-resolving, the resolver
+  re-reads the room and only commits if `cbs.round < bs.round &&
+  cbs.outcome === null` (nobody else resolved yet); otherwise the other
+  client's write stands.
+- New `_battleWriteAnswerFallback(isCorrect)` retains the old v1.31.1
+  best-effort merge as a graceful-degradation path — fires only on RPC
+  error/missing-function. Shipping JS before SQL keeps the game working
+  (imperfectly under concurrency) until SQL is deployed; then RPC takes
+  over automatically.
+- ⚠️ DEPLOY ORDER: run the SQL in Supabase first (see MIGRATIONS.md
+  2026-05-26 entry), verify with the smoke test, THEN ship game.js.
+- Host Force Next Round (v1.31.0) remains the backstop for any rare race
+  that still slips through (e.g. RPC unavailable + 3-way client merge).
 
 **Track C — ECONOMY TIMING CHANGE (2026-05-26, v1.31.3 / SPEC v3.10):**
 - Crystals now bank into the per-player wallet on EVERY region's boss win

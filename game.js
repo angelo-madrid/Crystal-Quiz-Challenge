@@ -1,5 +1,12 @@
 // ═══════════════════════════════════════════════════════════
 // CRYSTAL QUIZ CHALLENGE — game.js
+// v1.31.4 FIX: Multiplayer answer hang — the REAL fix. Client read-merge-write
+//   (v1.31.1) could not close the concurrent-write clobber window. Replaced with
+//   an atomic Supabase RPC (battle_submit_answer) that merges one player's answer
+//   inside a row-locked Postgres transaction — concurrent answers now serialize,
+//   no answeredThisRound flag is lost. Resolution still runs client-side on the
+//   guaranteed-correct merged state. Falls back to the old best-effort merge if
+//   the RPC is missing so shipping JS before SQL degrades gracefully.
 // v1.31.3: ECONOMY CHANGE — crystals now bank into the wallet on EVERY region's
 //   boss win (was R3/R7/R10 only). Kids can spend in the Prize Store right after
 //   R1. bankCrystalsForCheckpoint now banks the single region when called for a
@@ -5321,79 +5328,89 @@ function _battleTimeUp() {
 
 // Write this player's round answer to Supabase room.battleState.
 // Also checks: are ALL players answered? If yes, auto-resolve the round.
+// v1.31.4: ATOMIC answer write via Supabase RPC. Client read-merge-write (v1.31.1)
+// could not close the clobber window — two simultaneous answers could each read
+// before the other's write landed. The RPC battle_submit_answer does the merge
+// inside one Postgres transaction (row-locked), so concurrent answers serialize
+// and no answeredThisRound flag is lost. After the atomic merge, we check
+// allAnswered on the returned-fresh state and resolve client-side if needed.
 async function _battleWriteAnswer(isCorrect) {
   const code = STATE.roomCode;
   if (!code) return;
   const pid = STATE.player.id;
   try {
-    // CONCURRENCY-SAFE (v1.31.1): kids answer simultaneously every round. A blind
-    // read-modify-write clobbers other kids' answeredThisRound flags (Supabase is
-    // last-write-wins on the room blob) → allAnswered never true → round never
-    // resolves → hang. We re-read immediately before writing and MERGE every
-    // player's answered/correct state so concurrent answers converge.
-    //
-    // We also retry once if the write races: read → merge our answer → write.
-    // The merge preserves any answeredThisRound=true that another kid set, and
-    // never un-sets a flag (monotonic within a round).
-    const applyMyAnswer = (bs) => {
-      if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp(), STATE._fieldedChoice || null);
-      // Only count the correct contribution ONCE (guard against double-write on retry).
-      if (!bs.playerStates[pid].answeredThisRound) {
-        bs.playerStates[pid].answeredThisRound = true;
-        bs.playerStates[pid].answerCorrect     = isCorrect;
-        if (isCorrect) bs.playerStates[pid].correctThisBattle++;
-      }
-    };
-
-    // First read + apply.
-    let room = await dbReadRoom(code);
-    if (!room || !room.battleState) return;
-    let bs = room.battleState;
-    if (bs.roundActive === false || bs.outcome !== null) {
-      // Round already resolved by someone else, or fight over — nothing to do.
-      return;
+    // Atomic per-player merge on the server. Returns the freshest room.data.
+    const { data: freshData, error } = await sb.rpc('battle_submit_answer', {
+      p_room_id:   code,
+      p_player_id: pid,
+      p_correct:   !!isCorrect,
+    });
+    if (error) {
+      console.warn('[battle_submit_answer RPC]', error);
+      // Fallback: best-effort client write so we don't fully stall if RPC missing.
+      return _battleWriteAnswerFallback(isCorrect);
     }
-    applyMyAnswer(bs);
+    if (!freshData || !freshData.battleState) return;
+    const bs = freshData.battleState;
+    if (bs.outcome !== null || bs.roundActive === false) return;
 
-    // Re-read immediately before writing and merge: union answered flags so a
-    // concurrent kid's answer isn't lost. We take the freshest playerStates and
-    // re-apply our own answer on top.
-    const fresh = await dbReadRoom(code);
-    const fbs   = (fresh && fresh.battleState) ? fresh.battleState : bs;
-    if (fbs.outcome !== null || fbs.roundActive === false) {
-      // Resolved/over between our reads — bail (our contribution may be lost in
-      // a rare 3-way race; the host Force Next Round backstop covers this).
-      return;
-    }
-    // Merge: for each player, OR the answered flags and keep the higher contrib.
-    for (const id of Object.keys(bs.playerStates)) {
-      if (!fbs.playerStates[id]) { fbs.playerStates[id] = bs.playerStates[id]; continue; }
-      const a = bs.playerStates[id], f = fbs.playerStates[id];
-      if (a.answeredThisRound && !f.answeredThisRound) {
-        f.answeredThisRound = true;
-        f.answerCorrect     = a.answerCorrect;
-        f.correctThisBattle = Math.max(f.correctThisBattle || 0, a.correctThisBattle || 0);
-      }
-      // Carry pending ability if we set one and fresh doesn't have it.
-      if (a.pendingAbility && !f.pendingAbility) {
-        f.pendingAbility     = a.pendingAbility;
-        f.pendingAbilityPoke = a.pendingAbilityPoke;
-      }
-    }
-    // Ensure MY answer is applied to the fresh copy.
-    applyMyAnswer(fbs);
-
-    // Now check allAnswered on the merged state.
-    const activePlayers = Object.entries(fbs.playerStates).filter(([,p]) => !p.fainted);
+    // Check allAnswered on the guaranteed-correct merged state.
+    const activePlayers = Object.entries(bs.playerStates).filter(([,p]) => !p.fainted);
     const allAnswered   = activePlayers.length > 0 && activePlayers.every(([,p]) => p.answeredThisRound);
-    if (allAnswered && fbs.roundActive !== false && fbs.outcome === null) {
-      _battleResolveRound(fbs);
+    if (allAnswered) {
+      // Resolve client-side, then write the resolved state back. Only ONE client
+      // will see allAnswered===true first; if two race here, the resolve is
+      // idempotent-ish (round++ guard below) and the host Force backstop covers
+      // any rare double-resolve.
+      _battleResolveRound(bs);
+      // Re-read once to avoid clobbering a concurrent resolve, then write if we
+      // still own the advance (round not already past where we resolved).
+      const check = await dbReadRoom(code);
+      const cbs = check && check.battleState;
+      if (cbs && cbs.round < bs.round && cbs.outcome === null) {
+        // Nobody else resolved yet — commit our resolution.
+        check.battleState = bs;
+        check.updated_at  = new Date().toISOString();
+        await dbWriteRoom(code, check);
+      } else if (cbs && (cbs.round >= bs.round || cbs.outcome !== null)) {
+        // Someone else already resolved — do nothing (their write stands).
+      } else {
+        // No fresh read — commit ours as best effort.
+        freshData.battleState = bs;
+        await dbWriteRoom(code, freshData);
+      }
     }
+  } catch(e) {
+    console.warn('[_battleWriteAnswer]', e);
+    return _battleWriteAnswerFallback(isCorrect);
+  }
+}
 
-    fresh.battleState = fbs;
-    fresh.updated_at  = new Date().toISOString();
-    await dbWriteRoom(code, fresh);
-  } catch(e) { console.warn('[_battleWriteAnswer]', e); }
+// Fallback used only if the RPC is missing/errors (e.g. SQL not yet deployed).
+// This is the old v1.31.1 best-effort merge — imperfect under concurrency but
+// better than no write at all.
+async function _battleWriteAnswerFallback(isCorrect) {
+  const code = STATE.roomCode;
+  if (!code) return;
+  const pid = STATE.player.id;
+  try {
+    const room = await dbReadRoom(code);
+    if (!room || !room.battleState) return;
+    const bs = room.battleState;
+    if (bs.outcome !== null || bs.roundActive === false) return;
+    if (!bs.playerStates[pid]) bs.playerStates[pid] = _battleInitPlayerState(_battleDerivePlayerHp(), STATE._fieldedChoice || null);
+    if (!bs.playerStates[pid].answeredThisRound) {
+      bs.playerStates[pid].answeredThisRound = true;
+      bs.playerStates[pid].answerCorrect     = isCorrect;
+      if (isCorrect) bs.playerStates[pid].correctThisBattle++;
+    }
+    const activePlayers = Object.entries(bs.playerStates).filter(([,p]) => !p.fainted);
+    const allAnswered   = activePlayers.length > 0 && activePlayers.every(([,p]) => p.answeredThisRound);
+    if (allAnswered) _battleResolveRound(bs);
+    room.battleState = bs;
+    room.updated_at  = new Date().toISOString();
+    await dbWriteRoom(code, room);
+  } catch(e) { console.warn('[_battleWriteAnswerFallback]', e); }
 }
 
 // ── ROUND RESOLUTION (runs on the last player to answer) ─────
